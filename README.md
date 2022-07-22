@@ -2,4 +2,4 @@
 # ModbusRx
 A Reactive Modbus implementation based on NModbus4
 
-![Nuget](https://img.shields.io/nuget/dt/ChrisPulman.ModbusRx?color=pink&style=plastic) [![NuGet](https://img.shields.io/nuget/v/ChrisPulman.ModbusRx.svg?style=plastic)](https://www.nuget.org/packages/ChrisPulman.ModbusRx)
+![Nuget](https://img.shields.io/nuget/dt/ModbusRx?color=pink&style=plastic) [![NuGet](https://img.shields.io/nuget/v/ModbusRx.svg?style=plastic)](https://www.nuget.org/packages/ModbusRx)
