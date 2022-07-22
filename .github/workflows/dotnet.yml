@@ -40,8 +40,17 @@ jobs:
       run: msbuild /t:build,pack /nowarn:MSB4011 /maxcpucount /p:NoPackageAnalysis=true /verbosity:minimal /p:Configuration=Release ModbusRx.sln
       working-directory: src
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+    - name: Run Unit Tests and Generate Coverage
+      uses: glennawatson/coverlet-msbuild@v1
+      with:
+        project-files: 'src/**/*Tests*.csproj'
+        no-build: true
+        include-filter: 'ModbusRx*'
+        output-format: cobertura
+        configuration: Release
+
+    - name: Upload Code Coverage
+      uses: codecov/codecov-action@v3
 
     - name: Create NuGet Artifacts
       uses: actions/upload-artifact@master
