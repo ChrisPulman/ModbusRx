@@ -10,8 +10,7 @@ jobs:
   build-and-release:
 
     runs-on: windows-2022
-    outputs:
-      nbgv: ${{ steps.nbgv.outputs.SemVer2 }}
+ 
     steps:
     - name: Checkout
       uses: actions/checkout@v3

@@ -1,16 +1,22 @@
 {
+    "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
     "version": "0.2",
     "publicReleaseRefSpec": [
         "^refs/heads/master$",
         "^refs/heads/main$"
     ],
     "nugetPackageVersion": {
-        "semVer": 2
+        "semVer": 2,
+        "precision": "build"
     },
     "cloudBuild": {
         "setVersionVariables": true,
         "buildNumber": {
             "enabled": false
         }
+    },
+    "release": {
+        "versionIncrement": "build",
+        "firstUnstableTag": "alpha"
     }
 }
