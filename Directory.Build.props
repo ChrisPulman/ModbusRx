@@ -1,9 +1,11 @@
 <Project DefaultTargets="Build"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Chris Pulman</Authors>
     <Description>An Reactive version of NModbus4</Description>
     <Copyright>Copyright © https://github.com/ChrisPulman $([System.DateTime]::Now.ToString(yyyy))</Copyright>
+    <IsTestProject>$(MSBuildProjectName.Contains('Tests'))</IsTestProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>preview</LangVersion>
     <Configuration>$(TargetFramework)</Configuration>
@@ -15,7 +17,6 @@
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
 
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageProjectUrl>https://github.com/ChrisPulman/ModbusRx</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ChrisPulman/ModbusRx</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -28,17 +29,25 @@
     <DebugType>embedded</DebugType>
     <!--https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg-->
     <IncludeSymbols>true</IncludeSymbols>
+
+    <!-- Include PDB in the built .nupkg -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='PreRelease'">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+  <ItemGroup>
     <!--<Compile Update="**\*.cs" DependentUpon="I%(Filename).cs" />-->
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.107" PrivateAssets="all" />
     <PackageReference Include="stylecop.analyzers" Version="1.2.0-beta.435" PrivateAssets="all" />

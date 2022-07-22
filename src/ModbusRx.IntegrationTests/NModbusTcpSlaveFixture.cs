@@ -1,13 +1,9 @@
-﻿// <copyright file="NModbusTcpSlaveFixture.cs" company="Chris Pulman">
-// Copyright (c) Chris Pulman. All rights reserved.
+﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-// </copyright>
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Threading;
 using CP.IO.Ports;
 using ModbusRx.Device;
