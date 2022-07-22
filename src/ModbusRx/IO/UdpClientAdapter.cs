@@ -3,7 +3,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System.Net.Sockets;
 using CP.IO.Ports;
 using ModbusRx.Unme.Common;
 
@@ -14,12 +13,7 @@ namespace ModbusRx.IO;
 /// </summary>
 internal class UdpClientAdapter : IStreamResource
 {
-    // strategy for cross platform r/w
-    private const int MaxBufferSize = ushort.MaxValue;
-    private readonly byte[] _buffer = new byte[MaxBufferSize];
-
     private UdpClientRx? _udpClient;
-    private int _bufferOffset;
 
     public UdpClientAdapter(UdpClientRx udpClient)
     {
@@ -31,7 +25,7 @@ internal class UdpClientAdapter : IStreamResource
         _udpClient = udpClient;
     }
 
-    public int InfiniteTimeout => Timeout.Infinite;
+    public int InfiniteTimeout => _udpClient!.InfiniteTimeout;
 
     public int ReadTimeout
     {

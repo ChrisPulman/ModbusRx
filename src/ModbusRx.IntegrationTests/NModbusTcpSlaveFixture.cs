@@ -29,8 +29,10 @@ public class NModbusTcpSlaveFixture
     {
         var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
         using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync());
-        slaveThread.IsBackground = true;
+        var slaveThread = new Thread(async () => await slave.ListenAsync())
+        {
+            IsBackground = true
+        };
         slaveThread.Start();
 
         var masterClient = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
@@ -58,8 +60,10 @@ public class NModbusTcpSlaveFixture
     {
         var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
         using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync());
-        slaveThread.IsBackground = true;
+        var slaveThread = new Thread(async () => await slave.ListenAsync())
+        {
+            IsBackground = true
+        };
         slaveThread.Start();
 
         var masterClient = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
@@ -89,8 +93,10 @@ public class NModbusTcpSlaveFixture
     {
         var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
         using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync());
-        slaveThread.IsBackground = true;
+        var slaveThread = new Thread(async () => await slave.ListenAsync())
+        {
+            IsBackground = true
+        };
         slaveThread.Start();
 
         var workerThread1 = new Thread(Read);
