@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModbusRx", "ModbusRx\ModbusRx.csproj", "{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModbusRx.UnitTests", "ModbusRx.UnitTests\ModbusRx.UnitTests.csproj", "{C1C899CA-D6FB-4C88-94C7-878D33359CC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModbusRx.IntegrationTests", "ModbusRx.IntegrationTests\ModbusRx.IntegrationTests.csproj", "{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectConfiguration", "ProjectConfiguration", "{E46B0739-429F-4AB9-9FAA-1D4EE07D3667}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\.gitignore = ..\.gitignore
+		..\Directory.Build.props = ..\Directory.Build.props
+		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+		..\stylecop.json = ..\stylecop.json
+		..\Version.json = ..\Version.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModbusRx.DriverTest", "ModbusRx.DriverTest\ModbusRx.DriverTest.csproj", "{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		PreRelease|Any CPU = PreRelease|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.PreRelease|Any CPU.ActiveCfg = PreRelease|Any CPU
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.PreRelease|Any CPU.Build.0 = PreRelease|Any CPU
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A16A3B2A-4262-40E1-90B6-2B93AA39AF92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.PreRelease|Any CPU.ActiveCfg = PreRelease|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.PreRelease|Any CPU.Build.0 = PreRelease|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1C899CA-D6FB-4C88-94C7-878D33359CC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.PreRelease|Any CPU.ActiveCfg = PreRelease|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.PreRelease|Any CPU.Build.0 = PreRelease|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A74A04D7-2CE1-4B61-A05D-10BC22433EE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.PreRelease|Any CPU.ActiveCfg = PreRelease|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.PreRelease|Any CPU.Build.0 = PreRelease|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3E228F0-B0FB-4C96-AB59-C3D7D9214712}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8740A338-6492-42E4-8F7D-4926FFD1214A}
+	EndGlobalSection
+EndGlobal

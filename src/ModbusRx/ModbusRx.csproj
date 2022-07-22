@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0;</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
+    <PackageReference Include="IndexRange" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SerialPortRx" Version="2.2.6" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ModbusRx.IntegrationTests</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ModbusRx.DriverTest</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ModbusRx.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+    </AssemblyAttribute>
+
+  </ItemGroup>
+
+</Project>

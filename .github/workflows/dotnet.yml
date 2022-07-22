@@ -10,30 +10,59 @@ jobs:
   build-and-release:
 
     runs-on: windows-2022
-
+    outputs:
+      nbgv: ${{ steps.nbgv.outputs.SemVer2 }}
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+
     - name: Add MSBuild to PATH
       uses: glennawatson/setup-msbuild@v1.0.3
       with:
         prerelease: true
+
+    - name: NBGV
+      id: nbgv
+      uses: dotnet/nbgv@master
+      with:
+        setAllVars: true
+
     - name: NuGet Restore
       run: dotnet restore ModbusRx.sln
       working-directory: src
+
     - name: Build
       run: msbuild /t:build,pack /nowarn:MSB4011 /maxcpucount /p:NoPackageAnalysis=true /verbosity:minimal /p:Configuration=Release ModbusRx.sln
       working-directory: src
+
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
     - name: Create NuGet Artifacts
       uses: actions/upload-artifact@master
       with:
         name: nuget
         path: '**/*.nupkg'
+
+    - name: Changelog
+      uses: glennawatson/ChangeLog@v1
+      id: changelog
+
+    - name: Create Release
+      uses: actions/create-release@v1.1.4
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+          tag_name: ${{ steps.nbgv.outputs.SemVer2 }}
+          release_name: ${{ steps.nbgv.outputs.SemVer2 }}
+          body: |
+            ${{ steps.changelog.outputs.commitLog }}
+
     - name: NuGet Push
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
