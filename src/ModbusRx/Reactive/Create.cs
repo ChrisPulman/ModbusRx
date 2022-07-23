@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Net.NetworkInformation;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -38,15 +39,154 @@ namespace ModbusRx.Reactive
         }
 
         /// <summary>
+        /// Reads the input registers.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of ushort.
+        /// </returns>
+        public static IObservable<ushort[]> ReadInputRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+            Observable.Create<ushort[]>(observer =>
+                {
+                    var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .Subscribe(
+                        modbus =>
+                        {
+                            if (modbus.connected)
+                            {
+                                var result = modbus.master?.ReadInputRegisters(startAddress, numberOfPoints);
+                                if (result != null)
+                                {
+                                    observer.OnNext(result);
+                                }
+                            }
+                            else
+                            {
+                                observer.OnError(modbus.error);
+                            }
+                        },
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry();
+
+        /// <summary>
+        /// Reads the holding registers.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of ushort.
+        /// </returns>
+        public static IObservable<ushort[]> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+            Observable.Create<ushort[]>(observer =>
+                {
+                    var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .Subscribe(
+                        modbus =>
+                        {
+                            if (modbus.connected)
+                            {
+                                var result = modbus.master?.ReadHoldingRegisters(startAddress, numberOfPoints);
+                                if (result != null)
+                                {
+                                    observer.OnNext(result);
+                                }
+                            }
+                            else
+                            {
+                                observer.OnError(modbus.error);
+                            }
+                        },
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry();
+
+        /// <summary>
+        /// Reads the coils.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of bool.
+        /// </returns>
+        public static IObservable<bool[]> ReadCoils(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+            Observable.Create<bool[]>(observer =>
+                {
+                    var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .Subscribe(
+                        modbus =>
+                        {
+                            if (modbus.connected)
+                            {
+                                var result = modbus.master?.ReadCoils(startAddress, numberOfPoints);
+                                if (result != null)
+                                {
+                                    observer.OnNext(result);
+                                }
+                            }
+                            else
+                            {
+                                observer.OnError(modbus.error);
+                            }
+                        },
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry();
+
+        /// <summary>
+        /// Reads the coils.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of bool.
+        /// </returns>
+        public static IObservable<bool[]> ReadInputs(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+            Observable.Create<bool[]>(observer =>
+                {
+                    var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .Subscribe(
+                        modbus =>
+                        {
+                            if (modbus.connected)
+                            {
+                                var result = modbus.master?.ReadInputs(startAddress, numberOfPoints);
+                                if (result != null)
+                                {
+                                    observer.OnNext(result);
+                                }
+                            }
+                            else
+                            {
+                                observer.OnError(modbus.error);
+                            }
+                        },
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry();
+
+        /// <summary>
         /// Create a TcpIpMaster with the specified ip address.
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
-        /// <param name="interval">The interval.</param>
         /// <returns>
         /// The master and connection status.
         /// </returns>
-        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> TcpIpMaster(string ipAddress, int port = 502, double interval = 100.0) =>
+        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> TcpIpMaster(string ipAddress, int port = 502) =>
             Observable.Create<(bool connected, Exception? error, ModbusIpMaster? master)>(observer =>
             {
                 var dis = new CompositeDisposable();
@@ -87,28 +227,6 @@ namespace ModbusRx.Reactive
 
                         return res;
                     }).Retry().Subscribe());
-
-                dis.Add(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Subscribe(_ =>
-                {
-                    try
-                    {
-                        if (connected && master != null)
-                        {
-                            observer.OnNext((connected, null, master));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        master?.Dispose();
-                        master = null;
-                        observer.OnNext((false, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
-                    }
-                    finally
-                    {
-                        connected = master == null;
-                    }
-                }));
-
                 return dis;
             });
 
@@ -117,11 +235,10 @@ namespace ModbusRx.Reactive
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
-        /// <param name="interval">The interval.</param>
         /// <returns>
         /// The master and connection status.
         /// </returns>
-        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> UdpIpMaster(string ipAddress, int port = 502, double interval = 100.0) =>
+        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> UdpIpMaster(string ipAddress, int port = 502) =>
             Observable.Create<(bool connected, Exception? error, ModbusIpMaster? master)>(observer =>
             {
                 var dis = new CompositeDisposable();
@@ -163,27 +280,6 @@ namespace ModbusRx.Reactive
                         return res;
                     }).Retry().Subscribe());
 
-                dis.Add(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Subscribe(_ =>
-                {
-                    try
-                    {
-                        if (connected && master != null)
-                        {
-                            observer.OnNext((connected, null, master));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        master?.Dispose();
-                        master = null;
-                        observer.OnNext((false, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
-                    }
-                    finally
-                    {
-                        connected = master == null;
-                    }
-                }));
-
                 return dis;
             });
 
@@ -192,11 +288,10 @@ namespace ModbusRx.Reactive
         /// </summary>
         /// <param name="port">The COM Port.</param>
         /// <param name="baudRate">The baud rate.</param>
-        /// <param name="interval">The interval.</param>
         /// <returns>
         /// The master and connection status.
         /// </returns>
-        private static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> SerialIpMaster(string port, int baudRate = 502, double interval = 100.0) =>
+        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> SerialIpMaster(string port, int baudRate = 502) =>
             Observable.Create<(bool connected, Exception? error, ModbusIpMaster? master)>(observer =>
             {
                 var dis = new CompositeDisposable();
@@ -213,53 +308,42 @@ namespace ModbusRx.Reactive
                     }
                 }));
 
-                // TODO : Add a retry mechanism for the serial port.
+                var comdis = new CompositeDisposable();
 
-                ////dis.Add(Observable.Interval(TimeSpan.FromSeconds(10))
-                ////    .Where(_ => !connected)
-                ////    .Select(async _ => await pingSender.SendPingAsync(ipAddress, 1000).ConfigureAwait(false))
-                ////    .Select(x =>
-                ////    {
-                ////        var res = default(PingReply);
-
-                ////        try
-                ////        {
-                ////            res = x?.Result;
-                ////        }
-                ////        finally
-                ////        {
-                ////            if (master == null && res?.Status == IPStatus.Success)
-                ////            {
-                ////                master = ModbusIpMaster.CreateIp(new SerialPortRx(port, baudRate));
-                ////                dis.Add(master);
-                ////                connected = true;
-                ////                observer.OnNext((connected, null, master));
-                ////            }
-                ////        }
-
-                ////        return res;
-                ////    }).Retry().Subscribe());
-
-                dis.Add(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Subscribe(_ =>
+                // Subscribe to com ports available
+                SerialPortRx.PortNames().Do(x =>
                 {
                     try
                     {
-                        if (connected && master != null)
+                        if (comdis?.Count == 0 && x.Contains(port))
                         {
+                            master = ModbusIpMaster.CreateIp(new SerialPortRx(port, baudRate));
+                            comdis.Add(master);
+                            connected = true;
                             observer.OnNext((connected, null, master));
                         }
+                        else
+                        {
+                            dis.Remove(comdis!);
+                            comdis?.Dispose();
+                            connected = false;
+                            master = null;
+                            observer.OnNext((connected, null, master));
+                            comdis = new CompositeDisposable();
+                            comdis.AddTo(dis);
+                        }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        master?.Dispose();
+                        dis.Remove(comdis!);
+                        comdis?.Dispose();
+                        connected = false;
                         master = null;
-                        observer.OnNext((false, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
+                        observer.OnNext((connected, null, master));
+                        comdis = new CompositeDisposable();
+                        comdis.AddTo(dis);
                     }
-                    finally
-                    {
-                        connected = master == null;
-                    }
-                }));
+                }).Retry().Subscribe().AddTo(dis);
 
                 return dis;
             });
