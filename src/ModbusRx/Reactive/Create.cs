@@ -140,7 +140,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
-                                observer.OnNext((null, new ModbusCommunicationException(ex.Message, ex)));
+                                isConnected = false;
+                                observer.OnNext((null, new ModbusCommunicationException("Read Input Registers Error", ex)));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -185,7 +186,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
-                                observer.OnNext((null, new ModbusCommunicationException(ex.Message, ex)));
+                                isConnected = false;
+                                observer.OnNext((null, new ModbusCommunicationException("Read Holding Registers Error", ex)));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -230,7 +232,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
-                                observer.OnNext((null, new ModbusCommunicationException(ex.Message, ex)));
+                                isConnected = false;
+                                observer.OnNext((null, new ModbusCommunicationException("Read Coils Error", ex)));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -275,7 +278,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
-                                observer.OnNext((null, new ModbusCommunicationException(ex.Message, ex)));
+                                isConnected = false;
+                                observer.OnNext((null, new ModbusCommunicationException("Read Inputs Error", ex)));
                             }
                         },
                         (exception) => observer.OnError(exception));
