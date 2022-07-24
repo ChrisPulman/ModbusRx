@@ -40,11 +40,11 @@ namespace ModbusRx.Reactive
         /// </summary>
         /// <param name="inputs">The inputs.</param>
         /// <param name="start">The start.</param>
-        /// <param name="swapBytes">if set to <c>true</c> [swap bytes].</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         /// <returns>
         /// A float.
         /// </returns>
-        public static float? ToFloat(this ushort[]? inputs, int start, bool swapBytes = true)
+        public static float? ToFloat(this ushort[]? inputs, int start, bool swapWords = true)
         {
             if (inputs == null || inputs.Length < start + 1)
             {
@@ -54,8 +54,77 @@ namespace ModbusRx.Reactive
             var ba0 = BitConverter.GetBytes(inputs[start]);
             var ba1 = BitConverter.GetBytes(inputs[start + 1]);
             //// byte swap
-            var ba = swapBytes ? new byte[] { ba1[0], ba1[1], ba0[0], ba0[1] } : new byte[] { ba0[0], ba0[1], ba1[0], ba1[1] };
+            var ba = swapWords ? ba1.Concat(ba0).ToArray() : ba0.Concat(ba1).ToArray();
             return BitConverter.ToSingle(ba, 0);
+        }
+
+        /// <summary>
+        /// Converts to double.
+        /// </summary>
+        /// <param name="inputs">The inputs.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A double.</returns>
+        public static double? ToDouble(this ushort[]? inputs, int start, bool swapWords = true)
+        {
+            if (inputs == null || inputs.Length < start + 3)
+            {
+                return null;
+            }
+
+            var ba0 = BitConverter.GetBytes(inputs[start]);
+            var ba1 = BitConverter.GetBytes(inputs[start + 1]);
+            var ba2 = BitConverter.GetBytes(inputs[start + 2]);
+            var ba3 = BitConverter.GetBytes(inputs[start + 3]);
+            //// byte swap
+            var ba = swapWords ? ba1.Concat(ba0).Concat(ba3).Concat(ba2).ToArray() : ba0.Concat(ba1).Concat(ba2).Concat(ba3).ToArray();
+            return BitConverter.ToDouble(ba, 0);
+        }
+
+        /// <summary>
+        /// Froms the float.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="output">The output.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        public static void FromFloat(this float input, ushort[] output, int start, bool swapWords = true)
+        {
+            if (output == null || output.Length < start + 1)
+            {
+                return;
+            }
+
+            var ba = BitConverter.GetBytes(input);
+            var ba0 = ba.Take(2).ToArray();
+            var ba1 = ba.Skip(2).ToArray();
+            output[start] = BitConverter.ToUInt16(swapWords ? ba1 : ba0, 0);
+            output[start + 1] = BitConverter.ToUInt16(swapWords ? ba0 : ba1, 0);
+        }
+
+        /// <summary>
+        /// Froms the double.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="output">The output.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        public static void FromDouble(this double input, ushort[] output, int start, bool swapWords = true)
+        {
+            if (output == null || output.Length < start + 3)
+            {
+                return;
+            }
+
+            var ba = BitConverter.GetBytes(input);
+            var ba0 = ba.Take(2).ToArray();
+            var ba1 = ba.Skip(2).Take(2).ToArray();
+            var ba2 = ba.Skip(4).Take(2).ToArray();
+            var ba3 = ba.Skip(6).ToArray();
+            output[start] = BitConverter.ToUInt16(swapWords ? ba1 : ba0, 0);
+            output[start + 1] = BitConverter.ToUInt16(swapWords ? ba0 : ba1, 0);
+            output[start + 2] = BitConverter.ToUInt16(swapWords ? ba3 : ba2, 0);
+            output[start + 3] = BitConverter.ToUInt16(swapWords ? ba2 : ba3, 0);
         }
 
         /// <summary>
