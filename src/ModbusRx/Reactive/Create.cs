@@ -117,7 +117,7 @@ namespace ModbusRx.Reactive
                 {
                     var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
@@ -140,6 +140,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnNext((null, new ModbusCommunicationException("Read Input Registers Error", ex)));
                             }
@@ -163,7 +165,7 @@ namespace ModbusRx.Reactive
                 {
                     var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
@@ -186,6 +188,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnNext((null, new ModbusCommunicationException("Read Holding Registers Error", ex)));
                             }
@@ -209,7 +213,7 @@ namespace ModbusRx.Reactive
                 {
                     var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
@@ -232,6 +236,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnNext((null, new ModbusCommunicationException("Read Coils Error", ex)));
                             }
@@ -255,7 +261,7 @@ namespace ModbusRx.Reactive
                 {
                     var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
@@ -278,6 +284,8 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnNext((null, new ModbusCommunicationException("Read Inputs Error", ex)));
                             }
