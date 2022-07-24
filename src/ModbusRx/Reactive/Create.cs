@@ -115,14 +115,16 @@ namespace ModbusRx.Reactive
         public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
                 {
+                    var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
+                                isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
                                     var result = await modbus.master!.ReadInputRegistersAsync(startAddress, numberOfPoints);
@@ -158,14 +160,16 @@ namespace ModbusRx.Reactive
         public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
                 {
+                    var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
+                                isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
                                     var result = await modbus.master!.ReadHoldingRegistersAsync(startAddress, numberOfPoints);
@@ -201,14 +205,16 @@ namespace ModbusRx.Reactive
         public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
                 {
+                    var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
+                                isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
                                     var result = await modbus.master!.ReadCoilsAsync(startAddress, numberOfPoints);
@@ -244,14 +250,16 @@ namespace ModbusRx.Reactive
         public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
                 {
+                    var isConnected = false;
                     var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)), (modbus, _) => modbus)
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).SkipWhile(_ => !isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry()
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
+                                isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
                                     var result = await modbus.master!.ReadInputsAsync(startAddress, numberOfPoints);
@@ -291,7 +299,7 @@ namespace ModbusRx.Reactive
                 ModbusIpMaster? master = null;
                 var connected = false;
 
-                dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
+                dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (!connected)
                     {
@@ -299,7 +307,7 @@ namespace ModbusRx.Reactive
                     }
                 }));
 
-                dis.Add(Observable.Interval(PingInterval)
+                dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
                     .Select(async _ => await pingSender.SendPingAsync(ipAddress, 1000).ConfigureAwait(false))
                     .Select(x =>
@@ -404,7 +412,7 @@ namespace ModbusRx.Reactive
                 ModbusIpMaster? master = null;
                 var connected = false;
 
-                dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
+                dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (!connected)
                     {
@@ -412,7 +420,7 @@ namespace ModbusRx.Reactive
                     }
                 }));
 
-                dis.Add(Observable.Interval(PingInterval)
+                dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
                     .Select(async _ => await pingSender.SendPingAsync(ipAddress, 1000).ConfigureAwait(false))
                     .Select(x =>
@@ -516,7 +524,7 @@ namespace ModbusRx.Reactive
                 ModbusIpMaster? master = null;
                 var connected = false;
 
-                dis.Add(Observable.Interval(TimeSpan.FromMilliseconds(5000)).Subscribe(_ =>
+                dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (!connected)
                     {
