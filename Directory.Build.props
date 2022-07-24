@@ -14,6 +14,7 @@
     <Nullable>enable</Nullable>
     <Configurations>Debug;Release;PreRelease</Configurations>
     <PackageReleaseNotes>Compatability with Net 6 and netstandard2.0</PackageReleaseNotes>
+    <PackageTags>modbus;nmodbus4;modbusrx;ModbusIpMaster;ModbusTcpSlave;rx;reactive extensions;observable;LINQ;net;netstandard</PackageTags>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
 
@@ -21,13 +22,9 @@
     <RepositoryUrl>https://github.com/ChrisPulman/ModbusRx</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <!--https://devblogs.microsoft.com/dotnet/producing-packages-with-source-link/-->
-    <!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <!-- Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
     <DebugType>embedded</DebugType>
-    <!--https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg-->
     <IncludeSymbols>true</IncludeSymbols>
 
     <!-- Include PDB in the built .nupkg -->
