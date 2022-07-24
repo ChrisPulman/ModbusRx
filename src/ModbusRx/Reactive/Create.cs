@@ -315,6 +315,7 @@ namespace ModbusRx.Reactive
                 {
                     if (connected && master == null)
                     {
+                        observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
@@ -341,6 +342,7 @@ namespace ModbusRx.Reactive
                             {
                                 if (master == null && res?.Status == IPStatus.Success)
                                 {
+                                    observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                                     master = ModbusIpMaster.CreateIp(new TcpClientRx(ipAddress, port));
                                     dis.Add(master);
                                     connected = true;
