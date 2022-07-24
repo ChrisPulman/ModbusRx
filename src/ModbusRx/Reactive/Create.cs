@@ -140,6 +140,7 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
                                 modbus.master = null;
                                 isConnected = false;
@@ -188,10 +189,11 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
                                 modbus.master = null;
                                 isConnected = false;
-                                observer.OnNext((null, new ModbusCommunicationException("Read Holding Registers Error", ex)));
+                                observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -236,10 +238,11 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
                                 modbus.master = null;
                                 isConnected = false;
-                                observer.OnNext((null, new ModbusCommunicationException("Read Coils Error", ex)));
+                                observer.OnError(new ModbusCommunicationException("Read Coils Error", ex));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -284,10 +287,11 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
                                 modbus.master = null;
                                 isConnected = false;
-                                observer.OnNext((null, new ModbusCommunicationException("Read Inputs Error", ex)));
+                                observer.OnError(new ModbusCommunicationException("Read Inputs Error", ex));
                             }
                         },
                         (exception) => observer.OnError(exception));
@@ -310,19 +314,19 @@ namespace ModbusRx.Reactive
                 dis.Add(pingSender);
                 ModbusIpMaster? master = null;
                 var connected = false;
+                var connectionMessageSent = false;
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (connected && master == null)
                     {
-                        Console.WriteLine("Reset connected Master is null");
                         observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected)
+                    if (!connected && !connectionMessageSent)
                     {
-                        Console.WriteLine("Lost Communication");
+                        connectionMessageSent = true;
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                     }
                 }));
@@ -336,7 +340,6 @@ namespace ModbusRx.Reactive
 
                         try
                         {
-                            Console.WriteLine("Ping Request");
                             res = x?.Result;
                         }
                         finally
@@ -345,12 +348,11 @@ namespace ModbusRx.Reactive
                             {
                                 if (master == null && res?.Status == IPStatus.Success)
                                 {
-                                    Console.WriteLine("Create Master");
                                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                                     master = ModbusIpMaster.CreateIp(new TcpClientRx(ipAddress, port));
                                     dis.Add(master);
                                     connected = true;
-                                    Console.WriteLine("Master Created");
+                                    connectionMessageSent = false;
                                     observer.OnNext((connected, null, master));
                                 }
                             }
@@ -359,7 +361,6 @@ namespace ModbusRx.Reactive
                                 master?.Dispose();
                                 master = null;
                                 connected = false;
-                                Console.WriteLine("ModbusRx Master Fault");
                                 observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
                             }
                         }
@@ -436,16 +437,19 @@ namespace ModbusRx.Reactive
                 dis.Add(pingSender);
                 ModbusIpMaster? master = null;
                 var connected = false;
+                var connectionMessageSent = false;
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (connected && master == null)
                     {
+                        observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected)
+                    if (!connected && !connectionMessageSent)
                     {
+                        connectionMessageSent = true;
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                     }
                 }));
@@ -467,9 +471,11 @@ namespace ModbusRx.Reactive
                             {
                                 if (master == null && res?.Status == IPStatus.Success)
                                 {
+                                    observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                                     master = ModbusIpMaster.CreateIp(new UdpClientRx(ipAddress, port));
                                     dis.Add(master);
                                     connected = true;
+                                    connectionMessageSent = false;
                                     observer.OnNext((connected, null, master));
                                 }
                             }
@@ -553,16 +559,19 @@ namespace ModbusRx.Reactive
                 dis.Add(pingSender);
                 ModbusIpMaster? master = null;
                 var connected = false;
+                var connectionMessageSent = false;
 
                 dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
                 {
                     if (connected && master == null)
                     {
+                        observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected)
+                    if (!connected && !connectionMessageSent)
                     {
+                        connectionMessageSent = true;
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                     }
                 }));
@@ -576,9 +585,11 @@ namespace ModbusRx.Reactive
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
+                            observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                             master = ModbusIpMaster.CreateIp(new SerialPortRx(port, baudRate));
                             comdis.Add(master);
                             connected = true;
+                            connectionMessageSent = false;
                             observer.OnNext((connected, null, master));
                         }
                         else
