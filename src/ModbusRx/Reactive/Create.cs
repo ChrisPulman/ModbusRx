@@ -313,6 +313,11 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
+                    if (connected && master == null)
+                    {
+                        connected = false;
+                    }
+
                     if (!connected)
                     {
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
@@ -426,6 +431,11 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
+                    if (connected && master == null)
+                    {
+                        connected = false;
+                    }
+
                     if (!connected)
                     {
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
@@ -538,6 +548,11 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
                 {
+                    if (connected && master == null)
+                    {
+                        connected = false;
+                    }
+
                     if (!connected)
                     {
                         observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
