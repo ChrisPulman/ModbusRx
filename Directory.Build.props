@@ -12,9 +12,10 @@
     <Company>ChrisPulman</Company>
     <NoWarn>CS1591</NoWarn>
     <Nullable>enable</Nullable>
+    <PackageIcon>ModbusRx.png</PackageIcon>
     <Configurations>Debug;Release;PreRelease</Configurations>
     <PackageReleaseNotes>Compatability with Net 6 and netstandard2.0</PackageReleaseNotes>
-    <PackageTags>modbus;nmodbus4;modbusrx;ModbusIpMaster;ModbusTcpSlave;rx;reactive extensions;observable;LINQ;net;netstandard</PackageTags>
+    <PackageTags>modbus;nmodbus4;modbusrx;Master;Slave;TCP;UDP;Serial;rx;reactive;extensions;observable;LINQ;net;netstandard</PackageTags>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
 
@@ -38,6 +39,11 @@
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)images\ModbusRx.png" Pack="true" PackagePath="\"/>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="LICENSE" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
