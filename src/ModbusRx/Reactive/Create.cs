@@ -11,6 +11,7 @@ using System.Reactive.Linq;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
+using ModbusRx.Message;
 
 namespace ModbusRx.Reactive
 {
@@ -469,21 +470,18 @@ namespace ModbusRx.Reactive
                 throw new ArgumentOutOfRangeException(nameof(unitId));
             }
 
-            return Observable.Create<ModbusTcpSlave>(observer =>
+            return Observable.Create<ModbusTcpSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
-                 var slaveListener = new TcpListener(IPAddress.Parse(ipAddress), port);
-                 using var slave = ModbusTcpSlave.CreateTcp(unitId, slaveListener);
-                 var slaveThread = new Thread(async () => await slave.ListenAsync())
-                 {
-                     IsBackground = true
-                 };
-                 slaveThread.Start();
+                 var address = IPAddress.Parse(ipAddress);
+                 var slaveListener = new TcpListener(address, 502);
+                 using var slave = ModbusTcpSlave.CreateTcp(1, slaveListener);
                  dis.Add(slave);
                  observer.OnNext(slave);
+                 await slave.ListenAsync();
+
                  return Disposable.Create(() =>
                    {
-                       slaveThread.Abort();
                        slaveListener.Stop();
                        dis.Dispose();
                    });
@@ -593,20 +591,15 @@ namespace ModbusRx.Reactive
                 throw new ArgumentOutOfRangeException(nameof(unitId));
             }
 
-            return Observable.Create<ModbusUdpSlave>(observer =>
+            return Observable.Create<ModbusUdpSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
                  using var slave = ModbusUdpSlave.CreateUdp(unitId, new UdpClientRx(ipAddress, port));
-                 var slaveThread = new Thread(async () => await slave.ListenAsync())
-                 {
-                     IsBackground = true
-                 };
-                 slaveThread.Start();
+                 await slave.ListenAsync();
                  dis.Add(slave);
                  observer.OnNext(slave);
                  return Disposable.Create(() =>
                    {
-                       slaveThread.Abort();
                        dis.Dispose();
                    });
              }).Retry().Publish().RefCount();
