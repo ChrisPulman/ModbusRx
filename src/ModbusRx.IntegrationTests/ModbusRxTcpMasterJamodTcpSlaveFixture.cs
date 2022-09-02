@@ -11,12 +11,12 @@ namespace ModbusRx.IntegrationTests;
 /// NModbusTcpMasterJamodTcpSlaveFixture.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusMasterFixture" />
-public class NModbusTcpMasterJamodTcpSlaveFixture : ModbusMasterFixture
+public class ModbusRxTcpMasterJamodTcpSlaveFixture : ModbusMasterFixture
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NModbusTcpMasterJamodTcpSlaveFixture"/> class.
+    /// Initializes a new instance of the <see cref="ModbusRxTcpMasterJamodTcpSlaveFixture"/> class.
     /// </summary>
-    public NModbusTcpMasterJamodTcpSlaveFixture()
+    public ModbusRxTcpMasterJamodTcpSlaveFixture()
     {
         var program = $"TcpSlave {Port}";
         StartJamodSlave(program);

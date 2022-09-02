@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 using CP.IO.Ports;
 using ModbusRx.IO;
 using ModbusRx.Message;
@@ -20,7 +19,7 @@ internal class ModbusMasterTcpConnection : ModbusDevice
     private readonly byte[] _mbapHeader = new byte[6];
     private byte[]? _messageFrame;
 
-    public ModbusMasterTcpConnection(TcpClientRx client!!, ModbusTcpSlave slave!!)
+    public ModbusMasterTcpConnection(TcpClientRx client, ModbusTcpSlave slave)
         : base(new ModbusIpTransport(new TcpClientAdapter(client)))
     {
         TcpClient = client;

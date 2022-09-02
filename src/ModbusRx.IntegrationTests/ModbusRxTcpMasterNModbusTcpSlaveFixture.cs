@@ -10,13 +10,13 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusTcpMasterNModbusTcpSlaveFixture.
 /// </summary>
-/// <seealso cref="ModbusRx.IntegrationTests.ModbusMasterFixture" />
-public class NModbusTcpMasterNModbusTcpSlaveFixture : ModbusMasterFixture
+/// <seealso cref="ModbusRx.IntegrationTests.ModbusRxMasterFixture" />
+public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NModbusTcpMasterNModbusTcpSlaveFixture"/> class.
+    /// Initializes a new instance of the <see cref="ModbusRxTcpMasterNModbusTcpSlaveFixture"/> class.
     /// </summary>
-    public NModbusTcpMasterNModbusTcpSlaveFixture()
+    public ModbusRxTcpMasterNModbusTcpSlaveFixture()
     {
         SlaveTcp = new TcpListener(TcpHost, Port);
         SlaveTcp.Start();

@@ -2,26 +2,27 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if SERIAL
+using System;
 using ModbusRx.Device;
 using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
 /// <summary>
-/// NModbusSerialRtuMasterFixture.
+/// NModbusSerialAsciiMasterFixture.
 /// </summary>
-public class NModbusSerialRtuMasterFixture
+public class ModbusRxSerialAsciiMasterFixture
 {
     /// <summary>
-    /// ns the modbus rtu master read timeout.
+    /// ns the modbus ASCII master read timeout.
     /// </summary>
     [Fact]
-    public void NModbusRtuMaster_ReadTimeout()
+    public void ModbusRxAsciiMaster_ReadTimeout()
     {
         var port = ModbusMasterFixture.CreateAndOpenSerialPort(ModbusMasterFixture.DefaultMasterSerialPortName);
-        using var master = ModbusSerialMaster.CreateRtu(port);
+        using IModbusSerialMaster master = ModbusSerialMaster.CreateAscii(port);
         master.Transport.ReadTimeout = master.Transport.WriteTimeout = 1000;
-        master.ReadCoils(100, 1, 1);
+        Assert.Throws<TimeoutException>(() => master.ReadCoils(100, 1, 1));
     }
 }
 #endif

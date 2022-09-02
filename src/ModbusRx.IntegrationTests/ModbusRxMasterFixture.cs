@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
@@ -22,7 +23,7 @@ namespace ModbusRx.IntegrationTests;
 /// ModbusMasterFixture.
 /// </summary>
 /// <seealso cref="System.IDisposable" />
-public abstract class ModbusMasterFixture : IDisposable
+public abstract class ModbusRxMasterFixture : IDisposable
 {
     /// <summary>
     /// The port.
@@ -193,7 +194,7 @@ public abstract class ModbusMasterFixture : IDisposable
     public void StartJamodSlave(string program)
     {
         var pathToJamod = Path.Combine(
-            Path.GetDirectoryName(Assembly.GetAssembly(typeof(ModbusMasterFixture))!.Location)!, "../../../../tools/jamod");
+            Path.GetDirectoryName(Assembly.GetAssembly(typeof(ModbusRxMasterFixture))!.Location)!, "../../../../tools/jamod");
         var classpath = string.Format(@"-classpath ""{0};{1};{2}""", Path.Combine(pathToJamod, "jamod.jar"), Path.Combine(pathToJamod, "comm.jar"), Path.Combine(pathToJamod, "."));
         var startInfo = new ProcessStartInfo("java", string.Format(CultureInfo.InvariantCulture, "{0} {1}", classpath, program));
         Jamod = Process.Start(startInfo);
@@ -216,9 +217,9 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Reads the coils.
     /// </summary>
     [Fact]
-    public virtual void ReadCoils()
+    public virtual async void ReadCoils()
     {
-        var coils = Master!.ReadCoils(SlaveAddress, 2048, 8);
+        var coils = await Master!.ReadCoilsAsync(SlaveAddress, 2048, 8);
         Assert.Equal(new bool[] { false, false, false, false, false, false, false, false }, coils);
     }
 
@@ -226,9 +227,9 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Reads the inputs.
     /// </summary>
     [Fact]
-    public virtual void ReadInputs()
+    public virtual async void ReadInputs()
     {
-        var inputs = Master!.ReadInputs(SlaveAddress, 150, 3);
+        var inputs = await Master!.ReadInputsAsync(SlaveAddress, 150, 3);
         Assert.Equal(new bool[] { false, false, false }, inputs);
     }
 
@@ -236,9 +237,9 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Reads the holding registers.
     /// </summary>
     [Fact]
-    public virtual void ReadHoldingRegisters()
+    public virtual async void ReadHoldingRegisters()
     {
-        var registers = Master!.ReadHoldingRegisters(SlaveAddress, 104, 2);
+        var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 2);
         Assert.Equal(new ushort[] { 0, 0 }, registers);
     }
 
@@ -246,9 +247,9 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Reads the input registers.
     /// </summary>
     [Fact]
-    public virtual void ReadInputRegisters()
+    public virtual async void ReadInputRegisters()
     {
-        var registers = Master!.ReadInputRegisters(SlaveAddress, 104, 2);
+        var registers = await Master!.ReadInputRegistersAsync(SlaveAddress, 104, 2);
         Assert.Equal(new ushort[] { 0, 0 }, registers);
     }
 
@@ -256,70 +257,70 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Writes the single coil.
     /// </summary>
     [Fact]
-    public virtual void WriteSingleCoil()
+    public virtual async void WriteSingleCoil()
     {
-        var coilValue = Master!.ReadCoils(SlaveAddress, 10, 1)[0];
-        Master.WriteSingleCoil(SlaveAddress, 10, !coilValue);
-        Assert.Equal(!coilValue, Master.ReadCoils(SlaveAddress, 10, 1)[0]);
-        Master.WriteSingleCoil(SlaveAddress, 10, coilValue);
-        Assert.Equal(coilValue, Master.ReadCoils(SlaveAddress, 10, 1)[0]);
+        var coilValue = await Master!.ReadCoilsAsync(SlaveAddress, 10, 1);
+        await Master.WriteSingleCoilAsync(SlaveAddress, 10, !coilValue[0]);
+        Assert.Equal(!coilValue[0], (await Master.ReadCoilsAsync(SlaveAddress, 10, 1))[0]);
+        await Master.WriteSingleCoilAsync(SlaveAddress, 10, coilValue[0]);
+        Assert.Equal(coilValue[0], (await Master.ReadCoilsAsync(SlaveAddress, 10, 1))[0]);
     }
 
     /// <summary>
     /// Writes the single register.
     /// </summary>
     [Fact]
-    public virtual void WriteSingleRegister()
+    public virtual async void WriteSingleRegister()
     {
         const ushort testAddress = 200;
         const ushort testValue = 350;
 
-        var originalValue = Master!.ReadHoldingRegisters(SlaveAddress, testAddress, 1)[0];
-        Master.WriteSingleRegister(SlaveAddress, testAddress, testValue);
-        Assert.Equal(testValue, Master.ReadHoldingRegisters(SlaveAddress, testAddress, 1)[0]);
-        Master.WriteSingleRegister(SlaveAddress, testAddress, originalValue);
-        Assert.Equal(originalValue, Master.ReadHoldingRegisters(SlaveAddress, testAddress, 1)[0]);
+        var originalValue = await Master!.ReadHoldingRegistersAsync(SlaveAddress, testAddress, 1);
+        await Master.WriteSingleRegisterAsync(SlaveAddress, testAddress, testValue);
+        Assert.Equal(testValue, (await Master.ReadHoldingRegistersAsync(SlaveAddress, testAddress, 1))[0]);
+        await Master.WriteSingleRegisterAsync(SlaveAddress, testAddress, originalValue[0]);
+        Assert.Equal(originalValue[0], (await Master.ReadHoldingRegistersAsync(SlaveAddress, testAddress, 1))[0]);
     }
 
     /// <summary>
     /// Writes the multiple registers.
     /// </summary>
     [Fact]
-    public virtual void WriteMultipleRegisters()
+    public virtual async void WriteMultipleRegisters()
     {
         const ushort testAddress = 120;
         var testValues = new ushort[] { 10, 20, 30, 40, 50 };
 
-        var originalValues = Master!.ReadHoldingRegisters(SlaveAddress, testAddress, (ushort)testValues.Length);
-        Master.WriteMultipleRegisters(SlaveAddress, testAddress, testValues);
-        var newValues = Master.ReadHoldingRegisters(SlaveAddress, testAddress, (ushort)testValues.Length);
+        var originalValues = await Master!.ReadHoldingRegistersAsync(SlaveAddress, testAddress, (ushort)testValues.Length);
+        await Master.WriteMultipleRegistersAsync(SlaveAddress, testAddress, testValues);
+        var newValues = await Master.ReadHoldingRegistersAsync(SlaveAddress, testAddress, (ushort)testValues.Length);
         Assert.Equal(testValues, newValues);
-        Master.WriteMultipleRegisters(SlaveAddress, testAddress, originalValues);
+        await Master.WriteMultipleRegistersAsync(SlaveAddress, testAddress, originalValues);
     }
 
     /// <summary>
     /// Writes the multiple coils.
     /// </summary>
     [Fact]
-    public virtual void WriteMultipleCoils()
+    public virtual async void WriteMultipleCoils()
     {
         const ushort testAddress = 200;
         var testValues = new bool[] { true, false, true, false, false, false, true, false, true, false };
 
-        var originalValues = Master!.ReadCoils(SlaveAddress, testAddress, (ushort)testValues.Length);
-        Master.WriteMultipleCoils(SlaveAddress, testAddress, testValues);
-        var newValues = Master.ReadCoils(SlaveAddress, testAddress, (ushort)testValues.Length);
+        var originalValues = await Master!.ReadCoilsAsync(SlaveAddress, testAddress, (ushort)testValues.Length);
+        await Master.WriteMultipleCoilsAsync(SlaveAddress, testAddress, testValues);
+        var newValues = await Master.ReadCoilsAsync(SlaveAddress, testAddress, (ushort)testValues.Length);
         Assert.Equal(testValues, newValues);
-        Master.WriteMultipleCoils(SlaveAddress, testAddress, originalValues);
+        await Master.WriteMultipleCoilsAsync(SlaveAddress, testAddress, originalValues);
     }
 
     /// <summary>
     /// Reads the maximum number of holding registers.
     /// </summary>
     [Fact]
-    public virtual void ReadMaximumNumberOfHoldingRegisters()
+    public virtual async void ReadMaximumNumberOfHoldingRegisters()
     {
-        var registers = Master!.ReadHoldingRegisters(SlaveAddress, 104, 125);
+        var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 125);
         Assert.Equal(125, registers.Length);
     }
 
@@ -327,18 +328,18 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Reads the write multiple registers.
     /// </summary>
     [Fact]
-    public virtual void ReadWriteMultipleRegisters()
+    public virtual async void ReadWriteMultipleRegisters()
     {
         const ushort startReadAddress = 120;
         const ushort numberOfPointsToRead = 5;
         const ushort startWriteAddress = 50;
         var valuesToWrite = new ushort[] { 10, 20, 30, 40, 50 };
 
-        var valuesToRead = Master!.ReadHoldingRegisters(SlaveAddress, startReadAddress, numberOfPointsToRead);
-        var readValues = Master.ReadWriteMultipleRegisters(SlaveAddress, startReadAddress, numberOfPointsToRead, startWriteAddress, valuesToWrite);
+        var valuesToRead = await Master!.ReadHoldingRegistersAsync(SlaveAddress, startReadAddress, numberOfPointsToRead);
+        var readValues = await Master.ReadWriteMultipleRegistersAsync(SlaveAddress, startReadAddress, numberOfPointsToRead, startWriteAddress, valuesToWrite);
         Assert.Equal(valuesToRead, readValues);
 
-        var writtenValues = Master.ReadHoldingRegisters(SlaveAddress, startWriteAddress, (ushort)valuesToWrite.Length);
+        var writtenValues = await Master.ReadHoldingRegistersAsync(SlaveAddress, startWriteAddress, (ushort)valuesToWrite.Length);
         Assert.Equal(valuesToWrite, writtenValues);
     }
 
@@ -346,13 +347,13 @@ public abstract class ModbusMasterFixture : IDisposable
     /// Simples the read registers performance test.
     /// </summary>
     [Fact]
-    public virtual void SimpleReadRegistersPerformanceTest()
+    public virtual async void SimpleReadRegistersPerformanceTest()
     {
         var retries = Master!.Transport!.Retries;
         Master.Transport!.Retries = 5;
-        var actualAverageReadTime = CalculateAverage(Master);
+        var actualAverageReadTime = await CalculateAverageAsync(Master);
         Master.Transport.Retries = retries;
-        Assert.True(actualAverageReadTime < ModbusMasterFixture.AverageReadTime, string.Format(CultureInfo.InvariantCulture, "Test failed, actual average read time {0} is greater than expected {1}", actualAverageReadTime, ModbusMasterFixture.AverageReadTime));
+        Assert.True(actualAverageReadTime < ModbusRxMasterFixture.AverageReadTime, string.Format(CultureInfo.InvariantCulture, "Test failed, actual average read time {0} is greater than expected {1}", actualAverageReadTime, ModbusRxMasterFixture.AverageReadTime));
     }
 
     /// <summary>
@@ -392,13 +393,13 @@ public abstract class ModbusMasterFixture : IDisposable
     /// </summary>
     /// <param name="master">The master.</param>
     /// <returns>A double.</returns>
-    internal static double CalculateAverage(IModbusMaster master)
+    internal static async Task<double> CalculateAverageAsync(IModbusMaster master)
     {
         const ushort startAddress = 5;
         const ushort numRegisters = 5;
 
         // JIT compile the IL
-        master.ReadHoldingRegisters(SlaveAddress, startAddress, numRegisters);
+        await master.ReadHoldingRegistersAsync(SlaveAddress, startAddress, numRegisters);
 
         var stopwatch = new Stopwatch();
         long sum = 0;
@@ -408,7 +409,7 @@ public abstract class ModbusMasterFixture : IDisposable
         {
             stopwatch.Reset();
             stopwatch.Start();
-            master.ReadHoldingRegisters(SlaveAddress, startAddress, numRegisters);
+            await master.ReadHoldingRegistersAsync(SlaveAddress, startAddress, numRegisters);
             stopwatch.Stop();
 
             checked

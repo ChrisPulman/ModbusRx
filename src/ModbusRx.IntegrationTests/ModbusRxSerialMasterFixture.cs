@@ -9,8 +9,8 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// ModbusSerialMasterFixture.
 /// </summary>
-/// <seealso cref="ModbusRx.IntegrationTests.ModbusMasterFixture" />
-public abstract class ModbusSerialMasterFixture : ModbusMasterFixture
+/// <seealso cref="ModbusRx.IntegrationTests.ModbusRxMasterFixture" />
+public abstract class ModbusRxSerialMasterFixture : ModbusRxMasterFixture
 {
     /// <summary>
     /// Returns the query data.

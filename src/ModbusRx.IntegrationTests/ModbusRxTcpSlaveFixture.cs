@@ -14,29 +14,29 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusTcpSlaveFixture.
 /// </summary>
-public class NModbusTcpSlaveFixture
+public class ModbusRxTcpSlaveFixture
 {
     /// <summary>
     /// Tests possible exception when master closes gracefully immediately after transaction
     /// The goal is the test the exception in WriteCompleted when the slave attempts to read another request from an already closed master.
     /// </summary>
     [Fact]
-    public void ModbusTcpSlave_ConnectionClosesGracefully()
+    public async void ModbusTcpSlave_ConnectionClosesGracefully()
     {
-        var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
+        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
         var slaveThread = new Thread(async () => await slave.ListenAsync())
         {
             IsBackground = true
         };
         slaveThread.Start();
 
-        var masterClient = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
         using (var master = ModbusIpMaster.CreateIp(masterClient))
         {
             master.Transport!.Retries = 0;
 
-            var coils = master.ReadCoils(1, 1);
+            var coils = await master.ReadCoilsAsync(1, 1);
 
             Assert.Single(coils);
             Assert.Single(slave.Masters);
@@ -52,22 +52,22 @@ public class NModbusTcpSlaveFixture
     /// Tests possible exception when master closes gracefully and the ReadHeaderCompleted EndRead call returns 0 bytes.
     /// </summary>
     [Fact]
-    public void ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
+    public async void ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
     {
-        var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
+        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
         var slaveThread = new Thread(async () => await slave.ListenAsync())
         {
             IsBackground = true
         };
         slaveThread.Start();
 
-        var masterClient = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
         using (var master = ModbusIpMaster.CreateIp(masterClient))
         {
             master.Transport!.Retries = 0;
 
-            var coils = master.ReadCoils(1, 1);
+            var coils = await master.ReadCoilsAsync(1, 1);
             Assert.Single(coils);
 
             Assert.Single(slave.Masters);
@@ -87,8 +87,8 @@ public class NModbusTcpSlaveFixture
     [Fact]
     public void ModbusTcpSlave_MultiThreaded()
     {
-        var slaveListener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, slaveListener);
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
+        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
         var slaveThread = new Thread(async () => await slave.ListenAsync())
         {
             IsBackground = true
@@ -108,16 +108,16 @@ public class NModbusTcpSlaveFixture
     /// Reads the specified state.
     /// </summary>
     /// <param name="state">The state.</param>
-    private static void Read(object? state)
+    private static async void Read(object? state)
     {
-        var masterClient = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
         var random = new Random();
         for (var i = 0; i < 5; i++)
         {
-            var coils = master.ReadCoils(1, 1);
+            var coils = await master.ReadCoilsAsync(1, 1);
             Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
             Thread.Sleep(random.Next(100));

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
-using System.IO.Ports;
 using CP.IO.Ports;
 using ModbusRx.IO;
 using ModbusRx.Message;

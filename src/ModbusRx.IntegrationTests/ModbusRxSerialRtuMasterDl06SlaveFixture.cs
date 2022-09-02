@@ -8,15 +8,15 @@ using Xunit;
 namespace ModbusRx.IntegrationTests;
 
 /// <summary>
-/// NModbusSerialRtuMasterDl06SlaveFixture.
+/// ModbusRxSerialRtuMasterDl06SlaveFixture.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusSerialMasterFixture" />
-public class NModbusSerialRtuMasterDl06SlaveFixture : ModbusSerialMasterFixture
+public class ModbusRxSerialRtuMasterDl06SlaveFixture : ModbusSerialMasterFixture
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NModbusSerialRtuMasterDl06SlaveFixture"/> class.
+    /// Initializes a new instance of the <see cref="ModbusRxSerialRtuMasterDl06SlaveFixture"/> class.
     /// </summary>
-    public NModbusSerialRtuMasterDl06SlaveFixture()
+    public ModbusRxSerialRtuMasterDl06SlaveFixture()
     {
         MasterSerialPort = CreateAndOpenSerialPort("COM1");
         Master = ModbusSerialMaster.CreateRtu(MasterSerialPort);

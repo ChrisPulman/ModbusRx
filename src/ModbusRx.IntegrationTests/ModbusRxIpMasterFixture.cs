@@ -12,7 +12,7 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// ModbusIpMasterFixture.
 /// </summary>
-public class ModbusIpMasterFixture
+public class ModbusRxIpMasterFixture
 {
     /// <summary>
     /// Overrides the timeout on TCP client.
@@ -20,12 +20,12 @@ public class ModbusIpMasterFixture
     [Fact]
     public void OverrideTimeoutOnTcpClient()
     {
-        var listener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, listener);
+        var listener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
+        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, listener);
         var slaveThread = new Thread(async () => await slave.ListenAsync());
         slaveThread.Start();
 
-        var client = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port)
+        var client = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port)
         {
             ReadTimeout = 1500,
             WriteTimeout = 3000
@@ -41,12 +41,12 @@ public class ModbusIpMasterFixture
     [Fact]
     public void OverrideTimeoutOnNetworkStream()
     {
-        var listener = new TcpListener(ModbusMasterFixture.TcpHost, ModbusMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusMasterFixture.SlaveAddress, listener);
+        var listener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
+        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, listener);
         var slaveThread = new Thread(async () => await slave.ListenAsync());
         slaveThread.Start();
 
-        var client = new TcpClientRx(ModbusMasterFixture.TcpHost.ToString(), ModbusMasterFixture.Port);
+        var client = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
         client.Stream.ReadTimeout = 1500;
         client.Stream.WriteTimeout = 3000;
         using var master = ModbusIpMaster.CreateIp(client);

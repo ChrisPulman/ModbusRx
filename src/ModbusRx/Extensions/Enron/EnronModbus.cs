@@ -19,7 +19,7 @@ public static class EnronModbus
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of holding registers to read.</param>
     /// <returns>Holding registers status.</returns>
-    public static uint[] ReadHoldingRegisters32(
+    public static async Task<uint[]> ReadHoldingRegisters32Async(
         this ModbusMaster master,
         byte slaveAddress,
         ushort startAddress,
@@ -33,7 +33,7 @@ public static class EnronModbus
         ValidateNumberOfPoints(numberOfPoints, 62);
 
         // read 16 bit chunks and perform conversion
-        var rawRegisters = master.ReadHoldingRegisters(
+        var rawRegisters = await master.ReadHoldingRegistersAsync(
             slaveAddress,
             startAddress,
             (ushort)(numberOfPoints * 2));
@@ -49,7 +49,7 @@ public static class EnronModbus
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of holding registers to read.</param>
     /// <returns>Input registers status.</returns>
-    public static uint[] ReadInputRegisters32(
+    public static async Task<uint[]> ReadInputRegisters32Async(
         this ModbusMaster master,
         byte slaveAddress,
         ushort startAddress,
@@ -62,7 +62,7 @@ public static class EnronModbus
 
         ValidateNumberOfPoints(numberOfPoints, 62);
 
-        var rawRegisters = master.ReadInputRegisters(
+        var rawRegisters = await master.ReadInputRegistersAsync(
             slaveAddress,
             startAddress,
             (ushort)(numberOfPoints * 2));
@@ -88,7 +88,7 @@ public static class EnronModbus
             throw new ArgumentNullException(nameof(master));
         }
 
-        master.WriteMultipleRegisters32(slaveAddress, registerAddress, new[] { value });
+        master.WriteMultipleRegisters32Async(slaveAddress, registerAddress, new[] { value });
     }
 
     /// <summary>
@@ -98,7 +98,8 @@ public static class EnronModbus
     /// <param name="slaveAddress">Address of the device to write to.</param>
     /// <param name="startAddress">Address to begin writing values.</param>
     /// <param name="data">Values to write.</param>
-    public static void WriteMultipleRegisters32(
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task WriteMultipleRegisters32Async(
         this ModbusMaster master,
         byte slaveAddress,
         ushort startAddress,
@@ -119,7 +120,7 @@ public static class EnronModbus
             throw new ArgumentException("The length of argument data must be between 1 and 61 inclusive.");
         }
 
-        master.WriteMultipleRegisters(slaveAddress, startAddress, Convert(data).ToArray());
+        await master.WriteMultipleRegistersAsync(slaveAddress, startAddress, Convert(data).ToArray());
     }
 
     /// <summary>

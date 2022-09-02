@@ -37,8 +37,8 @@ public class ModbusMasterFixture
     [Fact]
     public void ReadCoils()
     {
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadCoils(1, 1, 0));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadCoils(1, 1, 2001));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 0));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 2001));
     }
 
     /// <summary>
@@ -47,8 +47,8 @@ public class ModbusMasterFixture
     [Fact]
     public void ReadInputs()
     {
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadInputs(1, 1, 0));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadInputs(1, 1, 2001));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 0));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 2001));
     }
 
     /// <summary>
@@ -57,8 +57,8 @@ public class ModbusMasterFixture
     [Fact]
     public void ReadHoldingRegisters()
     {
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadHoldingRegisters(1, 1, 0));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadHoldingRegisters(1, 1, 126));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 0));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 126));
     }
 
     /// <summary>
@@ -67,8 +67,8 @@ public class ModbusMasterFixture
     [Fact]
     public void ReadInputRegisters()
     {
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadInputRegisters(1, 1, 0));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadInputRegisters(1, 1, 126));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 0));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 126));
     }
 
     /// <summary>
@@ -77,9 +77,9 @@ public class ModbusMasterFixture
     [Fact]
     public void WriteMultipleRegisters()
     {
-        Assert.Throws<ArgumentNullException>(() => ModbusMasterFixture.Master.WriteMultipleRegisters(1, 1, null!));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.WriteMultipleRegisters(1, 1, Array.Empty<ushort>()));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.WriteMultipleRegisters(1, 1, Enumerable.Repeat<ushort>(1, 124).ToArray()));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, null!));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Array.Empty<ushort>()));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Enumerable.Repeat<ushort>(1, 124).ToArray()));
     }
 
     /// <summary>
@@ -88,9 +88,9 @@ public class ModbusMasterFixture
     [Fact]
     public void WriteMultipleCoils()
     {
-        Assert.Throws<ArgumentNullException>(() => ModbusMasterFixture.Master.WriteMultipleCoils(1, 1, null!));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.WriteMultipleCoils(1, 1, Array.Empty<bool>()));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.WriteMultipleCoils(1, 1, Enumerable.Repeat(false, 1969).ToArray()));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, null!));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Array.Empty<bool>()));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Enumerable.Repeat(false, 1969).ToArray()));
     }
 
     /// <summary>
@@ -100,12 +100,12 @@ public class ModbusMasterFixture
     public void ReadWriteMultipleRegisters()
     {
         // validate numberOfPointsToRead
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadWriteMultipleRegisters(1, 1, 0, 1, new ushort[] { 1 }));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadWriteMultipleRegisters(1, 1, 126, 1, new ushort[] { 1 }));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 0, 1, new ushort[] { 1 }));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 126, 1, new ushort[] { 1 }));
 
         // validate writeData
-        Assert.Throws<ArgumentNullException>(() => ModbusMasterFixture.Master.ReadWriteMultipleRegisters(1, 1, 1, 1, null!));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadWriteMultipleRegisters(1, 1, 1, 1, Array.Empty<ushort>()));
-        Assert.Throws<ArgumentException>(() => ModbusMasterFixture.Master.ReadWriteMultipleRegisters(1, 1, 1, 1, Enumerable.Repeat<ushort>(1, 122).ToArray()));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, null!));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Array.Empty<ushort>()));
+        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Enumerable.Repeat<ushort>(1, 122).ToArray()));
     }
 }

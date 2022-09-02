@@ -18,24 +18,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     }
 
     /// <summary>
-    ///    Reads from 1 to 2000 contiguous coils status.
-    /// </summary>
-    /// <param name="slaveAddress">Address of device to read values from.</param>
-    /// <param name="startAddress">Address to begin reading.</param>
-    /// <param name="numberOfPoints">Number of coils to read.</param>
-    /// <returns>Coils status.</returns>
-    public bool[] ReadCoils(byte slaveAddress, ushort startAddress, ushort numberOfPoints)
-    {
-        ValidateNumberOfPoints(nameof(numberOfPoints), numberOfPoints, 2000);
-
-        return PerformReadDiscretes(new ReadCoilsInputsRequest(
-            Modbus.ReadCoils,
-            slaveAddress,
-            startAddress,
-            numberOfPoints));
-    }
-
-    /// <summary>
     ///    Asynchronously reads from 1 to 2000 contiguous coils status.
     /// </summary>
     /// <param name="slaveAddress">Address of device to read values from.</param>
@@ -53,26 +35,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
             numberOfPoints);
 
         return PerformReadDiscretesAsync(request);
-    }
-
-    /// <summary>
-    ///    Reads from 1 to 2000 contiguous discrete input status.
-    /// </summary>
-    /// <param name="slaveAddress">Address of device to read values from.</param>
-    /// <param name="startAddress">Address to begin reading.</param>
-    /// <param name="numberOfPoints">Number of discrete inputs to read.</param>
-    /// <returns>Discrete inputs status.</returns>
-    public bool[] ReadInputs(byte slaveAddress, ushort startAddress, ushort numberOfPoints)
-    {
-        ValidateNumberOfPoints(nameof(numberOfPoints), numberOfPoints, 2000);
-
-        var request = new ReadCoilsInputsRequest(
-            Modbus.ReadInputs,
-            slaveAddress,
-            startAddress,
-            numberOfPoints);
-
-        return PerformReadDiscretes(request);
     }
 
     /// <summary>
@@ -96,26 +58,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     }
 
     /// <summary>
-    ///    Reads contiguous block of holding registers.
-    /// </summary>
-    /// <param name="slaveAddress">Address of device to read values from.</param>
-    /// <param name="startAddress">Address to begin reading.</param>
-    /// <param name="numberOfPoints">Number of holding registers to read.</param>
-    /// <returns>Holding registers status.</returns>
-    public ushort[] ReadHoldingRegisters(byte slaveAddress, ushort startAddress, ushort numberOfPoints)
-    {
-        ValidateNumberOfPoints(nameof(numberOfPoints), numberOfPoints, 125);
-
-        var request = new ReadHoldingInputRegistersRequest(
-            Modbus.ReadHoldingRegisters,
-            slaveAddress,
-            startAddress,
-            numberOfPoints);
-
-        return PerformReadRegisters(request);
-    }
-
-    /// <summary>
     ///    Asynchronously reads contiguous block of holding registers.
     /// </summary>
     /// <param name="slaveAddress">Address of device to read values from.</param>
@@ -133,26 +75,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
             numberOfPoints);
 
         return PerformReadRegistersAsync(request);
-    }
-
-    /// <summary>
-    ///    Reads contiguous block of input registers.
-    /// </summary>
-    /// <param name="slaveAddress">Address of device to read values from.</param>
-    /// <param name="startAddress">Address to begin reading.</param>
-    /// <param name="numberOfPoints">Number of holding registers to read.</param>
-    /// <returns>Input registers status.</returns>
-    public ushort[] ReadInputRegisters(byte slaveAddress, ushort startAddress, ushort numberOfPoints)
-    {
-        ValidateNumberOfPoints(nameof(numberOfPoints), numberOfPoints, 125);
-
-        var request = new ReadHoldingInputRegistersRequest(
-            Modbus.ReadInputRegisters,
-            slaveAddress,
-            startAddress,
-            numberOfPoints);
-
-        return PerformReadRegisters(request);
     }
 
     /// <summary>
@@ -176,18 +98,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     }
 
     /// <summary>
-    ///    Writes a single coil value.
-    /// </summary>
-    /// <param name="slaveAddress">Address of the device to write to.</param>
-    /// <param name="coilAddress">Address to write value to.</param>
-    /// <param name="value">Value to write.</param>
-    public void WriteSingleCoil(byte slaveAddress, ushort coilAddress, bool value)
-    {
-        var request = new WriteSingleCoilRequestResponse(slaveAddress, coilAddress, value);
-        Transport?.UnicastMessage<WriteSingleCoilRequestResponse>(request);
-    }
-
-    /// <summary>
     ///    Asynchronously writes a single coil value.
     /// </summary>
     /// <param name="slaveAddress">Address of the device to write to.</param>
@@ -198,22 +108,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     {
         var request = new WriteSingleCoilRequestResponse(slaveAddress, coilAddress, value);
         return PerformWriteRequestAsync<WriteSingleCoilRequestResponse>(request);
-    }
-
-    /// <summary>
-    ///    Writes a single holding register.
-    /// </summary>
-    /// <param name="slaveAddress">Address of the device to write to.</param>
-    /// <param name="registerAddress">Address to write.</param>
-    /// <param name="value">Value to write.</param>
-    public void WriteSingleRegister(byte slaveAddress, ushort registerAddress, ushort value)
-    {
-        var request = new WriteSingleRegisterRequestResponse(
-            slaveAddress,
-            registerAddress,
-            value);
-
-        Transport?.UnicastMessage<WriteSingleRegisterRequestResponse>(request);
     }
 
     /// <summary>
@@ -231,24 +125,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
             value);
 
         return PerformWriteRequestAsync<WriteSingleRegisterRequestResponse>(request);
-    }
-
-    /// <summary>
-    ///     Write a block of 1 to 123 contiguous 16 bit holding registers.
-    /// </summary>
-    /// <param name="slaveAddress">Address of the device to write to.</param>
-    /// <param name="startAddress">Address to begin writing values.</param>
-    /// <param name="data">Values to write.</param>
-    public void WriteMultipleRegisters(byte slaveAddress, ushort startAddress, ushort[] data)
-    {
-        ValidateData(nameof(data), data, 123);
-
-        var request = new WriteMultipleRegistersRequest(
-            slaveAddress,
-            startAddress,
-            new RegisterCollection(data));
-
-        Transport?.UnicastMessage<WriteMultipleRegistersResponse>(request);
     }
 
     /// <summary>
@@ -271,24 +147,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     }
 
     /// <summary>
-    ///    Writes a sequence of coils.
-    /// </summary>
-    /// <param name="slaveAddress">Address of the device to write to.</param>
-    /// <param name="startAddress">Address to begin writing values.</param>
-    /// <param name="data">Values to write.</param>
-    public void WriteMultipleCoils(byte slaveAddress, ushort startAddress, bool[] data)
-    {
-        ValidateData(nameof(data), data, 1968);
-
-        var request = new WriteMultipleCoilsRequest(
-            slaveAddress,
-            startAddress,
-            new DiscreteCollection(data));
-
-        Transport?.UnicastMessage<WriteMultipleCoilsResponse>(request);
-    }
-
-    /// <summary>
     ///    Asynchronously writes a sequence of coils.
     /// </summary>
     /// <param name="slaveAddress">Address of the device to write to.</param>
@@ -305,31 +163,6 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
             new DiscreteCollection(data));
 
         return PerformWriteRequestAsync<WriteMultipleCoilsResponse>(request);
-    }
-
-    /// <summary>
-    ///    Performs a combination of one read operation and one write operation in a single Modbus transaction.
-    ///    The write operation is performed before the read.
-    /// </summary>
-    /// <param name="slaveAddress">Address of device to read values from.</param>
-    /// <param name="startReadAddress">Address to begin reading (Holding registers are addressed starting at 0).</param>
-    /// <param name="numberOfPointsToRead">Number of registers to read.</param>
-    /// <param name="startWriteAddress">Address to begin writing (Holding registers are addressed starting at 0).</param>
-    /// <param name="writeData">Register values to write.</param>
-    /// <returns>A ushort.</returns>
-    public ushort[] ReadWriteMultipleRegisters(
-        byte slaveAddress,
-        ushort startReadAddress,
-        ushort numberOfPointsToRead,
-        ushort startWriteAddress,
-        ushort[] writeData)
-    {
-        ValidateNumberOfPoints("numberOfPointsToRead", numberOfPointsToRead, 125);
-        ValidateData(nameof(writeData), writeData, 121);
-
-        var request = new ReadWriteMultipleRegistersRequest(slaveAddress, startReadAddress, numberOfPointsToRead, startWriteAddress, new RegisterCollection(writeData));
-
-        return PerformReadRegisters(request);
     }
 
     /// <summary>

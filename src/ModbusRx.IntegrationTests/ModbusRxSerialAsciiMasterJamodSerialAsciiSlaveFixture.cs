@@ -8,17 +8,17 @@ using Xunit;
 namespace ModbusRx.IntegrationTests;
 
 /// <summary>
-/// NModbusSerialAsciiMasterJamodSerialAsciiSlaveFixture.
+/// ModbusRxSerialAsciiMasterJamodSerialAsciiSlaveFixture.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusMasterFixture" />
-public class NModbusSerialAsciiMasterJamodSerialAsciiSlaveFixture : ModbusMasterFixture
+public class ModbusRxSerialAsciiMasterJamodSerialAsciiSlaveFixture : ModbusMasterFixture
 {
     private const string Program = $"SerialSlave {DefaultSlaveSerialPortName} ASCII";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NModbusSerialAsciiMasterJamodSerialAsciiSlaveFixture"/> class.
+    /// Initializes a new instance of the <see cref="ModbusRxSerialAsciiMasterJamodSerialAsciiSlaveFixture"/> class.
     /// </summary>
-    public NModbusSerialAsciiMasterJamodSerialAsciiSlaveFixture()
+    public ModbusRxSerialAsciiMasterJamodSerialAsciiSlaveFixture()
     {
         StartJamodSlave(Program);
 

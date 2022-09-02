@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Threading;
 using CP.IO.Ports;
 using ModbusRx.Data;
@@ -15,7 +14,7 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusUdpSlaveFixture.
 /// </summary>
-public class NModbusUdpSlaveFixture
+public class ModbusRxUdpSlaveFixture
 {
     /// <summary>
     /// Modbuses the UDP slave ensure the slave shuts down cleanly.
@@ -23,7 +22,7 @@ public class NModbusUdpSlaveFixture
     [Fact]
     public void ModbusUdpSlave_EnsureTheSlaveShutsDownCleanly()
     {
-        var client = new UdpClientRx(ModbusMasterFixture.Port);
+        var client = new UdpClientRx(ModbusRxMasterFixture.Port);
         using var slave = ModbusUdpSlave.CreateUdp(1, client);
         var handle = new AutoResetEvent(false);
 
@@ -62,34 +61,34 @@ public class NModbusUdpSlaveFixture
         var master1Complete = false;
         var master2Complete = false;
         var masterClient1 = new UdpClientRx();
-        masterClient1.Connect(ModbusMasterFixture.DefaultModbusIPEndPoint);
+        masterClient1.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
         var master1 = ModbusIpMaster.CreateIp(masterClient1);
 
         var masterClient2 = new UdpClientRx();
-        masterClient2.Connect(ModbusMasterFixture.DefaultModbusIPEndPoint);
+        masterClient2.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
         var master2 = ModbusIpMaster.CreateIp(masterClient2);
 
-        var slaveClient = NModbusUdpSlaveFixture.CreateAndStartUdpSlave(ModbusMasterFixture.Port, DataStoreFactory.CreateTestDataStore());
+        var slaveClient = CreateAndStartUdpSlave(ModbusRxMasterFixture.Port, DataStoreFactory.CreateTestDataStore());
 
-        var master1Thread = new Thread(() =>
+        var master1Thread = new Thread(async () =>
         {
             for (var i = 0; i < 5; i++)
             {
                 Thread.Sleep(randomNumberGenerator.Next(1000));
                 Debug.WriteLine("Read from master 1");
-                Assert.Equal(new ushort[] { 2, 3, 4, 5, 6 }, master1.ReadHoldingRegisters(1, 5));
+                Assert.Equal(new ushort[] { 2, 3, 4, 5, 6 }, await master1.ReadHoldingRegistersAsync(1, 5));
             }
 
             master1Complete = true;
         });
 
-        var master2Thread = new Thread(() =>
+        var master2Thread = new Thread(async () =>
         {
             for (var i = 0; i < 5; i++)
             {
                 Thread.Sleep(randomNumberGenerator.Next(1000));
                 Debug.WriteLine("Read from master 2");
-                Assert.Equal(new ushort[] { 3, 4, 5, 6, 7 }, master2.ReadHoldingRegisters(2, 5));
+                Assert.Equal(new ushort[] { 3, 4, 5, 6, 7 }, await master2.ReadHoldingRegistersAsync(2, 5));
             }
 
             master2Complete = true;
@@ -111,13 +110,13 @@ public class NModbusUdpSlaveFixture
     /// <summary>
     /// Modbuses the UDP slave multi threaded.
     /// </summary>
-    [Fact(Skip ="Fault in new code")]
+    [Fact]
     public void ModbusUdpSlave_MultiThreaded()
     {
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
         dataStore.CoilDiscretes.Add(false);
 
-        using var slave = NModbusUdpSlaveFixture.CreateAndStartUdpSlave(ModbusMasterFixture.Port, dataStore);
+        using var slave = CreateAndStartUdpSlave(ModbusRxMasterFixture.Port, dataStore);
         var workerThread1 = new Thread(ReadThread);
         var workerThread2 = new Thread(ReadThread);
         workerThread1.Start();
@@ -131,17 +130,17 @@ public class NModbusUdpSlaveFixture
     /// Reads the thread.
     /// </summary>
     /// <param name="state">The state.</param>
-    private static void ReadThread(object? state)
+    private static async void ReadThread(object? state)
     {
         var masterClient = new UdpClientRx();
-        masterClient.Connect(ModbusMasterFixture.DefaultModbusIPEndPoint);
+        masterClient.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
         var random = new Random();
         for (var i = 0; i < 5; i++)
         {
-            var coils = master.ReadCoils(1, 1);
+            var coils = await master.ReadCoilsAsync(1, 1);
             Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
             Thread.Sleep(random.Next(100));

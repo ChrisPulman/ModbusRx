@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
@@ -32,7 +33,7 @@ internal static class TestCases
 
         // create modbus master
         using var master = ModbusSerialMaster.CreateRtu(masterPort);
-        ReadRegisters(master);
+        ReadRegistersAsync(master);
     }
 
     public static void Tcp()
@@ -45,7 +46,7 @@ internal static class TestCases
         var masterClient = new TcpClientRx(address.ToString(), 502);
 
         using var master = ModbusIpMaster.CreateIp(masterClient);
-        ReadRegisters(master);
+        ReadRegistersAsync(master);
     }
 
     public static void Udp()
@@ -59,7 +60,7 @@ internal static class TestCases
         masterClient.Connect(endPoint);
 
         using var master = ModbusIpMaster.CreateIp(masterClient);
-        ReadRegisters(master);
+        ReadRegistersAsync(master);
     }
 
     public static void StartSlave(ModbusSlave slave)
@@ -69,9 +70,9 @@ internal static class TestCases
         slaveThread.Start();
     }
 
-    public static void ReadRegisters(IModbusMaster master)
+    public static async Task ReadRegistersAsync(IModbusMaster master)
     {
-        var result = master.ReadHoldingRegisters(1, 0, 5);
+        var result = await master.ReadHoldingRegistersAsync(1, 0, 5);
 
         for (var i = 0; i < 5; i++)
         {

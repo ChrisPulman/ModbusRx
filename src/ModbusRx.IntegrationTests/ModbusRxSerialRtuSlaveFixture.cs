@@ -11,15 +11,15 @@ using Xunit;
 namespace ModbusRx.IntegrationTests;
 
 /// <summary>
-/// NModbusSerialRtuSlaveFixture.
+/// ModbusRxSerialRtuSlaveFixture.
 /// </summary>
-public class NModbusSerialRtuSlaveFixture
+public class ModbusRxSerialRtuSlaveFixture
 {
     /// <summary>
     /// ns the modbus serial rtu slave bonus character verify timeout.
     /// </summary>
     [Fact]
-    public void NModbusSerialRtuSlave_BonusCharacter_VerifyTimeout()
+    public void ModbusRxSerialRtuSlave_BonusCharacter_VerifyTimeout()
     {
         var masterPort = ModbusMasterFixture.CreateAndOpenSerialPort(ModbusMasterFixture.DefaultMasterSerialPortName);
         var slavePort = ModbusMasterFixture.CreateAndOpenSerialPort(ModbusMasterFixture.DefaultSlaveSerialPortName);

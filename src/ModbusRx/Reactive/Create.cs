@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.IO.Ports;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -11,7 +10,6 @@ using System.Reactive.Linq;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
-using ModbusRx.Message;
 
 namespace ModbusRx.Reactive
 {
@@ -453,7 +451,7 @@ namespace ModbusRx.Reactive
         /// or
         /// nameof(unitId).
         /// </exception>
-        public static IObservable<ModbusTcpSlave> TcpIpSlave(string ipAddress!!, int port = 502, byte unitId = 1)
+        public static IObservable<ModbusTcpSlave> TcpIpSlave(string ipAddress, int port = 502, byte unitId = 1)
         {
             if (string.IsNullOrWhiteSpace(ipAddress))
             {
@@ -574,7 +572,7 @@ namespace ModbusRx.Reactive
         /// or
         /// nameof(unitId).
         /// </exception>
-        public static IObservable<ModbusUdpSlave> UdpIpSlave(string ipAddress!!, int port = 502, byte unitId = 1)
+        public static IObservable<ModbusUdpSlave> UdpIpSlave(string ipAddress, int port = 502, byte unitId = 1)
         {
             if (string.IsNullOrWhiteSpace(ipAddress))
             {
@@ -697,7 +695,7 @@ namespace ModbusRx.Reactive
         /// or
         /// nameof(unitId).</exception>
         /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
-        public static IObservable<ModbusSerialSlave> SerialRtuSlave(string port!!, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
+        public static IObservable<ModbusSerialSlave> SerialRtuSlave(string port, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
         {
             if (string.IsNullOrWhiteSpace(port))
             {
@@ -774,7 +772,7 @@ namespace ModbusRx.Reactive
         /// or
         /// nameof(unitId).</exception>
         /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
-        public static IObservable<ModbusSerialSlave> SerialAsciiSlave(string port!!, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
+        public static IObservable<ModbusSerialSlave> SerialAsciiSlave(string port, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
         {
             if (string.IsNullOrWhiteSpace(port))
             {
