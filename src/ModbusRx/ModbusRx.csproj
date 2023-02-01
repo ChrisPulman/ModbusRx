@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SerialPortRx" Version="2.2.6" />
+    <PackageReference Include="SerialPortRx" Version="2.3.2" />
   </ItemGroup>
 
   <ItemGroup>
