@@ -15,7 +15,7 @@ namespace ModbusRx.IntegrationTests;
 
 internal static class TestCases
 {
-    public static void Serial()
+    public static async void Serial()
     {
         using var masterPort = new SerialPortRx("COM2");
         using var slavePort = new SerialPortRx("COM1");
@@ -25,18 +25,18 @@ internal static class TestCases
         masterPort.DataBits = slavePort.DataBits = 8;
         masterPort.Parity = slavePort.Parity = Parity.None;
         masterPort.StopBits = slavePort.StopBits = StopBits.One;
-        masterPort.Open();
-        slavePort.Open();
+        await masterPort.Open();
+        await slavePort.Open();
 
         using var slave = ModbusSerialSlave.CreateRtu(1, slavePort);
         StartSlave(slave);
 
         // create modbus master
         using var master = ModbusSerialMaster.CreateRtu(masterPort);
-        ReadRegistersAsync(master);
+        await ReadRegistersAsync(master);
     }
 
-    public static void Tcp()
+    public static async void Tcp()
     {
         var slaveClient = new TcpListener(new IPAddress(new byte[] { 127, 0, 0, 1 }), 502);
         using var slave = ModbusTcpSlave.CreateTcp((byte)1, slaveClient);
@@ -46,10 +46,10 @@ internal static class TestCases
         var masterClient = new TcpClientRx(address.ToString(), 502);
 
         using var master = ModbusIpMaster.CreateIp(masterClient);
-        ReadRegistersAsync(master);
+        await ReadRegistersAsync(master);
     }
 
-    public static void Udp()
+    public static async void Udp()
     {
         var slaveClient = new UdpClientRx(502);
         using var slave = ModbusUdpSlave.CreateUdp(slaveClient);
@@ -60,7 +60,7 @@ internal static class TestCases
         masterClient.Connect(endPoint);
 
         using var master = ModbusIpMaster.CreateIp(masterClient);
-        ReadRegistersAsync(master);
+        await ReadRegistersAsync(master);
     }
 
     public static void StartSlave(ModbusSlave slave)

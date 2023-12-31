@@ -2,13 +2,17 @@ name: ModbusRx CI-Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build-and-release:
-
-    runs-on: windows-2022
- 
+  windows-latest:
+    name: windows-latest
+    runs-on: windows-latest
+    
+    permissions: write-all
+    environment:
+      name: release
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -18,7 +22,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
 
     - name: Add MSBuild to PATH
       uses: glennawatson/setup-msbuild@v1.0.3
@@ -58,6 +65,13 @@ jobs:
         name: nuget
         path: '**/*.nupkg'
 
+    - name: NuGet Push
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
+        SOURCE_URL: https://api.nuget.org/v3/index.json
+      run: |
+        dotnet nuget push -s ${{ env.SOURCE_URL }} -k ${{ env.NUGET_AUTH_TOKEN }} **/*.nupkg --skip-duplicate
+
     - name: Changelog
       uses: glennawatson/ChangeLog@v1
       id: changelog
@@ -71,10 +85,3 @@ jobs:
           release_name: ${{ steps.nbgv.outputs.SemVer2 }}
           body: |
             ${{ steps.changelog.outputs.commitLog }}
-
-    - name: NuGet Push
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
-        SOURCE_URL: https://api.nuget.org/v3/index.json
-      run: |
-        dotnet nuget push -s ${{ env.SOURCE_URL }} -k ${{ env.NUGET_AUTH_TOKEN }} **/*.nupkg --skip-duplicate

@@ -2,15 +2,13 @@ name: ModbusRx CI-BuildOnly
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches-ignore:
+      - main
 
 jobs:
-  build-and-release:
-
-    runs-on: windows-2022
- 
+  windows-latest:
+    name: windows-latest
+    runs-on: windows-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -20,7 +18,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
 
     - name: Add MSBuild to PATH
       uses: glennawatson/setup-msbuild@v1.0.3

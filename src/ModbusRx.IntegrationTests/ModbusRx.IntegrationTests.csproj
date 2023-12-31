@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net48</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <!--<DefineConstants>SERIAL;JAMOD;</DefineConstants>-->
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <TargetFrameworks>net48;net6.0;</TargetFrameworks>
-    <!--<DefineConstants>SERIAL</DefineConstants>-->
   </PropertyGroup>
 
   <ItemGroup>
