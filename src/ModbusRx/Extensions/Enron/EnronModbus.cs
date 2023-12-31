@@ -77,7 +77,7 @@ public static class EnronModbus
     /// <param name="slaveAddress">Address of the device to write to.</param>
     /// <param name="registerAddress">Address to write.</param>
     /// <param name="value">Value to write.</param>
-    public static void WriteSingleRegister32(
+    public static async void WriteSingleRegister32(
         this ModbusMaster master,
         byte slaveAddress,
         ushort registerAddress,
@@ -88,7 +88,7 @@ public static class EnronModbus
             throw new ArgumentNullException(nameof(master));
         }
 
-        master.WriteMultipleRegisters32Async(slaveAddress, registerAddress, new[] { value });
+        await master.WriteMultipleRegisters32Async(slaveAddress, registerAddress, [value]);
     }
 
     /// <summary>

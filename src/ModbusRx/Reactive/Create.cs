@@ -596,10 +596,7 @@ namespace ModbusRx.Reactive
                  await slave.ListenAsync();
                  dis.Add(slave);
                  observer.OnNext(slave);
-                 return Disposable.Create(() =>
-                   {
-                       dis.Dispose();
-                   });
+                 return Disposable.Create(() => dis.Dispose());
              }).Retry().Publish().RefCount();
         }
 
@@ -659,7 +656,7 @@ namespace ModbusRx.Reactive
                             connected = false;
                             master = null;
                             observer.OnNext((connected, null, master));
-                            comdis = new CompositeDisposable();
+                            comdis = [];
                             comdis.AddTo(dis);
                         }
                     }
@@ -670,7 +667,7 @@ namespace ModbusRx.Reactive
                         connected = false;
                         master = null;
                         observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
-                        comdis = new CompositeDisposable();
+                        comdis = [];
                         comdis.AddTo(dis);
                     }
                 }).Retry().Subscribe().AddTo(dis);
@@ -711,7 +708,7 @@ namespace ModbusRx.Reactive
              {
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
-                 Thread? slaveThread = null;
+                 Task? slaveThread = null;
                  SerialPortRx.PortNames().Do(x =>
                 {
                     try
@@ -719,10 +716,7 @@ namespace ModbusRx.Reactive
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
                             using var slave = ModbusSerialSlave.CreateRtu(unitId, new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake));
-                            slaveThread = new Thread(async () => await slave.ListenAsync())
-                            {
-                                IsBackground = true
-                            };
+                            slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
                             observer.OnNext(slave);
@@ -731,8 +725,8 @@ namespace ModbusRx.Reactive
                         {
                             dis.Remove(comdis!);
                             comdis?.Dispose();
-                            slaveThread?.Abort();
-                            comdis = new CompositeDisposable();
+                            slaveThread?.Dispose();
+                            comdis = [];
                             comdis.AddTo(dis);
                         }
                     }
@@ -741,15 +735,15 @@ namespace ModbusRx.Reactive
                         observer.OnError(new ModbusCommunicationException("ModbusRx Slave Fault", ex));
                         dis.Remove(comdis!);
                         comdis?.Dispose();
-                        slaveThread?.Abort();
-                        comdis = new CompositeDisposable();
+                        slaveThread?.Dispose();
+                        comdis = [];
                         comdis.AddTo(dis);
                     }
                 }).Retry().Subscribe();
 
                  return Disposable.Create(() =>
                    {
-                       slaveThread?.Abort();
+                       slaveThread?.Dispose();
                        dis.Dispose();
                    });
              }).Retry().Publish().RefCount();
@@ -788,7 +782,7 @@ namespace ModbusRx.Reactive
              {
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
-                 Thread? slaveThread = null;
+                 Task? slaveThread = null;
                  SerialPortRx.PortNames().Do(x =>
                 {
                     try
@@ -796,10 +790,7 @@ namespace ModbusRx.Reactive
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
                             using var slave = ModbusSerialSlave.CreateAscii(unitId, new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake));
-                            slaveThread = new Thread(async () => await slave.ListenAsync())
-                            {
-                                IsBackground = true
-                            };
+                            slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
                             observer.OnNext(slave);
@@ -808,8 +799,8 @@ namespace ModbusRx.Reactive
                         {
                             dis.Remove(comdis!);
                             comdis?.Dispose();
-                            slaveThread?.Abort();
-                            comdis = new CompositeDisposable();
+                            slaveThread?.Dispose();
+                            comdis = [];
                             comdis.AddTo(dis);
                         }
                     }
@@ -818,15 +809,15 @@ namespace ModbusRx.Reactive
                         observer.OnError(new ModbusCommunicationException("ModbusRx Slave Fault", ex));
                         dis.Remove(comdis!);
                         comdis?.Dispose();
-                        slaveThread?.Abort();
-                        comdis = new CompositeDisposable();
+                        slaveThread?.Dispose();
+                        comdis = [];
                         comdis.AddTo(dis);
                     }
                 }).Retry().Subscribe();
 
                  return Disposable.Create(() =>
                    {
-                       slaveThread?.Abort();
+                       slaveThread?.Dispose();
                        dis.Dispose();
                    });
              }).Retry().Publish().RefCount();

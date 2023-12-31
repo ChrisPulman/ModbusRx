@@ -13,8 +13,9 @@
     <NoWarn>CS1591</NoWarn>
     <Nullable>enable</Nullable>
     <PackageIcon>ModbusRx.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Configurations>Debug;Release;PreRelease</Configurations>
-    <PackageReleaseNotes>Compatability with Net 6 and netstandard2.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Compatability with Net 6/7/8 and netstandard2.0</PackageReleaseNotes>
     <PackageTags>modbus;nmodbus4;modbusrx;Master;Slave;TCP;UDP;Serial;rx;reactive;extensions;observable;LINQ;net;netstandard</PackageTags>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
@@ -38,12 +39,13 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)images\ModbusRx.png" Pack="true" PackagePath="\"/>
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="LICENSE" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
   
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
@@ -67,7 +69,7 @@
   <ItemGroup>
     <!--<Compile Update="**\*.cs" DependentUpon="I%(Filename).cs" />-->
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="all" />
-    <PackageReference Include="stylecop.analyzers" Version="1.2.0-beta.507" PrivateAssets="all" />
+    <PackageReference Include="stylecop.analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
     <PackageReference Include="Roslynator.Analyzers" Version="4.7.0" PrivateAssets="All" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
   </ItemGroup>
