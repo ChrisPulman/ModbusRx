@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
+using ReactiveMarbles.Extensions;
 
 namespace ModbusRx.Reactive
 {
@@ -657,7 +658,7 @@ namespace ModbusRx.Reactive
                             master = null;
                             observer.OnNext((connected, null, master));
                             comdis = [];
-                            comdis.AddTo(dis);
+                            comdis.DisposeWith(dis);
                         }
                     }
                     catch (Exception ex)
@@ -668,9 +669,9 @@ namespace ModbusRx.Reactive
                         master = null;
                         observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
                         comdis = [];
-                        comdis.AddTo(dis);
+                        comdis.DisposeWith(dis);
                     }
-                }).Retry().Subscribe().AddTo(dis);
+                }).Retry().Subscribe().DisposeWith(dis);
 
                 return dis;
             }).Publish().RefCount();
@@ -727,7 +728,7 @@ namespace ModbusRx.Reactive
                             comdis?.Dispose();
                             slaveThread?.Dispose();
                             comdis = [];
-                            comdis.AddTo(dis);
+                            comdis.DisposeWith(dis);
                         }
                     }
                     catch (Exception ex)
@@ -737,7 +738,7 @@ namespace ModbusRx.Reactive
                         comdis?.Dispose();
                         slaveThread?.Dispose();
                         comdis = [];
-                        comdis.AddTo(dis);
+                        comdis.DisposeWith(dis);
                     }
                 }).Retry().Subscribe();
 
@@ -801,7 +802,7 @@ namespace ModbusRx.Reactive
                             comdis?.Dispose();
                             slaveThread?.Dispose();
                             comdis = [];
-                            comdis.AddTo(dis);
+                            comdis.DisposeWith(dis);
                         }
                     }
                     catch (Exception ex)
@@ -811,7 +812,7 @@ namespace ModbusRx.Reactive
                         comdis?.Dispose();
                         slaveThread?.Dispose();
                         comdis = [];
-                        comdis.AddTo(dis);
+                        comdis.DisposeWith(dis);
                     }
                 }).Retry().Subscribe();
 

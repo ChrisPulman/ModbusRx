@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
@@ -43,12 +44,13 @@ public class ModbusRxUdpSlaveFixture
     /// <summary>
     /// Modbuses the UDP slave not bound.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ModbusUdpSlave_NotBound()
+    public async Task ModbusUdpSlave_NotBound()
     {
         var client = new UdpClientRx();
         ModbusSlave slave = ModbusUdpSlave.CreateUdp(1, client);
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await slave.ListenAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await slave.ListenAsync());
     }
 
     /// <summary>

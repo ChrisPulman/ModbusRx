@@ -65,8 +65,9 @@ public class ModbusAsciiTransportFixture
     /// <summary>
     /// Reads the request response not enough bytes.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadRequestResponseNotEnoughBytes()
+    public async Task ReadRequestResponseNotEnoughBytesAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
         var stream = mock.Object;
@@ -81,7 +82,7 @@ public class ModbusAsciiTransportFixture
                 return 1;
             });
 
-        Assert.ThrowsAsync<IOException>(() => transport.ReadRequestResponse());
+        await Assert.ThrowsAsync<IOException>(() => transport.ReadRequestResponse());
         mock.VerifyAll();
     }
 

@@ -228,8 +228,9 @@ public class ModbusRtuTransportFixture
     /// We want to throw an IOException for any message w/ an invalid checksum,
     /// this must preceed throwing a SlaveException based on function code &gt; 127.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadResponseSlaveExceptionWithErroneousLrc()
+    public async Task ReadResponseSlaveExceptionWithErroneousLrcAsync()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
         var transport = mock.Object;
@@ -245,7 +246,7 @@ public class ModbusRtuTransportFixture
         mock.Setup(t => t.Read(1))
             .Returns(new byte[] { crc[1] });
 
-        Assert.ThrowsAsync<IOException>(() => transport.ReadResponse<ReadCoilsInputsResponse>());
+        await Assert.ThrowsAsync<IOException>(() => transport.ReadResponse<ReadCoilsInputsResponse>());
 
         mock.VerifyAll();
     }

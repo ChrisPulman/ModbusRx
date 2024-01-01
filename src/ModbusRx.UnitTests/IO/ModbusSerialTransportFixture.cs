@@ -46,13 +46,14 @@ public class ModbusSerialTransportFixture
     /// <summary>
     /// Creates the response erroneous LRC.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void CreateResponseErroneousLrc()
+    public async Task CreateResponseErroneousLrcAsync()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = true };
         var frame = Task.FromResult(new byte[] { 19, Modbus.ReadCoils, 0, 0, 0, 2, 115 });
 
-        Assert.ThrowsAsync<IOException>(() => transport.CreateResponse<ReadCoilsInputsResponse>(frame));
+        await Assert.ThrowsAsync<IOException>(() => transport.CreateResponse<ReadCoilsInputsResponse>(frame));
     }
 
     /// <summary>
