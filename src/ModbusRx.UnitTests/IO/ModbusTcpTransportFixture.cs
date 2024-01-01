@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ModbusRx.Data;
 using ModbusRx.IO;
 using ModbusRx.Message;
@@ -104,22 +105,24 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Reads the request response connection aborted while reading mbap header.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadRequestResponse_ConnectionAbortedWhileReadingMBAPHeader()
+    public async Task ReadRequestResponse_ConnectionAbortedWhileReadingMBAPHeaderAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
         mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 6), 0, 6).Result).Returns(3);
         mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 6), 3, 3).Result).Returns(0);
 
-        Assert.ThrowsAsync<IOException>(() => ModbusIpTransport.ReadRequestResponse(mock.Object));
+        await Assert.ThrowsAsync<IOException>(() => ModbusIpTransport.ReadRequestResponse(mock.Object));
         mock.VerifyAll();
     }
 
     /// <summary>
     /// Reads the request response connection aborted while reading message frame.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadRequestResponse_ConnectionAbortedWhileReadingMessageFrame()
+    public async Task ReadRequestResponse_ConnectionAbortedWhileReadingMessageFrameAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
 
@@ -127,7 +130,7 @@ public class ModbusTcpTransportFixture
         mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 6), 0, 6).Result).Returns(3);
         mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 6), 3, 3).Result).Returns(0);
 
-        Assert.ThrowsAsync<IOException>(() => ModbusIpTransport.ReadRequestResponse(mock.Object));
+        await Assert.ThrowsAsync<IOException>(() => ModbusIpTransport.ReadRequestResponse(mock.Object));
         mock.VerifyAll();
     }
 

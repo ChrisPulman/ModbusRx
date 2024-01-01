@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using ModbusRx.Device;
 using ModbusRx.IO;
 using Moq;
@@ -34,78 +35,85 @@ public class ModbusMasterFixture
     /// <summary>
     /// Reads the coils.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadCoils()
+    public async Task ReadCoils()
     {
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 0));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 2001));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 0));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 2001));
     }
 
     /// <summary>
     /// Reads the inputs.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadInputs()
+    public async Task ReadInputs()
     {
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 0));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 2001));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 0));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 2001));
     }
 
     /// <summary>
     /// Reads the holding registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadHoldingRegisters()
+    public async Task ReadHoldingRegistersAsync()
     {
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 0));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 126));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 0));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 126));
     }
 
     /// <summary>
     /// Reads the input registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadInputRegisters()
+    public async Task ReadInputRegistersAsync()
     {
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 0));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 126));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 0));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 126));
     }
 
     /// <summary>
     /// Writes the multiple registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void WriteMultipleRegisters()
+    public async Task WriteMultipleRegistersAsync()
     {
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, null!));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Array.Empty<ushort>()));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Enumerable.Repeat<ushort>(1, 124).ToArray()));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, null!));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Array.Empty<ushort>()));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, Enumerable.Repeat<ushort>(1, 124).ToArray()));
     }
 
     /// <summary>
     /// Writes the multiple coils.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void WriteMultipleCoils()
+    public async Task WriteMultipleCoilsAsync()
     {
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, null!));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Array.Empty<bool>()));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Enumerable.Repeat(false, 1969).ToArray()));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, null!));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Array.Empty<bool>()));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, Enumerable.Repeat(false, 1969).ToArray()));
     }
 
     /// <summary>
     /// Reads the write multiple registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ReadWriteMultipleRegisters()
+    public async Task ReadWriteMultipleRegistersAsync()
     {
         // validate numberOfPointsToRead
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 0, 1, new ushort[] { 1 }));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 126, 1, new ushort[] { 1 }));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 0, 1, new ushort[] { 1 }));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 126, 1, new ushort[] { 1 }));
 
         // validate writeData
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, null!));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Array.Empty<ushort>()));
-        Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Enumerable.Repeat<ushort>(1, 122).ToArray()));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, null!));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Array.Empty<ushort>()));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadWriteMultipleRegistersAsync(1, 1, 1, 1, Enumerable.Repeat<ushort>(1, 122).ToArray()));
     }
 }
