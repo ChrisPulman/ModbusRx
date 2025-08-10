@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);SA1129</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
     <PackageReference Include="IndexRange" Version="1.1.0" />
+    <PackageReference Include="System.Memory" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>

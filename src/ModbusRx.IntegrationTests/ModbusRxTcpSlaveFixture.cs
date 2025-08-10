@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Device;
 using Xunit;
@@ -20,8 +21,9 @@ public class ModbusRxTcpSlaveFixture
     /// Tests possible exception when master closes gracefully immediately after transaction
     /// The goal is the test the exception in WriteCompleted when the slave attempts to read another request from an already closed master.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void ModbusTcpSlave_ConnectionClosesGracefully()
+    public async Task ModbusTcpSlave_ConnectionClosesGracefully()
     {
         var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
         using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
@@ -51,8 +53,9 @@ public class ModbusRxTcpSlaveFixture
     /// <summary>
     /// Tests possible exception when master closes gracefully and the ReadHeaderCompleted EndRead call returns 0 bytes.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
+    public async Task ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
     {
         var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
         using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);

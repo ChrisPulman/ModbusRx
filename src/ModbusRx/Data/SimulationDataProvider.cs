@@ -86,7 +86,9 @@ public sealed class SimulationDataProvider : IDisposable
 
         for (var i = 0; i < length; i++)
         {
-            result[i] = (ushort)(minValue + (range * i / length));
+            // Use floating point for accurate calculation, then round
+            var value = minValue + (range * (double)i / (length - 1));
+            result[i] = (ushort)Math.Round(value);
         }
 
         return result;
@@ -223,7 +225,7 @@ public sealed class SimulationDataProvider : IDisposable
 
     private static void UpdateCountingData(DataStore dataStore, int count, bool countUp)
     {
-        for (var i = 0; i < Math.Min(count, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(count + 1, dataStore.HoldingRegisters.Count); i++)
         {
             var currentValue = dataStore.HoldingRegisters[i];
             dataStore.HoldingRegisters[i] = countUp ?
@@ -240,7 +242,7 @@ public sealed class SimulationDataProvider : IDisposable
     {
         var time = DateTime.Now.Millisecond / 1000.0;
 
-        for (var i = 0; i < Math.Min(count, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(count + 1, dataStore.HoldingRegisters.Count); i++)
         {
             var value = (32767 * Math.Sin((2 * Math.PI * 0.1 * time) + (i * 0.1))) + 32767;
             dataStore.HoldingRegisters[i] = (ushort)Math.Max(0, Math.Min(65535, value));
@@ -255,7 +257,7 @@ public sealed class SimulationDataProvider : IDisposable
         var time = DateTime.Now.Second;
         var isHigh = (time % 4) < 2;
 
-        for (var i = 0; i < Math.Min(count, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(count + 1, dataStore.HoldingRegisters.Count); i++)
         {
             dataStore.HoldingRegisters[i] = isHigh ? (ushort)65535 : (ushort)0;
             dataStore.InputRegisters[i] = dataStore.HoldingRegisters[i];
@@ -266,9 +268,9 @@ public sealed class SimulationDataProvider : IDisposable
 
     private static void LoadCountingPattern(DataStore dataStore, int length, bool countUp)
     {
-        for (var i = 0; i < Math.Min(length, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(length + 1, dataStore.HoldingRegisters.Count); i++)
         {
-            var value = countUp ? i : (length - i - 1);
+            var value = countUp ? (i - 1) : (length - i);
             dataStore.HoldingRegisters[i] = (ushort)(value % 65536);
             dataStore.InputRegisters[i] = dataStore.HoldingRegisters[i];
             dataStore.CoilDiscretes[i] = (value % 2) == 1;
@@ -279,11 +281,11 @@ public sealed class SimulationDataProvider : IDisposable
     private static void LoadSineWavePattern(DataStore dataStore, int length)
     {
         var sineData = GenerateSineWave(length);
-        for (var i = 0; i < Math.Min(length, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(length + 1, dataStore.HoldingRegisters.Count); i++)
         {
-            dataStore.HoldingRegisters[i] = sineData[i];
-            dataStore.InputRegisters[i] = sineData[i];
-            dataStore.CoilDiscretes[i] = sineData[i] > 32767;
+            dataStore.HoldingRegisters[i] = sineData[i - 1]; // Offset for 1-based indexing
+            dataStore.InputRegisters[i] = sineData[i - 1];
+            dataStore.CoilDiscretes[i] = sineData[i - 1] > 32767;
             dataStore.InputDiscretes[i] = !dataStore.CoilDiscretes[i];
         }
     }
@@ -291,18 +293,18 @@ public sealed class SimulationDataProvider : IDisposable
     private static void LoadSquareWavePattern(DataStore dataStore, int length)
     {
         var squareData = GenerateSquareWave(length);
-        for (var i = 0; i < Math.Min(length, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(length + 1, dataStore.HoldingRegisters.Count); i++)
         {
-            dataStore.HoldingRegisters[i] = squareData[i];
-            dataStore.InputRegisters[i] = squareData[i];
-            dataStore.CoilDiscretes[i] = squareData[i] > 0;
+            dataStore.HoldingRegisters[i] = squareData[i - 1]; // Offset for 1-based indexing
+            dataStore.InputRegisters[i] = squareData[i - 1];
+            dataStore.CoilDiscretes[i] = squareData[i - 1] > 0;
             dataStore.InputDiscretes[i] = !dataStore.CoilDiscretes[i];
         }
     }
 
     private static void LoadConstantPattern(DataStore dataStore, int length, ushort value, bool boolValue)
     {
-        for (var i = 0; i < Math.Min(length, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(length + 1, dataStore.HoldingRegisters.Count); i++)
         {
             dataStore.HoldingRegisters[i] = value;
             dataStore.InputRegisters[i] = value;
@@ -344,7 +346,7 @@ public sealed class SimulationDataProvider : IDisposable
 
     private void UpdateRandomData(DataStore dataStore, int count)
     {
-        for (var i = 0; i < Math.Min(count, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(count + 1, dataStore.HoldingRegisters.Count); i++)
         {
             dataStore.HoldingRegisters[i] = (ushort)_random.Next(65536);
             dataStore.InputRegisters[i] = (ushort)_random.Next(65536);
@@ -358,12 +360,12 @@ public sealed class SimulationDataProvider : IDisposable
         var randomData = GenerateRandomData(length);
         var boolData = GenerateBooleanPattern(length);
 
-        for (var i = 0; i < Math.Min(length, dataStore.HoldingRegisters.Count); i++)
+        for (var i = 1; i < Math.Min(length + 1, dataStore.HoldingRegisters.Count); i++)
         {
-            dataStore.HoldingRegisters[i] = randomData[i];
-            dataStore.InputRegisters[i] = randomData[i];
-            dataStore.CoilDiscretes[i] = boolData[i];
-            dataStore.InputDiscretes[i] = !boolData[i];
+            dataStore.HoldingRegisters[i] = randomData[i - 1]; // Offset for 1-based indexing
+            dataStore.InputRegisters[i] = randomData[i - 1];
+            dataStore.CoilDiscretes[i] = boolData[i - 1];
+            dataStore.InputDiscretes[i] = !boolData[i - 1];
         }
     }
 }

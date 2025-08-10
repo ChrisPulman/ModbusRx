@@ -57,13 +57,7 @@ public class SlaveExceptionResponse : AbstractModbusMessage, IModbusMessage
             ? _exceptionMessages[SlaveExceptionCode]
             : Resources.Unknown;
 
-        return string.Format(
-            CultureInfo.InvariantCulture,
-            Resources.SlaveExceptionResponseFormat,
-            Environment.NewLine,
-            FunctionCode,
-            SlaveExceptionCode,
-            msg);
+        return $"Function Code: {FunctionCode}{Environment.NewLine}Exception Code: {SlaveExceptionCode} - {msg}";
     }
 
     internal static Dictionary<byte, string> CreateExceptionMessages() =>

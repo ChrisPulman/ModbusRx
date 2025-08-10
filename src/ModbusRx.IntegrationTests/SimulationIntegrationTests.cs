@@ -14,6 +14,7 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// Integration tests for simulation and data generation.
 /// </summary>
+[Collection("SimulationTests")]
 public sealed class SimulationIntegrationTests : IDisposable
 {
     private readonly List<IDisposable> _disposables = new();
@@ -87,12 +88,12 @@ public sealed class SimulationIntegrationTests : IDisposable
         using var provider = new SimulationDataProvider();
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
 
-        // Capture initial values
+        // Capture initial values from valid Modbus addresses (starting at index 1)
         var initialValues = new[]
         {
-            dataStore.HoldingRegisters[0],
             dataStore.HoldingRegisters[1],
-            dataStore.HoldingRegisters[2]
+            dataStore.HoldingRegisters[2],
+            dataStore.HoldingRegisters[3]
         };
 
         // Act
@@ -102,9 +103,9 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         var finalValues = new[]
         {
-            dataStore.HoldingRegisters[0],
             dataStore.HoldingRegisters[1],
-            dataStore.HoldingRegisters[2]
+            dataStore.HoldingRegisters[2],
+            dataStore.HoldingRegisters[3]
         };
 
         // Assert
@@ -155,7 +156,7 @@ public sealed class SimulationIntegrationTests : IDisposable
         server.SimulationMode = true;
         server.Start();
 
-        await Task.Delay(100);
+        await Task.Delay(200);
 
         var client = new CP.IO.Ports.TcpClientRx("127.0.0.1", tcpPort);
         var master = ModbusIpMaster.CreateIp(client);
@@ -239,24 +240,24 @@ public sealed class SimulationIntegrationTests : IDisposable
         // Act - Load different patterns
         provider.LoadTestPattern(dataStore, TestPattern.CountingUp);
 
-        // Check holding registers (counting up)
-        Assert.Equal(0, dataStore.HoldingRegisters[0]);
-        Assert.Equal(1, dataStore.HoldingRegisters[1]);
-        Assert.Equal(2, dataStore.HoldingRegisters[2]);
+        // Check holding registers (counting up) - use 1-based indexing
+        Assert.Equal(0, dataStore.HoldingRegisters[1]); // First real value
+        Assert.Equal(1, dataStore.HoldingRegisters[2]); // Second real value
+        Assert.Equal(2, dataStore.HoldingRegisters[3]); // Third real value
 
         // Check that input registers match
-        Assert.Equal(dataStore.HoldingRegisters[0], dataStore.InputRegisters[0]);
         Assert.Equal(dataStore.HoldingRegisters[1], dataStore.InputRegisters[1]);
+        Assert.Equal(dataStore.HoldingRegisters[2], dataStore.InputRegisters[2]);
 
-        // Check coils (should reflect register values)
-        Assert.False(dataStore.CoilDiscretes[0]); // 0 % 2 == 0 -> false
-        Assert.True(dataStore.CoilDiscretes[1]);  // 1 % 2 == 1 -> true
-        Assert.False(dataStore.CoilDiscretes[2]); // 2 % 2 == 0 -> false
+        // Check coils (should reflect register values) - use 1-based indexing
+        Assert.False(dataStore.CoilDiscretes[1]); // 0 % 2 == 0 -> false
+        Assert.True(dataStore.CoilDiscretes[2]);  // 1 % 2 == 1 -> true
+        Assert.False(dataStore.CoilDiscretes[3]); // 2 % 2 == 0 -> false
 
-        // Check inputs (inverted coils)
-        Assert.True(dataStore.InputDiscretes[0]);  // !false
-        Assert.False(dataStore.InputDiscretes[1]); // !true
-        Assert.True(dataStore.InputDiscretes[2]);  // !false
+        // Check inputs (inverted coils) - use 1-based indexing
+        Assert.True(dataStore.InputDiscretes[1]);  // !false
+        Assert.False(dataStore.InputDiscretes[2]); // !true
+        Assert.True(dataStore.InputDiscretes[3]);  // !false
     }
 
     private static int GetAvailablePort()
@@ -278,7 +279,14 @@ public sealed class SimulationIntegrationTests : IDisposable
         {
             foreach (var disposable in _disposables)
             {
-                disposable?.Dispose();
+                try
+                {
+                    disposable?.Dispose();
+                }
+                catch
+                {
+                    // Ignore disposal exceptions in tests
+                }
             }
 
             _disposables.Clear();

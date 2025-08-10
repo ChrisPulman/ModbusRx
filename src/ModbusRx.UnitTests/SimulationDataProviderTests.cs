@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using ModbusRx.Data;
 using Xunit;
 
@@ -19,20 +20,23 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests that SimulationDataProvider can be created and disposed.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void SimulationDataProvider_CreateAndDispose_ShouldNotThrow()
+    public async Task SimulationDataProvider_CreateAndDispose_ShouldNotThrow()
     {
         // Arrange & Act & Assert
         using var provider = new SimulationDataProvider();
         Assert.NotNull(provider);
-        Assert.False(provider.IsRunning.FirstAsync().ToTask().Result);
+        var isRunning = await provider.IsRunning.FirstAsync().ToTask();
+        Assert.False(isRunning);
     }
 
     /// <summary>
     /// Tests that simulation can be started and stopped.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void SimulationDataProvider_StartAndStop_ShouldUpdateRunningState()
+    public async Task SimulationDataProvider_StartAndStop_ShouldUpdateRunningState()
     {
         // Arrange
         using var provider = new SimulationDataProvider();
@@ -42,13 +46,15 @@ public class SimulationDataProviderTests
         provider.Start(dataStore, TimeSpan.FromMilliseconds(100));
 
         // Assert
-        Assert.True(provider.IsRunning.FirstAsync().ToTask().Result);
+        var isRunning = await provider.IsRunning.FirstAsync().ToTask();
+        Assert.True(isRunning);
 
         // Act
         provider.Stop();
 
         // Assert
-        Assert.False(provider.IsRunning.FirstAsync().ToTask().Result);
+        isRunning = await provider.IsRunning.FirstAsync().ToTask();
+        Assert.False(isRunning);
     }
 
     /// <summary>
@@ -157,10 +163,10 @@ public class SimulationDataProviderTests
         // Act
         provider.LoadTestPattern(dataStore, TestPattern.CountingUp);
 
-        // Assert
-        Assert.Equal(0, dataStore.HoldingRegisters[0]);
-        Assert.Equal(1, dataStore.HoldingRegisters[1]);
-        Assert.Equal(2, dataStore.HoldingRegisters[2]);
+        // Assert - Check the actual data values, starting from index 1 in Modbus collections
+        Assert.Equal(0, dataStore.HoldingRegisters[1]); // First real value
+        Assert.Equal(1, dataStore.HoldingRegisters[2]); // Second real value
+        Assert.Equal(2, dataStore.HoldingRegisters[3]); // Third real value
     }
 
     /// <summary>
@@ -173,15 +179,15 @@ public class SimulationDataProviderTests
         using var provider = new SimulationDataProvider();
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
 
-        // Capture initial state
-        var initialValue = dataStore.HoldingRegisters[0];
+        // Capture initial state of first real register (index 1)
+        var initialValue = dataStore.HoldingRegisters[1];
 
         // Act
         provider.Start(dataStore, TimeSpan.FromMilliseconds(50), SimulationType.Random);
         Thread.Sleep(200); // Let simulation run
         provider.Stop();
 
-        var finalValue = dataStore.HoldingRegisters[0];
+        var finalValue = dataStore.HoldingRegisters[1];
 
         // Assert
         Assert.NotEqual(initialValue, finalValue);

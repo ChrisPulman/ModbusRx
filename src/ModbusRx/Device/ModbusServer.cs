@@ -292,33 +292,33 @@ public sealed class ModbusServer : IDisposable
         {
             if (holdingRegisters != null)
             {
-                for (var i = 0; i < Math.Min(holdingRegisters.Length, DataStore.HoldingRegisters.Count); i++)
+                for (var i = 0; i < Math.Min(holdingRegisters.Length, DataStore.HoldingRegisters.Count - 1); i++)
                 {
-                    DataStore.HoldingRegisters[i] = holdingRegisters[i];
+                    DataStore.HoldingRegisters[i + 1] = holdingRegisters[i]; // Modbus collections are 1-based
                 }
             }
 
             if (inputRegisters != null)
             {
-                for (var i = 0; i < Math.Min(inputRegisters.Length, DataStore.InputRegisters.Count); i++)
+                for (var i = 0; i < Math.Min(inputRegisters.Length, DataStore.InputRegisters.Count - 1); i++)
                 {
-                    DataStore.InputRegisters[i] = inputRegisters[i];
+                    DataStore.InputRegisters[i + 1] = inputRegisters[i]; // Modbus collections are 1-based
                 }
             }
 
             if (coils != null)
             {
-                for (var i = 0; i < Math.Min(coils.Length, DataStore.CoilDiscretes.Count); i++)
+                for (var i = 0; i < Math.Min(coils.Length, DataStore.CoilDiscretes.Count - 1); i++)
                 {
-                    DataStore.CoilDiscretes[i] = coils[i];
+                    DataStore.CoilDiscretes[i + 1] = coils[i]; // Modbus collections are 1-based
                 }
             }
 
             if (inputs != null)
             {
-                for (var i = 0; i < Math.Min(inputs.Length, DataStore.InputDiscretes.Count); i++)
+                for (var i = 0; i < Math.Min(inputs.Length, DataStore.InputDiscretes.Count - 1); i++)
                 {
-                    DataStore.InputDiscretes[i] = inputs[i];
+                    DataStore.InputDiscretes[i + 1] = inputs[i]; // Modbus collections are 1-based
                 }
             }
         }
@@ -337,11 +337,12 @@ public sealed class ModbusServer : IDisposable
 
         lock (DataStore.SyncRoot)
         {
+            // Skip index 0 since Modbus collections are 1-based
             return (
-                DataStore.HoldingRegisters.ToArray(),
-                DataStore.InputRegisters.ToArray(),
-                DataStore.CoilDiscretes.ToArray(),
-                DataStore.InputDiscretes.ToArray());
+                DataStore.HoldingRegisters.Skip(1).ToArray(),
+                DataStore.InputRegisters.Skip(1).ToArray(),
+                DataStore.CoilDiscretes.Skip(1).ToArray(),
+                DataStore.InputDiscretes.Skip(1).ToArray());
         }
     }
 
@@ -368,9 +369,9 @@ public sealed class ModbusServer : IDisposable
             var holdingRegs = await master.ReadHoldingRegistersAsync(slaveAddress, 0, 100);
             lock (DataStore.SyncRoot)
             {
-                for (var i = 0; i < Math.Min(holdingRegs.Length, DataStore.HoldingRegisters.Count); i++)
+                for (var i = 0; i < Math.Min(holdingRegs.Length, DataStore.HoldingRegisters.Count - 1); i++)
                 {
-                    DataStore.HoldingRegisters[i] = holdingRegs[i];
+                    DataStore.HoldingRegisters[i + 1] = holdingRegs[i]; // Modbus collections are 1-based
                 }
             }
 
@@ -378,9 +379,9 @@ public sealed class ModbusServer : IDisposable
             var inputRegs = await master.ReadInputRegistersAsync(slaveAddress, 0, 100);
             lock (DataStore.SyncRoot)
             {
-                for (var i = 0; i < Math.Min(inputRegs.Length, DataStore.InputRegisters.Count); i++)
+                for (var i = 0; i < Math.Min(inputRegs.Length, DataStore.InputRegisters.Count - 1); i++)
                 {
-                    DataStore.InputRegisters[i] = inputRegs[i];
+                    DataStore.InputRegisters[i + 1] = inputRegs[i]; // Modbus collections are 1-based
                 }
             }
 
@@ -388,9 +389,9 @@ public sealed class ModbusServer : IDisposable
             var coils = await master.ReadCoilsAsync(slaveAddress, 0, 100);
             lock (DataStore.SyncRoot)
             {
-                for (var i = 0; i < Math.Min(coils.Length, DataStore.CoilDiscretes.Count); i++)
+                for (var i = 0; i < Math.Min(coils.Length, DataStore.CoilDiscretes.Count - 1); i++)
                 {
-                    DataStore.CoilDiscretes[i] = coils[i];
+                    DataStore.CoilDiscretes[i + 1] = coils[i]; // Modbus collections are 1-based
                 }
             }
 
@@ -398,9 +399,9 @@ public sealed class ModbusServer : IDisposable
             var inputs = await master.ReadInputsAsync(slaveAddress, 0, 100);
             lock (DataStore.SyncRoot)
             {
-                for (var i = 0; i < Math.Min(inputs.Length, DataStore.InputDiscretes.Count); i++)
+                for (var i = 0; i < Math.Min(inputs.Length, DataStore.InputDiscretes.Count - 1); i++)
                 {
-                    DataStore.InputDiscretes[i] = inputs[i];
+                    DataStore.InputDiscretes[i + 1] = inputs[i]; // Modbus collections are 1-based
                 }
             }
         }
@@ -439,23 +440,23 @@ public sealed class ModbusServer : IDisposable
 
         lock (DataStore.SyncRoot)
         {
-            // Simulate changing values
-            for (var i = 0; i < Math.Min(100, DataStore.HoldingRegisters.Count); i++)
+            // Simulate changing values - use 1-based indexing for Modbus collections
+            for (var i = 1; i < Math.Min(101, DataStore.HoldingRegisters.Count); i++)
             {
                 DataStore.HoldingRegisters[i] = (ushort)_random.Next(0, 65536);
             }
 
-            for (var i = 0; i < Math.Min(100, DataStore.InputRegisters.Count); i++)
+            for (var i = 1; i < Math.Min(101, DataStore.InputRegisters.Count); i++)
             {
                 DataStore.InputRegisters[i] = (ushort)_random.Next(0, 65536);
             }
 
-            for (var i = 0; i < Math.Min(100, DataStore.CoilDiscretes.Count); i++)
+            for (var i = 1; i < Math.Min(101, DataStore.CoilDiscretes.Count); i++)
             {
                 DataStore.CoilDiscretes[i] = _random.Next(0, 2) == 1;
             }
 
-            for (var i = 0; i < Math.Min(100, DataStore.InputDiscretes.Count); i++)
+            for (var i = 1; i < Math.Min(101, DataStore.InputDiscretes.Count); i++)
             {
                 DataStore.InputDiscretes[i] = _random.Next(0, 2) == 1;
             }

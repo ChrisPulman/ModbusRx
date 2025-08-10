@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
+using ModbusRx.Utility;
 using ReactiveMarbles.Extensions;
 
 namespace ModbusRx.Reactive
@@ -36,7 +37,24 @@ namespace ModbusRx.Reactive
         public static TimeSpan CheckConnectionInterval { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// Convert ushort to float.
+        /// Convert ushort span to float with high-performance operations.
+        /// </summary>
+        /// <param name="inputs">The inputs span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A float value or null if insufficient data.</returns>
+        public static float? ToFloat(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
+        {
+            if (inputs.Length < start + 2)
+            {
+                return null;
+            }
+
+            return ModbusUtility.ReadSingle(inputs[start..], swapWords);
+        }
+
+        /// <summary>
+        /// Convert ushort array to float.
         /// </summary>
         /// <param name="inputs">The inputs.</param>
         /// <param name="start">The start.</param>
@@ -46,16 +64,29 @@ namespace ModbusRx.Reactive
         /// </returns>
         public static float? ToFloat(this ushort[]? inputs, int start, bool swapWords = true)
         {
-            if (inputs == null || inputs.Length < start + 1)
+            if (inputs == null || inputs.Length < start + 2)
             {
                 return null;
             }
 
-            var ba0 = BitConverter.GetBytes(inputs[start]);
-            var ba1 = BitConverter.GetBytes(inputs[start + 1]);
-            //// byte swap
-            var ba = swapWords ? ba1.Concat(ba0).ToArray() : ba0.Concat(ba1).ToArray();
-            return BitConverter.ToSingle(ba, 0);
+            return inputs.AsSpan().ToFloat(start, swapWords);
+        }
+
+        /// <summary>
+        /// Convert ushort span to double with high-performance operations.
+        /// </summary>
+        /// <param name="inputs">The inputs span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A double value or null if insufficient data.</returns>
+        public static double? ToDouble(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
+        {
+            if (inputs.Length < start + 4)
+            {
+                return null;
+            }
+
+            return ModbusUtility.ReadDouble(inputs[start..], swapWords);
         }
 
         /// <summary>
@@ -67,18 +98,30 @@ namespace ModbusRx.Reactive
         /// <returns>A double.</returns>
         public static double? ToDouble(this ushort[]? inputs, int start, bool swapWords = true)
         {
-            if (inputs == null || inputs.Length < start + 3)
+            if (inputs == null || inputs.Length < start + 4)
             {
                 return null;
             }
 
-            var ba0 = BitConverter.GetBytes(inputs[start]);
-            var ba1 = BitConverter.GetBytes(inputs[start + 1]);
-            var ba2 = BitConverter.GetBytes(inputs[start + 2]);
-            var ba3 = BitConverter.GetBytes(inputs[start + 3]);
-            //// byte swap
-            var ba = swapWords ? ba1.Concat(ba0).Concat(ba3).Concat(ba2).ToArray() : ba0.Concat(ba1).Concat(ba2).Concat(ba3).ToArray();
-            return BitConverter.ToDouble(ba, 0);
+            return inputs.AsSpan().ToDouble(start, swapWords);
+        }
+
+        /// <summary>
+        /// Write float to ushort span with high-performance operations.
+        /// </summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="output">The output span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
+        public static void FromFloat(this float input, Span<ushort> output, int start, bool swapWords = true)
+        {
+            if (output.Length < start + 2)
+            {
+                throw new ArgumentException("Output span is too small.", nameof(output));
+            }
+
+            ModbusUtility.WriteSingle(input, output[start..], swapWords);
         }
 
         /// <summary>
@@ -90,16 +133,30 @@ namespace ModbusRx.Reactive
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         public static void FromFloat(this float input, ushort[] output, int start, bool swapWords = true)
         {
-            if (output == null || output.Length < start + 1)
+            if (output == null || output.Length < start + 2)
             {
                 return;
             }
 
-            var ba = BitConverter.GetBytes(input);
-            var ba0 = ba.Take(2).ToArray();
-            var ba1 = ba.Skip(2).ToArray();
-            output[start] = BitConverter.ToUInt16(swapWords ? ba1 : ba0, 0);
-            output[start + 1] = BitConverter.ToUInt16(swapWords ? ba0 : ba1, 0);
+            input.FromFloat(output.AsSpan(), start, swapWords);
+        }
+
+        /// <summary>
+        /// Write double to ushort span with high-performance operations.
+        /// </summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="output">The output span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
+        public static void FromDouble(this double input, Span<ushort> output, int start, bool swapWords = true)
+        {
+            if (output.Length < start + 4)
+            {
+                throw new ArgumentException("Output span is too small.", nameof(output));
+            }
+
+            ModbusUtility.WriteDouble(input, output[start..], swapWords);
         }
 
         /// <summary>
@@ -111,20 +168,12 @@ namespace ModbusRx.Reactive
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         public static void FromDouble(this double input, ushort[] output, int start, bool swapWords = true)
         {
-            if (output == null || output.Length < start + 3)
+            if (output == null || output.Length < start + 4)
             {
                 return;
             }
 
-            var ba = BitConverter.GetBytes(input);
-            var ba0 = ba.Take(2).ToArray();
-            var ba1 = ba.Skip(2).Take(2).ToArray();
-            var ba2 = ba.Skip(4).Take(2).ToArray();
-            var ba3 = ba.Skip(6).ToArray();
-            output[start] = BitConverter.ToUInt16(swapWords ? ba1 : ba0, 0);
-            output[start + 1] = BitConverter.ToUInt16(swapWords ? ba0 : ba1, 0);
-            output[start + 2] = BitConverter.ToUInt16(swapWords ? ba3 : ba2, 0);
-            output[start + 3] = BitConverter.ToUInt16(swapWords ? ba2 : ba3, 0);
+            input.FromDouble(output.AsSpan(), start, swapWords);
         }
 
         /// <summary>

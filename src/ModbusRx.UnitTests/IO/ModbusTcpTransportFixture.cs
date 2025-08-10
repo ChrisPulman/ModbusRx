@@ -77,8 +77,9 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Reads the request response.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void ReadRequestResponse()
+    public async Task ReadRequestResponse()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
         var request = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 1, 3);
