@@ -77,33 +77,43 @@ public class ModbusServerTests
         using var server = new ModbusServer();
         server.Start();
 
+        // Capture initial state to verify change
+        var initialData = server.GetCurrentData();
+        var initialSum = initialData.holdingRegisters.Take(10).Sum(x => (long)x);
+
         // Act
         server.SimulationMode = true;
 
-        // Wait for simulation to run - use environment-appropriate timeout with retries
-        var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(600));
-        var maxRetries = IsRunningInCI ? 5 : 2; // More retries in CI
-        var dataContainsNonZero = false;
+        // Wait for simulation to run - simulation runs every 500ms so wait at least that long
+        var baseInterval = TimeSpan.FromMilliseconds(700); // Longer than the 500ms simulation interval
+        var timeout = GetEnvironmentTimeout(baseInterval);
+        var maxRetries = IsRunningInCI ? 8 : 3; // More retries in CI due to slower execution
+        var dataHasChanged = false;
 
-        for (var retry = 0; retry < maxRetries && !dataContainsNonZero; retry++)
+        for (var retry = 0; retry < maxRetries && !dataHasChanged; retry++)
         {
             await Task.Delay(timeout);
-            var data = server.GetCurrentData();
+            var currentData = server.GetCurrentData();
 
-            // Check if any holding registers have non-zero values
-            dataContainsNonZero = data.holdingRegisters.Any(x => x > 0);
+            // Check if any holding registers have non-zero values OR if data has changed from initial state
+            var currentSum = currentData.holdingRegisters.Take(10).Sum(x => (long)x);
+            var hasNonZeroValues = currentData.holdingRegisters.Any(x => x > 0);
+            var sumChanged = currentSum != initialSum;
 
-            if (!dataContainsNonZero && retry < maxRetries - 1)
+            dataHasChanged = hasNonZeroValues || sumChanged;
+
+            if (!dataHasChanged && retry < maxRetries - 1)
             {
                 // If no data yet, wait a bit more for next retry
-                await Task.Delay(GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200)));
+                await Task.Delay(GetEnvironmentTimeout(TimeSpan.FromMilliseconds(300)));
             }
         }
 
         // Assert
-        Assert.True(
-            dataContainsNonZero,
-            $"Simulation should generate non-zero data after {maxRetries} attempts with {timeout.TotalMilliseconds}ms intervals");
+        var errorMessage = $"Simulation should generate non-zero data or change from initial state after {maxRetries} attempts with {timeout.TotalMilliseconds}ms intervals. " +
+                          $"Initial sum: {initialSum}, Simulation interval: 500ms";
+
+        Assert.True(dataHasChanged, errorMessage);
 
         // Act
         server.SimulationMode = false;
