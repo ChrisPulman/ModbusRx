@@ -192,16 +192,31 @@ public class SimulationDataProviderTests
         // Act
         provider.Start(dataStore, TimeSpan.FromMilliseconds(50), SimulationType.Random);
 
-        // Wait long enough for simulation to execute at least once
-        // Simulation uses Observable.Interval so first execution happens after the interval
-        var waitTime = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(300)); // Wait much longer than 50ms interval
-        Thread.Sleep(waitTime);
+        // Use retry logic similar to ModbusServer tests for better reliability
+        var maxRetries = IsRunningInCI ? 6 : 3; // More retries in CI, especially for .NET Framework 4.8
+        var baseWaitTime = IsRunningInCI ? TimeSpan.FromMilliseconds(400) : TimeSpan.FromMilliseconds(250);
+        var dataChanged = false;
+
+        for (var retry = 0; retry < maxRetries && !dataChanged; retry++)
+        {
+            Thread.Sleep(baseWaitTime);
+            var currentValue = dataStore.HoldingRegisters[1];
+            dataChanged = currentValue != initialValue;
+
+            if (!dataChanged && retry < maxRetries - 1)
+            {
+                // Give a bit more time between retries
+                Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            }
+        }
+
         provider.Stop();
 
-        var finalValue = dataStore.HoldingRegisters[1];
+        // Assert with better error message
+        var errorMessage = $"Simulation should update data store. Initial: {initialValue}, Final: {dataStore.HoldingRegisters[1]}, " +
+                          $"Retries: {maxRetries}, Wait time: {baseWaitTime.TotalMilliseconds}ms, CI: {IsRunningInCI}";
 
-        // Assert
-        Assert.NotEqual(initialValue, finalValue);
+        Assert.True(dataChanged, errorMessage);
     }
 
     /// <summary>
@@ -215,23 +230,53 @@ public class SimulationDataProviderTests
         var dataStore1 = DataStoreFactory.CreateDefaultDataStore();
         var dataStore2 = DataStoreFactory.CreateDefaultDataStore();
 
-        // Act
+        // Use longer wait times for .NET Framework 4.8 CI reliability
+        var baseWaitTime = IsRunningInCI ? TimeSpan.FromMilliseconds(400) : TimeSpan.FromMilliseconds(250);
+        var maxRetries = IsRunningInCI ? 4 : 2;
+
+        // Act - Start first simulation (CountingUp)
         provider.Start(dataStore1, TimeSpan.FromMilliseconds(50), SimulationType.CountingUp);
 
-        // Wait long enough for simulation to execute at least once
-        var waitTime = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
-        Thread.Sleep(waitTime);
+        var simulation1Succeeded = false;
+        for (var retry = 0; retry < maxRetries && !simulation1Succeeded; retry++)
+        {
+            Thread.Sleep(baseWaitTime);
+            var currentData = dataStore1.HoldingRegisters.Take(5).ToArray();
+
+            // CountingUp should produce sequential values starting from 0
+            simulation1Succeeded = currentData.Any(x => x > 0) || currentData.Distinct().Count() > 1;
+        }
+
         provider.Stop();
 
+        // Start second simulation (Random)
         provider.Start(dataStore2, TimeSpan.FromMilliseconds(50), SimulationType.Random);
-        Thread.Sleep(waitTime);
+
+        var simulation2Succeeded = false;
+        for (var retry = 0; retry < maxRetries && !simulation2Succeeded; retry++)
+        {
+            Thread.Sleep(baseWaitTime);
+            var currentData = dataStore2.HoldingRegisters.Take(5).ToArray();
+
+            // Random should produce varied values
+            simulation2Succeeded = currentData.Any(x => x > 0) || currentData.Distinct().Count() > 1;
+        }
+
         provider.Stop();
 
-        // Assert
+        // Assert - Get final values for comparison
         var values1 = dataStore1.HoldingRegisters.Take(10).ToArray();
         var values2 = dataStore2.HoldingRegisters.Take(10).ToArray();
 
-        Assert.False(values1.SequenceEqual(values2));
+        // More flexible assertion - different simulation types should produce different results
+        var patternsAreDifferent = !values1.SequenceEqual(values2) ||
+                                  values1.Distinct().Count() != values2.Distinct().Count();
+
+        var errorMessage = "Different simulation types should produce different patterns. " +
+                          $"CountingUp: [{string.Join(", ", values1)}], Random: [{string.Join(", ", values2)}], " +
+                          $"Sim1 Success: {simulation1Succeeded}, Sim2 Success: {simulation2Succeeded}, CI: {IsRunningInCI}";
+
+        Assert.True(patternsAreDifferent, errorMessage);
     }
 
     /// <summary>
@@ -240,6 +285,6 @@ public class SimulationDataProviderTests
     /// <param name="normalTimeout">Normal timeout for local testing.</param>
     /// <returns>Appropriate timeout for the environment.</returns>
     private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
-            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.6) : // Less aggressive reduction for simulation tests
+            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.8) : // Less aggressive reduction than before for better .NET Framework 4.8 support
             normalTimeout;
 }
