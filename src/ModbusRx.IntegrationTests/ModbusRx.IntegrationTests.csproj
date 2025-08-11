@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ModbusRx\ModbusRx.csproj" />
   </ItemGroup>
 
