@@ -37,7 +37,7 @@ public class ModbusRxUdpMasterModbusRxUdpSlaveFixture : ModbusRxMasterFixture
         StartSlave();
 
         // Give slave time to start listening
-        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(200)), CancellationToken);
 
         MasterUdp = new UdpClientRx();
         var endPoint = new IPEndPoint(TcpHost, port);

@@ -133,12 +133,20 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     protected UdpClientRx? SlaveUdp { get; set; }
 
     /// <summary>
-    /// Gets or sets the slave thread.
+    /// Gets or sets the slave task.
     /// </summary>
     /// <value>
-    /// The slave thread.
+    /// The slave task.
     /// </value>
-    private Thread? SlaveThread { get; set; }
+    private Task? SlaveTask { get; set; }
+
+    /// <summary>
+    /// Gets or sets the slave cancellation token source.
+    /// </summary>
+    /// <value>
+    /// The slave cancellation token source.
+    /// </value>
+    private CancellationTokenSource? SlaveCancellationTokenSource { get; set; }
 
     /// <summary>
     /// Gets or sets the jamod.
@@ -197,25 +205,37 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
         }
 
         RegisterDisposable(Slave);
-        SlaveThread = new Thread(async () =>
-        {
-            try
+        
+        // Create cancellation token source for the slave
+        SlaveCancellationTokenSource = new CancellationTokenSource();
+        RegisterDisposable(SlaveCancellationTokenSource);
+
+        SlaveTask = Task.Run(
+            async () =>
             {
-                await Slave.ListenAsync();
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when cancellation is requested
-            }
-            catch (ObjectDisposedException)
-            {
-                // Expected when resources are disposed
-            }
-        })
-        {
-            IsBackground = true,
-        };
-        SlaveThread.Start();
+                try
+                {
+                    await Slave.ListenAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when cancellation is requested
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Expected when resources are disposed
+                }
+                catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+                {
+                    // Expected when I/O operation is aborted due to thread exit or application request
+                    // This is normal during test cleanup in CI environments
+                }
+                catch (System.Net.Sockets.SocketException)
+                {
+                    // Other socket exceptions during cleanup are also expected
+                }
+            },
+            SlaveCancellationTokenSource.Token);
     }
 
     /// <summary>
@@ -483,9 +503,63 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
         {
             if (disposing)
             {
-                Master?.Dispose();
-                Slave?.Dispose();
+                // Cancel slave operations first
+                try
+                {
+                    SlaveCancellationTokenSource?.Cancel();
+                }
+                catch
+                {
+                    // Ignore cancellation exceptions
+                }
 
+                // Stop TCP listener before disposing slave
+                if (SlaveTcp != null)
+                {
+                    try
+                    {
+                        SlaveTcp.Stop();
+                    }
+                    catch
+                    {
+                        // Ignore cleanup exceptions
+                    }
+                }
+
+                // Dispose slave and master
+                try
+                {
+                    Slave?.Dispose();
+                }
+                catch
+                {
+                    // Ignore disposal exceptions
+                }
+
+                try
+                {
+                    Master?.Dispose();
+                }
+                catch
+                {
+                    // Ignore disposal exceptions
+                }
+
+                // Wait for slave task to complete with timeout
+                if (SlaveTask != null && !SlaveTask.IsCompleted)
+                {
+                    try
+                    {
+                        var timeout = GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
+                        SlaveTask.Wait(timeout);
+                    }
+                    catch
+                    {
+                        // Ignore task wait exceptions
+                    }
+                }
+
+                // Handle Jamod process
                 if (Jamod is not null)
                 {
                     try
@@ -493,7 +567,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
                         Jamod.Kill();
 
                         // Use synchronous wait in disposal
-                        Thread.Sleep(GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1)));
+                        Thread.Sleep(GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1)));
                     }
                     catch
                     {
@@ -525,18 +599,6 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
                 if (SlaveUdp != null)
                 {
                     RegisterDisposable(SlaveUdp);
-                }
-
-                if (SlaveTcp != null)
-                {
-                    try
-                    {
-                        SlaveTcp.Stop();
-                    }
-                    catch
-                    {
-                        // Ignore cleanup exceptions
-                    }
                 }
             }
 

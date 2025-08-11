@@ -50,6 +50,15 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
             {
                 // Expected when disposed
             }
+            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            {
+                // Expected when I/O operation is aborted due to thread exit or application request
+                // This is normal during test cleanup in CI environments
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                // Other socket exceptions during cleanup are also expected
+            }
         });
 
         // Wait for slave to start
@@ -213,6 +222,15 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
             catch (ObjectDisposedException)
             {
                 // Expected when disposed
+            }
+            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            {
+                // Expected when I/O operation is aborted due to thread exit or application request
+                // This is normal during test cleanup in CI environments
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                // Other socket exceptions during cleanup are also expected
             }
         });
 

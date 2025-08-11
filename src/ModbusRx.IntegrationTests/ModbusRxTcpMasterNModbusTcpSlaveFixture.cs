@@ -40,7 +40,7 @@ public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
         StartSlave();
 
         // Give slave time to start listening
-        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(200)), CancellationToken);
 
         MasterTcp = new TcpClientRx(TcpHost.ToString(), port);
         Master = ModbusIpMaster.CreateIp(MasterTcp);
