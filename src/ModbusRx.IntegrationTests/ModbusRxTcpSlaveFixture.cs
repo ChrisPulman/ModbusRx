@@ -15,7 +15,8 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusTcpSlaveFixture.
 /// </summary>
-public class ModbusRxTcpSlaveFixture
+[Collection("NetworkTests")]
+public class ModbusRxTcpSlaveFixture : NetworkTestBase
 {
     /// <summary>
     /// Tests possible exception when master closes gracefully immediately after transaction
@@ -25,15 +26,33 @@ public class ModbusRxTcpSlaveFixture
     [Fact]
     public async Task ModbusTcpSlave_ConnectionClosesGracefully()
     {
-        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync())
-        {
-            IsBackground = true
-        };
-        slaveThread.Start();
+        // Arrange
+        var port = await GetAvailablePortAsync();
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, port);
+        var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
+        RegisterDisposable(slave);
 
-        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
+        var slaveTask = Task.Run(async () =>
+        {
+            try
+            {
+                await slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when disposed
+            }
+        });
+
+        // Wait for slave to start
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
+
+        // Act
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), port);
         using (var master = ModbusIpMaster.CreateIp(masterClient))
         {
             master.Transport!.Retries = 0;
@@ -44,8 +63,8 @@ public class ModbusRxTcpSlaveFixture
             Assert.Single(slave.Masters);
         }
 
-        // give the slave some time to remove the master
-        Thread.Sleep(50);
+        // Give the slave some time to remove the master
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
 
         Assert.Empty(slave.Masters);
     }
@@ -57,15 +76,33 @@ public class ModbusRxTcpSlaveFixture
     [Fact]
     public async Task ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
     {
-        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync())
-        {
-            IsBackground = true
-        };
-        slaveThread.Start();
+        // Arrange
+        var port = await GetAvailablePortAsync();
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, port);
+        var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
+        RegisterDisposable(slave);
 
-        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
+        var slaveTask = Task.Run(async () =>
+        {
+            try
+            {
+                await slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when disposed
+            }
+        });
+
+        // Wait for slave to start
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
+
+        // Act
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), port);
         using (var master = ModbusIpMaster.CreateIp(masterClient))
         {
             master.Transport!.Retries = 0;
@@ -75,45 +112,62 @@ public class ModbusRxTcpSlaveFixture
 
             Assert.Single(slave.Masters);
 
-            // wait a bit to let slave move on to read header
-            Thread.Sleep(50);
+            // Wait a bit to let slave move on to read header
+            await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
         }
 
-        // give the slave some time to remove the master
-        Thread.Sleep(50);
+        // Give the slave some time to remove the master
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
         Assert.Empty(slave.Masters);
     }
 
     /// <summary>
     /// Modbuses the TCP slave multi threaded.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ModbusTcpSlave_MultiThreaded()
+    public async Task ModbusTcpSlave_MultiThreaded()
     {
-        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, ModbusRxMasterFixture.Port);
-        using var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
-        var slaveThread = new Thread(async () => await slave.ListenAsync())
+        // Arrange
+        var port = await GetAvailablePortAsync();
+        var slaveListener = new TcpListener(ModbusRxMasterFixture.TcpHost, port);
+        var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
+        RegisterDisposable(slave);
+
+        var slaveTask = Task.Run(async () =>
         {
-            IsBackground = true
-        };
-        slaveThread.Start();
+            try
+            {
+                await slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when disposed
+            }
+        });
 
-        var workerThread1 = new Thread(Read);
-        var workerThread2 = new Thread(Read);
-        workerThread1.Start();
-        workerThread2.Start();
+        // Wait for slave to start
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
 
-        workerThread1.Join();
-        workerThread2.Join();
+        // Act
+        var workerTask1 = ReadAsync(port);
+        var workerTask2 = ReadAsync(port);
+
+        await Task.WhenAll(workerTask1, workerTask2);
     }
 
     /// <summary>
-    /// Reads the specified state.
+    /// Reads from the specified port asynchronously.
     /// </summary>
-    /// <param name="state">The state.</param>
-    private static async void Read(object? state)
+    /// <param name="port">The port to connect to.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    private async Task ReadAsync(int port)
     {
-        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), ModbusRxMasterFixture.Port);
+        var masterClient = new TcpClientRx(ModbusRxMasterFixture.TcpHost.ToString(), port);
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
@@ -123,7 +177,9 @@ public class ModbusRxTcpSlaveFixture
             var coils = await master.ReadCoilsAsync(1, 1);
             Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
-            Thread.Sleep(random.Next(100));
+
+            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(random.Next(100)));
+            await Task.Delay(delay, CancellationToken);
         }
     }
 }

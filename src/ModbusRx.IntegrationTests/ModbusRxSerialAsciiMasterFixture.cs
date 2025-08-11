@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if SERIAL
 using System;
 using ModbusRx.Device;
 using Xunit;
@@ -11,18 +10,28 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusSerialAsciiMasterFixture.
 /// </summary>
-public class ModbusRxSerialAsciiMasterFixture
+[Collection("NetworkTests")]
+public class ModbusRxSerialAsciiMasterFixture : NetworkTestBase
 {
     /// <summary>
-    /// ns the modbus ASCII master read timeout.
+    /// Tests the modbus ASCII master read timeout.
     /// </summary>
     [Fact]
     public void ModbusRxAsciiMaster_ReadTimeout()
     {
-        var port = ModbusMasterFixture.CreateAndOpenSerialPort(ModbusMasterFixture.DefaultMasterSerialPortName);
+        // Skip this test in CI environments as serial ports are not available
+        SkipIfRunningInCI("Serial port tests require physical hardware not available in CI");
+
+#if SERIAL
+        var port = ModbusRxMasterFixture.CreateAndOpenSerialPort(ModbusRxMasterFixture.DefaultMasterSerialPortName);
+        RegisterDisposable(port);
+        
         using IModbusSerialMaster master = ModbusSerialMaster.CreateAscii(port);
-        master.Transport.ReadTimeout = master.Transport.WriteTimeout = 1000;
+        master.Transport!.ReadTimeout = master.Transport.WriteTimeout = 1000;
         Assert.Throws<TimeoutException>(() => master.ReadCoils(100, 1, 1));
+#else
+        // When SERIAL symbol is not defined, skip with explanation
+        throw new SkipException("SERIAL conditional compilation symbol not defined");
+#endif
     }
 }
-#endif

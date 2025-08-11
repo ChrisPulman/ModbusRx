@@ -15,30 +15,49 @@ namespace ModbusRx.IntegrationTests;
 /// <summary>
 /// NModbusUdpSlaveFixture.
 /// </summary>
-public class ModbusRxUdpSlaveFixture
+[Collection("NetworkTests")]
+public class ModbusRxUdpSlaveFixture : NetworkTestBase
 {
     /// <summary>
     /// Modbuses the UDP slave ensure the slave shuts down cleanly.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ModbusUdpSlave_EnsureTheSlaveShutsDownCleanly()
+    public async Task ModbusUdpSlave_EnsureTheSlaveShutsDownCleanly()
     {
-        var client = new UdpClientRx(ModbusRxMasterFixture.Port);
-        using var slave = ModbusUdpSlave.CreateUdp(1, client);
-        var handle = new AutoResetEvent(false);
+        // Arrange
+        var port = await GetAvailablePortAsync();
+        var client = new UdpClientRx(port);
+        var slave = ModbusUdpSlave.CreateUdp(1, client);
+        RegisterDisposable(slave);
+        RegisterDisposable(client);
 
-        var backgroundThread = new Thread(async (_) =>
-        {
-            handle.Set();
-            await slave.ListenAsync();
-        })
-        {
-            IsBackground = true
-        };
-        backgroundThread.Start();
+        var slaveStarted = false;
 
-        handle.WaitOne();
-        Thread.Sleep(100);
+        // Act
+        var backgroundTask = Task.Run(async () =>
+        {
+            try
+            {
+                slaveStarted = true;
+                await slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when disposed
+            }
+        });
+
+        // Wait for slave to start
+        await WaitForConditionAsync(() => slaveStarted, TimeSpan.FromSeconds(2));
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
+
+        // Assert - Test passes if no exceptions are thrown
+        Assert.True(slaveStarted);
     }
 
     /// <summary>
@@ -48,35 +67,52 @@ public class ModbusRxUdpSlaveFixture
     [Fact]
     public async Task ModbusUdpSlave_NotBound()
     {
+        // Arrange
         var client = new UdpClientRx();
         ModbusSlave slave = ModbusUdpSlave.CreateUdp(1, client);
+        RegisterDisposable(slave);
+        RegisterDisposable(client);
+
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await slave.ListenAsync());
     }
 
     /// <summary>
     /// Modbuses the UDP slave multiple masters.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ModbusUdpSlave_MultipleMasters()
+    public async Task ModbusUdpSlave_MultipleMasters()
     {
+        // Arrange
+        var port = await GetAvailablePortAsync();
         var randomNumberGenerator = new Random();
         var master1Complete = false;
         var master2Complete = false;
+
         var masterClient1 = new UdpClientRx();
-        masterClient1.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
+        var endPoint = new System.Net.IPEndPoint(ModbusRxMasterFixture.TcpHost, port);
+        masterClient1.Connect(endPoint);
         var master1 = ModbusIpMaster.CreateIp(masterClient1);
+        RegisterDisposable(master1);
+        RegisterDisposable(masterClient1);
 
         var masterClient2 = new UdpClientRx();
-        masterClient2.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
+        masterClient2.Connect(endPoint);
         var master2 = ModbusIpMaster.CreateIp(masterClient2);
+        RegisterDisposable(master2);
+        RegisterDisposable(masterClient2);
 
-        var slaveClient = CreateAndStartUdpSlave(ModbusRxMasterFixture.Port, DataStoreFactory.CreateTestDataStore());
+        var slaveClient = await CreateAndStartUdpSlaveAsync(port, DataStoreFactory.CreateTestDataStore());
+        RegisterDisposable(slaveClient);
 
-        var master1Thread = new Thread(async () =>
+        // Act
+        var master1Task = Task.Run(async () =>
         {
             for (var i = 0; i < 5; i++)
             {
-                Thread.Sleep(randomNumberGenerator.Next(1000));
+                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(randomNumberGenerator.Next(1000)));
+                await Task.Delay(delay, CancellationToken);
                 Debug.WriteLine("Read from master 1");
                 Assert.Equal(new ushort[] { 2, 3, 4, 5, 6 }, await master1.ReadHoldingRegistersAsync(1, 5));
             }
@@ -84,11 +120,12 @@ public class ModbusRxUdpSlaveFixture
             master1Complete = true;
         });
 
-        var master2Thread = new Thread(async () =>
+        var master2Task = Task.Run(async () =>
         {
             for (var i = 0; i < 5; i++)
             {
-                Thread.Sleep(randomNumberGenerator.Next(1000));
+                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(randomNumberGenerator.Next(1000)));
+                await Task.Delay(delay, CancellationToken);
                 Debug.WriteLine("Read from master 2");
                 Assert.Equal(new ushort[] { 3, 4, 5, 6, 7 }, await master2.ReadHoldingRegistersAsync(2, 5));
             }
@@ -96,46 +133,45 @@ public class ModbusRxUdpSlaveFixture
             master2Complete = true;
         });
 
-        master1Thread.Start();
-        master2Thread.Start();
+        await Task.WhenAll(master1Task, master2Task);
 
-        while (!master1Complete || !master2Complete)
-        {
-            Thread.Sleep(200);
-        }
-
-        slaveClient.Close();
-        masterClient1.Close();
-        masterClient2.Close();
+        // Assert
+        Assert.True(master1Complete);
+        Assert.True(master2Complete);
     }
 
     /// <summary>
     /// Modbuses the UDP slave multi threaded.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public void ModbusUdpSlave_MultiThreaded()
+    public async Task ModbusUdpSlave_MultiThreaded()
     {
+        // Arrange
+        var port = await GetAvailablePortAsync();
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
         dataStore.CoilDiscretes.Add(false);
 
-        using var slave = CreateAndStartUdpSlave(ModbusRxMasterFixture.Port, dataStore);
-        var workerThread1 = new Thread(ReadThread);
-        var workerThread2 = new Thread(ReadThread);
-        workerThread1.Start();
-        workerThread2.Start();
+        var slave = await CreateAndStartUdpSlaveAsync(port, dataStore);
+        RegisterDisposable(slave);
 
-        workerThread1.Join();
-        workerThread2.Join();
+        // Act
+        var workerTask1 = ReadThreadAsync(port);
+        var workerTask2 = ReadThreadAsync(port);
+
+        await Task.WhenAll(workerTask1, workerTask2);
     }
 
     /// <summary>
-    /// Reads the thread.
+    /// Reads from the specified port asynchronously.
     /// </summary>
-    /// <param name="state">The state.</param>
-    private static async void ReadThread(object? state)
+    /// <param name="port">The port to connect to.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    private async Task ReadThreadAsync(int port)
     {
         var masterClient = new UdpClientRx();
-        masterClient.Connect(ModbusRxMasterFixture.DefaultModbusIPEndPoint);
+        var endPoint = new System.Net.IPEndPoint(ModbusRxMasterFixture.TcpHost, port);
+        masterClient.Connect(endPoint);
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
@@ -145,23 +181,43 @@ public class ModbusRxUdpSlaveFixture
             var coils = await master.ReadCoilsAsync(1, 1);
             Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
-            Thread.Sleep(random.Next(100));
+            
+            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(random.Next(100)));
+            await Task.Delay(delay, CancellationToken);
         }
     }
 
     /// <summary>
-    /// Creates the and start UDP slave.
+    /// Creates and starts a UDP slave asynchronously.
     /// </summary>
-    /// <param name="port">The port.</param>
-    /// <param name="dataStore">The data store.</param>
-    /// <returns>A UdpClientRx.</returns>
-    private static UdpClientRx CreateAndStartUdpSlave(int port, DataStore dataStore)
+    /// <param name="port">The port to listen on.</param>
+    /// <param name="dataStore">The data store to use.</param>
+    /// <returns>The UDP client used by the slave.</returns>
+    private async Task<UdpClientRx> CreateAndStartUdpSlaveAsync(int port, DataStore dataStore)
     {
         var slaveClient = new UdpClientRx(port);
         ModbusSlave slave = ModbusUdpSlave.CreateUdp(slaveClient);
         slave.DataStore = dataStore;
-        var slaveThread = new Thread(async () => await slave.ListenAsync());
-        slaveThread.Start();
+        RegisterDisposable(slave);
+
+        var slaveTask = Task.Run(async () =>
+        {
+            try
+            {
+                await slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when disposed
+            }
+        });
+
+        // Give the slave time to start
+        await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
 
         return slaveClient;
     }

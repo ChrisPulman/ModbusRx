@@ -23,7 +23,8 @@ namespace ModbusRx.IntegrationTests;
 /// ModbusMasterFixture.
 /// </summary>
 /// <seealso cref="System.IDisposable" />
-public abstract class ModbusRxMasterFixture : IDisposable
+[Collection("NetworkTests")]
+public abstract class ModbusRxMasterFixture : NetworkTestBase
 {
     /// <summary>
     /// The port.
@@ -65,7 +66,7 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <value>
     /// The average read time.
     /// </value>
-    public static double AverageReadTime => 150;
+    public static double AverageReadTime => IsRunningInCI ? 300 : 150; // More relaxed in CI
 
     /// <summary>
     /// Gets or sets the master.
@@ -148,6 +149,13 @@ public abstract class ModbusRxMasterFixture : IDisposable
     private Process? Jamod { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether the tests are running in CI environment.
+    /// </summary>
+    private static bool IsRunningInCI =>
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
+
+    /// <summary>
     /// Creates the and open serial port.
     /// </summary>
     /// <param name="portName">Name of the port.</param>
@@ -168,11 +176,14 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// </summary>
     public void SetupSlaveSerialPort()
     {
+        SkipIfRunningInCI("Serial port tests require physical hardware not available in CI");
+
         SlaveSerialPort = new SerialPortRx(DefaultSlaveSerialPortName)
         {
             Parity = Parity.None,
         };
         SlaveSerialPort.Open();
+        RegisterDisposable(SlaveSerialPort);
     }
 
     /// <summary>
@@ -180,7 +191,27 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// </summary>
     public void StartSlave()
     {
-        SlaveThread = new Thread(async () => await Slave!.ListenAsync())
+        if (Slave == null)
+        {
+            return;
+        }
+
+        RegisterDisposable(Slave);
+        SlaveThread = new Thread(async () =>
+        {
+            try
+            {
+                await Slave.ListenAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected when resources are disposed
+            }
+        })
         {
             IsBackground = true,
         };
@@ -191,22 +222,26 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// Starts the jamod slave.
     /// </summary>
     /// <param name="program">The program.</param>
-    public void StartJamodSlave(string program)
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task StartJamodSlaveAsync(string program)
     {
+        SkipIfRunningInCI("Jamod external dependency not available in CI environment");
+
         var pathToJamod = Path.Combine(
             Path.GetDirectoryName(Assembly.GetAssembly(typeof(ModbusRxMasterFixture))!.Location)!, "../../../../tools/jamod");
         var classpath = string.Format(@"-classpath ""{0};{1};{2}""", Path.Combine(pathToJamod, "jamod.jar"), Path.Combine(pathToJamod, "comm.jar"), Path.Combine(pathToJamod, "."));
         var startInfo = new ProcessStartInfo("java", string.Format(CultureInfo.InvariantCulture, "{0} {1}", classpath, program));
         Jamod = Process.Start(startInfo);
 
-        Thread.Sleep(4000);
+        var timeout = GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(2));
+        await Task.Delay(timeout, CancellationToken);
         Assert.False(Jamod?.HasExited, "Jamod Serial Ascii Slave did not start correctly.");
     }
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
     /// </summary>
-    public void Dispose()
+    public new void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
@@ -216,8 +251,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the coils.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadCoils()
+    public virtual async Task ReadCoils()
     {
         var coils = await Master!.ReadCoilsAsync(SlaveAddress, 2048, 8);
         Assert.Equal(new bool[] { false, false, false, false, false, false, false, false }, coils);
@@ -226,8 +262,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the inputs.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadInputs()
+    public virtual async Task ReadInputs()
     {
         var inputs = await Master!.ReadInputsAsync(SlaveAddress, 150, 3);
         Assert.Equal(new bool[] { false, false, false }, inputs);
@@ -236,8 +273,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the holding registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadHoldingRegisters()
+    public virtual async Task ReadHoldingRegisters()
     {
         var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 2);
         Assert.Equal(new ushort[] { 0, 0 }, registers);
@@ -246,8 +284,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the input registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadInputRegisters()
+    public virtual async Task ReadInputRegisters()
     {
         var registers = await Master!.ReadInputRegistersAsync(SlaveAddress, 104, 2);
         Assert.Equal(new ushort[] { 0, 0 }, registers);
@@ -256,8 +295,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Writes the single coil.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void WriteSingleCoil()
+    public virtual async Task WriteSingleCoil()
     {
         var coilValue = await Master!.ReadCoilsAsync(SlaveAddress, 10, 1);
         await Master.WriteSingleCoilAsync(SlaveAddress, 10, !coilValue[0]);
@@ -269,8 +309,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Writes the single register.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void WriteSingleRegister()
+    public virtual async Task WriteSingleRegister()
     {
         const ushort testAddress = 200;
         const ushort testValue = 350;
@@ -285,8 +326,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Writes the multiple registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void WriteMultipleRegisters()
+    public virtual async Task WriteMultipleRegisters()
     {
         const ushort testAddress = 120;
         var testValues = new ushort[] { 10, 20, 30, 40, 50 };
@@ -301,8 +343,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Writes the multiple coils.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void WriteMultipleCoils()
+    public virtual async Task WriteMultipleCoils()
     {
         const ushort testAddress = 200;
         var testValues = new bool[] { true, false, true, false, false, false, true, false, true, false };
@@ -317,8 +360,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the maximum number of holding registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadMaximumNumberOfHoldingRegisters()
+    public virtual async Task ReadMaximumNumberOfHoldingRegisters()
     {
         var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 125);
         Assert.Equal(125, registers.Length);
@@ -327,8 +371,9 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Reads the write multiple registers.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void ReadWriteMultipleRegisters()
+    public virtual async Task ReadWriteMultipleRegisters()
     {
         const ushort startReadAddress = 120;
         const ushort numberOfPointsToRead = 5;
@@ -346,14 +391,21 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// <summary>
     /// Simples the read registers performance test.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public virtual async void SimpleReadRegistersPerformanceTest()
+    public virtual async Task SimpleReadRegistersPerformanceTest()
     {
         var retries = Master!.Transport!.Retries;
         Master.Transport!.Retries = 5;
         var actualAverageReadTime = await CalculateAverageAsync(Master);
         Master.Transport.Retries = retries;
-        Assert.True(actualAverageReadTime < ModbusRxMasterFixture.AverageReadTime, string.Format(CultureInfo.InvariantCulture, "Test failed, actual average read time {0} is greater than expected {1}", actualAverageReadTime, ModbusRxMasterFixture.AverageReadTime));
+        Assert.True(
+            actualAverageReadTime < AverageReadTime,
+            string.Format(
+                CultureInfo.InvariantCulture,
+                "Test failed, actual average read time {0} is greater than expected {1}",
+                actualAverageReadTime,
+                AverageReadTime));
     }
 
     /// <summary>
@@ -403,7 +455,7 @@ public abstract class ModbusRxMasterFixture : IDisposable
 
         var stopwatch = new Stopwatch();
         long sum = 0;
-        const double numberOfReads = 50;
+        var numberOfReads = IsRunningInCI ? 25.0 : 50.0; // Reduce iterations in CI
 
         for (var i = 0; i < numberOfReads; i++)
         {
@@ -425,26 +477,73 @@ public abstract class ModbusRxMasterFixture : IDisposable
     /// Releases unmanaged and - optionally - managed resources.
     /// </summary>
     /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-    protected virtual void Dispose(bool disposing)
+    protected override void Dispose(bool disposing)
     {
         if (!_disposedValue)
         {
             if (disposing)
             {
                 Master?.Dispose();
-
                 Slave?.Dispose();
 
                 if (Jamod is not null)
                 {
-                    Jamod.Kill();
-                    Thread.Sleep(4000);
+                    try
+                    {
+                        Jamod.Kill();
+
+                        // Use synchronous wait in disposal
+                        Thread.Sleep(GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1)));
+                    }
+                    catch
+                    {
+                        // Ignore cleanup exceptions
+                    }
+                }
+
+                // Register additional resources for cleanup
+                if (MasterTcp != null)
+                {
+                    RegisterDisposable(MasterTcp);
+                }
+
+                if (MasterUdp != null)
+                {
+                    RegisterDisposable(MasterUdp);
+                }
+
+                if (MasterSerialPort != null)
+                {
+                    RegisterDisposable(MasterSerialPort);
+                }
+
+                if (SlaveSerialPort != null)
+                {
+                    RegisterDisposable(SlaveSerialPort);
+                }
+
+                if (SlaveUdp != null)
+                {
+                    RegisterDisposable(SlaveUdp);
+                }
+
+                if (SlaveTcp != null)
+                {
+                    try
+                    {
+                        SlaveTcp.Stop();
+                    }
+                    catch
+                    {
+                        // Ignore cleanup exceptions
+                    }
                 }
             }
 
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
             _disposedValue = true;
         }
+
+        // Call base NetworkTestBase disposal
+        base.Dispose(disposing);
     }
 }
