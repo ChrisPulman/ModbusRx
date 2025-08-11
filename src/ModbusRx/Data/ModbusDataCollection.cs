@@ -48,7 +48,7 @@ public class ModbusDataCollection<TData> : Collection<TData>
     /// </summary>
     /// <param name="data">The data.</param>
     public ModbusDataCollection(IList<TData> data)
-        : base(AddDefault(data?.IsReadOnly == true ? new List<TData>(data) : data!))
+        : base(AddDefault(data?.IsReadOnly == true ? [.. data] : data!))
     {
         if (!typeof(TData).Equals(typeof(bool)) && !typeof(TData).Equals(typeof(ushort)))
         {

@@ -26,7 +26,7 @@ public class CustomReadHoldingRegistersResponse : IModbusMessage
     /// <value>
     /// The data.
     /// </value>
-    public ushort[] Data => _data!.ToArray();
+    public ushort[] Data => [.. _data!];
 
     /// <summary>
     /// Gets composition of the slave address and protocol data unit.
@@ -41,7 +41,7 @@ public class CustomReadHoldingRegistersResponse : IModbusMessage
             };
             frame.AddRange(ProtocolDataUnit);
 
-            return frame.ToArray();
+            return [.. frame];
         }
     }
 
@@ -59,7 +59,7 @@ public class CustomReadHoldingRegistersResponse : IModbusMessage
             };
             pdu.AddRange(_data!.NetworkBytes);
 
-            return pdu.ToArray();
+            return [.. pdu];
         }
     }
 

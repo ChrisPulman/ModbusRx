@@ -42,7 +42,7 @@ public class RegisterCollection : Collection<ushort>, IDataCollection
     /// </summary>
     /// <param name="registers">List for register collection.</param>
     public RegisterCollection(IList<ushort> registers)
-        : base(registers?.IsReadOnly == true ? new List<ushort>(registers) : registers!)
+        : base(registers?.IsReadOnly == true ? [.. registers] : registers!)
     {
     }
 

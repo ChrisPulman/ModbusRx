@@ -226,7 +226,7 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     private bool[] PerformReadDiscretes(ReadCoilsInputsRequest request)
     {
         var response = Transport?.UnicastMessage<ReadCoilsInputsResponse>(request);
-        return response!.Data.Take(request.NumberOfPoints).ToArray();
+        return [.. response!.Data.Take(request.NumberOfPoints)];
     }
 
 #pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
@@ -237,14 +237,14 @@ public abstract class ModbusMaster : ModbusDevice, IModbusMaster
     {
         var response = Transport?.UnicastMessage<ReadHoldingInputRegistersResponse>(request);
 
-        return response!.Data.Take(request.NumberOfPoints).ToArray();
+        return [.. response!.Data.Take(request.NumberOfPoints)];
     }
 
     private ushort[] PerformReadRegisters(ReadWriteMultipleRegistersRequest request)
     {
         var response = Transport?.UnicastMessage<ReadHoldingInputRegistersResponse>(request);
 
-        return response!.Data.Take(request.ReadRequest!.NumberOfPoints).ToArray();
+        return [.. response!.Data.Take(request.ReadRequest!.NumberOfPoints)];
     }
 
     private Task<ushort[]> PerformReadRegistersAsync(ReadHoldingInputRegistersRequest request) =>

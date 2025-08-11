@@ -14,7 +14,7 @@ namespace ModbusRx.IntegrationTests;
 /// </summary>
 public abstract class NetworkTestBase : IDisposable
 {
-    private readonly List<IDisposable> _disposables = new();
+    private readonly List<IDisposable> _disposables = [];
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private static readonly SemaphoreSlim PortSemaphore = new(1, 1);
     private static int _currentPortBase = 15000; // Start high to avoid conflicts
@@ -112,19 +112,6 @@ public abstract class NetworkTestBase : IDisposable
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Skips the test if running in CI environment to avoid network connectivity issues.
-    /// </summary>
-    /// <param name="reason">The reason for skipping (optional).</param>
-    [Obsolete("Use Skip.IfNot(!IsRunningInCI, reason) with [SkippableFact] instead")]
-    protected static void SkipIfRunningInCI(string reason = "Live network tests are not supported in CI environments")
-    {
-        if (IsRunningInCI)
-        {
-            throw new Xunit.SkipException(reason);
-        }
     }
 
     /// <summary>

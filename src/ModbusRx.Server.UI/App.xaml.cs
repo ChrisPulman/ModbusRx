@@ -13,9 +13,6 @@ public partial class App
     /// <summary>
     /// Initializes a new instance of the <see cref="App"/> class.
     /// </summary>
-    public App()
-    {
-        // Setup ReactiveUI logging
-        Locator.CurrentMutable.RegisterConstant(new DebugLogger(), typeof(ILogger));
-    }
+    public App() =>
+        Locator.CurrentMutable.RegisterConstant<ILogger>(new DebugLogger());
 }

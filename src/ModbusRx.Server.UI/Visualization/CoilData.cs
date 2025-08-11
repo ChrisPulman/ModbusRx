@@ -15,6 +15,12 @@ public partial class CoilData : ReactiveObject
     private bool _value;
 
     /// <summary>
+    /// Gets or sets a value indicating whether this coil can be edited.
+    /// </summary>
+    [Reactive]
+    private bool _isEditable = true;
+
+    /// <summary>
     /// Gets or sets the coil address.
     /// </summary>
     public ushort Address { get; set; }
@@ -23,9 +29,4 @@ public partial class CoilData : ReactiveObject
     /// Gets the display representation of the value.
     /// </summary>
     public string DisplayValue => Value ? "TRUE" : "FALSE";
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this coil can be edited.
-    /// </summary>
-    public bool IsEditable { get; set; } = true;
 }

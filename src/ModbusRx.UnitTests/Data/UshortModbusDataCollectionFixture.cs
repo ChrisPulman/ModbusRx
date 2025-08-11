@@ -32,7 +32,7 @@ public class UshortModbusDataCollectionFixture : ModbusDataCollectionFixture<ush
     /// </summary>
     /// <returns>A ushort.</returns>
     protected override ushort[] GetArray() =>
-        new ushort[] { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+        [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     /// <summary>
     /// Gets the non existent element.

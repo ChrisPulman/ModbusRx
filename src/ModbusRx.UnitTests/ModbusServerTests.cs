@@ -361,12 +361,9 @@ public class ModbusServerTests
     /// </summary>
     /// <param name="normalTimeout">Normal timeout for local testing.</param>
     /// <returns>Appropriate timeout for the environment.</returns>
-    private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout)
-    {
-        return IsRunningInCI ?
+    private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
             TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5) :
             normalTimeout;
-    }
 
     private static int GetAvailablePort()
     {

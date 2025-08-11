@@ -9,39 +9,26 @@ namespace ModbusRx.Server.UI.Services;
 /// <summary>
 /// Service for managing Modbus client configurations.
 /// </summary>
-public class ConfigurationService
+/// <remarks>
+/// Initializes a new instance of the <see cref="ConfigurationService"/> class.
+/// </remarks>
+/// <param name="context">The database context.</param>
+public class ConfigurationService(ModbusServerContext context)
 {
-    private readonly ModbusServerContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConfigurationService"/> class.
-    /// </summary>
-    /// <param name="context">The database context.</param>
-    public ConfigurationService(ModbusServerContext context)
-    {
-        _context = context;
-    }
-
     /// <summary>
     /// Gets all client configurations.
     /// </summary>
     /// <returns>A list of client configurations.</returns>
-    public async Task<List<ModbusClientConfiguration>> GetClientConfigurationsAsync()
-    {
-        return await _context.ClientConfigurations
+    public async Task<List<ModbusClientConfiguration>> GetClientConfigurationsAsync() => await context.ClientConfigurations
             .OrderBy(c => c.Name)
             .ToListAsync();
-    }
 
     /// <summary>
     /// Gets a client configuration by ID.
     /// </summary>
     /// <param name="id">The configuration ID.</param>
     /// <returns>The client configuration or null if not found.</returns>
-    public async Task<ModbusClientConfiguration?> GetClientConfigurationAsync(int id)
-    {
-        return await _context.ClientConfigurations.FindAsync(id);
-    }
+    public async Task<ModbusClientConfiguration?> GetClientConfigurationAsync(int id) => await context.ClientConfigurations.FindAsync(id);
 
     /// <summary>
     /// Saves a client configuration.
@@ -60,14 +47,14 @@ public class ConfigurationService
         if (configuration.Id == 0)
         {
             configuration.CreatedAt = DateTime.UtcNow;
-            _context.ClientConfigurations.Add(configuration);
+            context.ClientConfigurations.Add(configuration);
         }
         else
         {
-            _context.ClientConfigurations.Update(configuration);
+            context.ClientConfigurations.Update(configuration);
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return configuration;
     }
 
@@ -78,14 +65,14 @@ public class ConfigurationService
     /// <returns>True if deleted, false if not found.</returns>
     public async Task<bool> DeleteClientConfigurationAsync(int id)
     {
-        var configuration = await _context.ClientConfigurations.FindAsync(id);
+        var configuration = await context.ClientConfigurations.FindAsync(id);
         if (configuration == null)
         {
             return false;
         }
 
-        _context.ClientConfigurations.Remove(configuration);
-        await _context.SaveChangesAsync();
+        context.ClientConfigurations.Remove(configuration);
+        await context.SaveChangesAsync();
         return true;
     }
 
@@ -95,12 +82,12 @@ public class ConfigurationService
     /// <returns>The server configuration.</returns>
     public async Task<ServerConfiguration> GetServerConfigurationAsync()
     {
-        var config = await _context.ServerConfigurations.FirstOrDefaultAsync();
+        var config = await context.ServerConfigurations.FirstOrDefaultAsync();
         if (config == null)
         {
             config = new ServerConfiguration { Id = 1 };
-            _context.ServerConfigurations.Add(config);
-            await _context.SaveChangesAsync();
+            context.ServerConfigurations.Add(config);
+            await context.SaveChangesAsync();
         }
 
         return config;
@@ -119,8 +106,8 @@ public class ConfigurationService
         }
 
         configuration.ModifiedAt = DateTime.UtcNow;
-        _context.ServerConfigurations.Update(configuration);
-        await _context.SaveChangesAsync();
+        context.ServerConfigurations.Update(configuration);
+        await context.SaveChangesAsync();
         return configuration;
     }
 
@@ -128,13 +115,10 @@ public class ConfigurationService
     /// Gets enabled client configurations.
     /// </summary>
     /// <returns>A list of enabled client configurations.</returns>
-    public async Task<List<ModbusClientConfiguration>> GetEnabledClientConfigurationsAsync()
-    {
-        return await _context.ClientConfigurations
+    public async Task<List<ModbusClientConfiguration>> GetEnabledClientConfigurationsAsync() => await context.ClientConfigurations
             .Where(c => c.IsEnabled)
             .OrderBy(c => c.Name)
             .ToListAsync();
-    }
 
     /// <summary>
     /// Updates the enabled status of a client configuration.
@@ -144,7 +128,7 @@ public class ConfigurationService
     /// <returns>True if updated, false if not found.</returns>
     public async Task<bool> UpdateClientEnabledStatusAsync(int id, bool enabled)
     {
-        var configuration = await _context.ClientConfigurations.FindAsync(id);
+        var configuration = await context.ClientConfigurations.FindAsync(id);
         if (configuration == null)
         {
             return false;
@@ -152,7 +136,7 @@ public class ConfigurationService
 
         configuration.IsEnabled = enabled;
         configuration.ModifiedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return true;
     }
 }

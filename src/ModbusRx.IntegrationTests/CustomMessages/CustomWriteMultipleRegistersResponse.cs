@@ -27,7 +27,7 @@ public class CustomWriteMultipleRegistersResponse : IModbusMessage
             };
             frame.AddRange(ProtocolDataUnit);
 
-            return frame.ToArray();
+            return [.. frame];
         }
     }
 
@@ -45,7 +45,7 @@ public class CustomWriteMultipleRegistersResponse : IModbusMessage
             pdu.AddRange(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)StartAddress)));
             pdu.AddRange(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)NumberOfPoints)));
 
-            return pdu.ToArray();
+            return [.. pdu];
         }
     }
 

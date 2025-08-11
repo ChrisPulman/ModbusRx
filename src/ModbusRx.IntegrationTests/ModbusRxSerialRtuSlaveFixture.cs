@@ -68,5 +68,6 @@ public class ModbusRxSerialRtuSlaveFixture : NetworkTestBase
         // When SERIAL symbol is not defined, skip with explanation
         Skip.If(true, "SERIAL conditional compilation symbol not defined");
 #endif
+        await Task.CompletedTask;
     }
 }

@@ -18,6 +18,13 @@ namespace ModbusRx.UnitTests;
 public class SimulationDataProviderTests
 {
     /// <summary>
+    /// Gets a value indicating whether the tests are running in CI environment.
+    /// </summary>
+    private static bool IsRunningInCI =>
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
+
+    /// <summary>
     /// Tests that SimulationDataProvider can be created and disposed.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -184,7 +191,11 @@ public class SimulationDataProviderTests
 
         // Act
         provider.Start(dataStore, TimeSpan.FromMilliseconds(50), SimulationType.Random);
-        Thread.Sleep(200); // Let simulation run
+
+        // Wait long enough for simulation to execute at least once
+        // Simulation uses Observable.Interval so first execution happens after the interval
+        var waitTime = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(300)); // Wait much longer than 50ms interval
+        Thread.Sleep(waitTime);
         provider.Stop();
 
         var finalValue = dataStore.HoldingRegisters[1];
@@ -206,11 +217,14 @@ public class SimulationDataProviderTests
 
         // Act
         provider.Start(dataStore1, TimeSpan.FromMilliseconds(50), SimulationType.CountingUp);
-        Thread.Sleep(100);
+
+        // Wait long enough for simulation to execute at least once
+        var waitTime = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
+        Thread.Sleep(waitTime);
         provider.Stop();
 
         provider.Start(dataStore2, TimeSpan.FromMilliseconds(50), SimulationType.Random);
-        Thread.Sleep(100);
+        Thread.Sleep(waitTime);
         provider.Stop();
 
         // Assert
@@ -219,4 +233,13 @@ public class SimulationDataProviderTests
 
         Assert.False(values1.SequenceEqual(values2));
     }
+
+    /// <summary>
+    /// Gets an appropriate timeout based on the environment.
+    /// </summary>
+    /// <param name="normalTimeout">Normal timeout for local testing.</param>
+    /// <returns>Appropriate timeout for the environment.</returns>
+    private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
+            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.6) : // Less aggressive reduction for simulation tests
+            normalTimeout;
 }

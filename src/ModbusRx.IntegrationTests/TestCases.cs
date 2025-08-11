@@ -50,7 +50,7 @@ internal static class TestCases
     /// </summary>
     public static async Task TcpAsync()
     {
-        var slaveClient = new TcpListener(new IPAddress(new byte[] { 127, 0, 0, 1 }), 502);
+        var slaveClient = new TcpListener(new IPAddress([127, 0, 0, 1]), 502);
         using var slave = ModbusTcpSlave.CreateTcp((byte)1, slaveClient);
         StartSlave(slave);
 
@@ -72,7 +72,7 @@ internal static class TestCases
         StartSlave(slave);
 
         var masterClient = new UdpClientRx();
-        var endPoint = new IPEndPoint(new IPAddress(new byte[] { 127, 0, 0, 1 }), 502);
+        var endPoint = new IPEndPoint(new IPAddress([127, 0, 0, 1]), 502);
         masterClient.Connect(endPoint);
 
         using var master = ModbusIpMaster.CreateIp(masterClient);

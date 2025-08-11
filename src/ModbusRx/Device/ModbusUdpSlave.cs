@@ -58,7 +58,7 @@ public sealed class ModbusUdpSlave : ModbusSlave
                 Debug.WriteLine($"Read Frame completed {frame.Length} bytes");
                 Debug.WriteLine($"RX: {string.Join(", ", frame)}");
 
-                var request = ModbusMessageFactory.CreateModbusRequest(frame.Slice(6, frame.Length - 6).ToArray());
+                var request = ModbusMessageFactory.CreateModbusRequest([.. frame.Slice(6, frame.Length - 6)]);
                 request.TransactionId = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(frame, 0));
 
                 // perform action and build response

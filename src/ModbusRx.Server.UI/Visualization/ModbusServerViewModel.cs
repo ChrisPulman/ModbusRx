@@ -147,21 +147,6 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> RemoveClientCommand { get; private set; } = null!;
 
     /// <summary>
-    /// Gets the save configuration command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> SaveConfigurationCommand { get; private set; } = null!;
-
-    /// <summary>
-    /// Gets the load configuration command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> LoadConfigurationCommand { get; private set; } = null!;
-
-    /// <summary>
-    /// Gets the exit application command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> ExitApplicationCommand { get; private set; } = null!;
-
-    /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
     /// </summary>
     public void Dispose()
@@ -185,8 +170,6 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
                 _server?.Dispose();
             }
 
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
             _disposedValue = true;
         }
     }
@@ -235,9 +218,6 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         ClearDataCommand = ReactiveCommand.Create(ClearData);
         AddClientCommand = ReactiveCommand.CreateFromTask(AddClientAsync, canAddClient);
         RemoveClientCommand = ReactiveCommand.CreateFromTask(RemoveClientAsync, hasSelectedClient);
-        SaveConfigurationCommand = ReactiveCommand.CreateFromTask(SaveConfigurationAsync);
-        LoadConfigurationCommand = ReactiveCommand.CreateFromTask(LoadConfigurationAsync);
-        ExitApplicationCommand = ReactiveCommand.Create(ExitApplication);
 
         // Subscribe to command results
         StartServerCommand.Subscribe(_ => StatusMessage = "Server started successfully");
@@ -257,9 +237,6 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         _disposables.Add(ClearDataCommand);
         _disposables.Add(AddClientCommand);
         _disposables.Add(RemoveClientCommand);
-        _disposables.Add(SaveConfigurationCommand);
-        _disposables.Add(LoadConfigurationCommand);
-        _disposables.Add(ExitApplicationCommand);
     }
 
     private async void InitializeAsync()
@@ -450,6 +427,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    [ReactiveCommand]
     private async Task SaveConfigurationAsync()
     {
         if (ServerConfiguration == null)
@@ -470,6 +448,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    [ReactiveCommand]
     private async Task LoadConfigurationAsync()
     {
         try
@@ -493,6 +472,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    [ReactiveCommand]
     private void ExitApplication()
     {
         try

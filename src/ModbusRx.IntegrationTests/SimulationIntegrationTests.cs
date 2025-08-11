@@ -17,7 +17,7 @@ namespace ModbusRx.IntegrationTests;
 [Collection("SimulationTests")]
 public sealed class SimulationIntegrationTests : IDisposable
 {
-    private readonly List<IDisposable> _disposables = new();
+    private readonly List<IDisposable> _disposables = [];
 
     /// <summary>
     /// Disposes test resources.

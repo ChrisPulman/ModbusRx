@@ -39,7 +39,7 @@ public class RegisterCollectionFixture
     [Fact]
     public void NewRegisterCollectionFromBytes()
     {
-        var col = new RegisterCollection(new byte[] { 0, 1, 0, 2, 0, 3 });
+        var col = new RegisterCollection([0, 1, 0, 2, 0, 3]);
         Assert.NotNull(col);
         Assert.Equal(3, col.Count);
         Assert.Equal(1, col[0]);
@@ -57,7 +57,7 @@ public class RegisterCollectionFixture
         var bytes = col.NetworkBytes;
         Assert.NotNull(bytes);
         Assert.Equal(8, bytes.Length);
-        Assert.Equal(new byte[] { 0, 5, 0, 3, 0, 4, 0, 6 }, bytes);
+        Assert.Equal([0, 5, 0, 3, 0, 4, 0, 6], bytes);
     }
 
     /// <summary>

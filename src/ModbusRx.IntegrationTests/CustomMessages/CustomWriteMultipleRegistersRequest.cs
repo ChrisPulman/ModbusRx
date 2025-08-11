@@ -51,7 +51,7 @@ public class CustomWriteMultipleRegistersRequest : IModbusMessage
             };
             frame.AddRange(ProtocolDataUnit);
 
-            return frame.ToArray();
+            return [.. frame];
         }
     }
 
@@ -71,7 +71,7 @@ public class CustomWriteMultipleRegistersRequest : IModbusMessage
             pdu.Add(ByteCount);
             pdu.AddRange(Data.NetworkBytes);
 
-            return pdu.ToArray();
+            return [.. pdu];
         }
     }
 

@@ -50,7 +50,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <value>
     /// The TCP host.
     /// </value>
-    public static IPAddress TcpHost { get; } = new IPAddress(new byte[] { 127, 0, 0, 1 });
+    public static IPAddress TcpHost { get; } = new IPAddress([127, 0, 0, 1]);
 
     /// <summary>
     /// Gets the default modbus ip end point.
@@ -177,8 +177,6 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// </summary>
     public void SetupSlaveSerialPort()
     {
-        SkipIfRunningInCI("Serial port tests require physical hardware not available in CI");
-
         SlaveSerialPort = new SerialPortRx(DefaultSlaveSerialPortName)
         {
             Parity = Parity.None,
@@ -238,8 +236,6 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task StartJamodSlaveAsync(string program)
     {
-        SkipIfRunningInCI("Jamod external dependency not available in CI environment");
-
         var pathToJamod = Path.Combine(
             Path.GetDirectoryName(Assembly.GetAssembly(typeof(ModbusRxMasterFixture))!.Location)!, "../../../../tools/jamod");
         var classpath = string.Format(@"-classpath ""{0};{1};{2}""", Path.Combine(pathToJamod, "jamod.jar"), Path.Combine(pathToJamod, "comm.jar"), Path.Combine(pathToJamod, "."));
@@ -249,16 +245,6 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
         var timeout = GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(2));
         await Task.Delay(timeout, CancellationToken);
         Assert.False(Jamod?.HasExited, "Jamod Serial Ascii Slave did not start correctly.");
-    }
-
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
-    public new void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -539,7 +525,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
                 }
 
                 // Wait for slave task to complete with timeout
-                if (SlaveTask != null && !SlaveTask.IsCompleted)
+                if (SlaveTask?.IsCompleted == false)
                 {
                     try
                     {

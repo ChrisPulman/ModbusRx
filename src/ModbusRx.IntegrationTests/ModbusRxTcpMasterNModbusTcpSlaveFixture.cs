@@ -18,10 +18,7 @@ public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
     /// <summary>
     /// Initializes a new instance of the <see cref="ModbusRxTcpMasterNModbusTcpSlaveFixture"/> class.
     /// </summary>
-    public ModbusRxTcpMasterNModbusTcpSlaveFixture()
-    {
-        InitializeAsync().GetAwaiter().GetResult();
-    }
+    public ModbusRxTcpMasterNModbusTcpSlaveFixture() => InitializeAsync().GetAwaiter().GetResult();
 
     /// <summary>
     /// Initializes the TCP connections asynchronously with CI-safe port allocation.
@@ -49,15 +46,9 @@ public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
     /// <summary>
     /// Helper class to properly dispose TcpListener.
     /// </summary>
-    private class TcpListenerDisposable : IDisposable
+    private class TcpListenerDisposable(TcpListener listener) : IDisposable
     {
-        private readonly TcpListener _listener;
         private bool _disposed;
-
-        public TcpListenerDisposable(TcpListener listener)
-        {
-            _listener = listener;
-        }
 
         public void Dispose()
         {
@@ -65,7 +56,7 @@ public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
             {
                 try
                 {
-                    _listener?.Stop();
+                    listener?.Stop();
                 }
                 catch
                 {

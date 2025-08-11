@@ -23,7 +23,7 @@ public sealed class ModbusServer : IDisposable
     private readonly ConcurrentDictionary<string, ModbusTcpSlave> _tcpSlaves = new();
     private readonly ConcurrentDictionary<string, ModbusUdpSlave> _udpSlaves = new();
     private readonly BehaviorSubject<bool> _isRunning = new(false);
-    private readonly CompositeDisposable _disposables = new();
+    private readonly CompositeDisposable _disposables = [];
     private readonly Random _random = new();
     private readonly object _lock = new();
 

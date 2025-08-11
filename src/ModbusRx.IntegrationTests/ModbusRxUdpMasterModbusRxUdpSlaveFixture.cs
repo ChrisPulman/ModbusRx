@@ -18,10 +18,7 @@ public class ModbusRxUdpMasterModbusRxUdpSlaveFixture : ModbusRxMasterFixture
     /// <summary>
     /// Initializes a new instance of the <see cref="ModbusRxUdpMasterModbusRxUdpSlaveFixture"/> class.
     /// </summary>
-    public ModbusRxUdpMasterModbusRxUdpSlaveFixture()
-    {
-        InitializeAsync().GetAwaiter().GetResult();
-    }
+    public ModbusRxUdpMasterModbusRxUdpSlaveFixture() => InitializeAsync().GetAwaiter().GetResult();
 
     /// <summary>
     /// Initializes the UDP connections asynchronously with CI-safe port allocation.

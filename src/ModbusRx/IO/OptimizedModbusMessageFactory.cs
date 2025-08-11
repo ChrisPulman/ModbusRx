@@ -214,7 +214,7 @@ public static class OptimizedModbusMessageFactory
             buffer[6] = (byte)byteCount;
 
             // Pack boolean values into bytes
-            var dataIndex = 7;
+            const int dataIndex = 7;
             for (var i = 0; i < values.Length; i++)
             {
                 var byteIndex = dataIndex + (i / 8);

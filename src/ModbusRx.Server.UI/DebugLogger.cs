@@ -35,10 +35,7 @@ internal class DebugLogger : ILogger
     /// <param name="message">The message to log.</param>
     /// <param name="type">The type that generated the message.</param>
     /// <param name="logLevel">The log level.</param>
-    public void Write(string message, Type type, LogLevel logLevel)
-    {
-        Write($"{type.Name}: {message}", logLevel);
-    }
+    public void Write(string message, Type type, LogLevel logLevel) => Write($"{type.Name}: {message}", logLevel);
 
     /// <summary>
     /// Writes an exception with message.
@@ -46,10 +43,7 @@ internal class DebugLogger : ILogger
     /// <param name="exception">The exception to log.</param>
     /// <param name="message">The message to log.</param>
     /// <param name="logLevel">The log level.</param>
-    public void Write(Exception exception, string message, LogLevel logLevel)
-    {
-        Write($"{message} - Exception: {exception}", logLevel);
-    }
+    public void Write(Exception exception, string message, LogLevel logLevel) => Write($"{message} - Exception: {exception}", logLevel);
 
     /// <summary>
     /// Writes an exception with message and type information.
@@ -58,8 +52,5 @@ internal class DebugLogger : ILogger
     /// <param name="message">The message to log.</param>
     /// <param name="type">The type that generated the message.</param>
     /// <param name="logLevel">The log level.</param>
-    public void Write(Exception exception, string message, Type type, LogLevel logLevel)
-    {
-        Write($"{type.Name}: {message} - Exception: {exception}", logLevel);
-    }
+    public void Write(Exception exception, string message, Type type, LogLevel logLevel) => Write($"{type.Name}: {message} - Exception: {exception}", logLevel);
 }

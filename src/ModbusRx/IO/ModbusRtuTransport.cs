@@ -119,7 +119,7 @@ internal class ModbusRtuTransport : ModbusSerialTransport
     {
         var frameStart = Read(ResponseFrameStartLength);
         var frameEnd = Read(ResponseBytesToRead(frameStart));
-        var frame = Enumerable.Concat(frameStart, frameEnd).ToArray();
+        var frame = frameStart.Concat(frameEnd).ToArray();
         Debug.WriteLine($"RX: {string.Join(", ", frame)}");
 
         return CreateResponse<T>(Task.FromResult(frame));
@@ -129,7 +129,7 @@ internal class ModbusRtuTransport : ModbusSerialTransport
     {
         var frameStart = Read(RequestFrameStartLength);
         var frameEnd = Read(RequestBytesToRead(frameStart));
-        var frame = Enumerable.Concat(frameStart, frameEnd).ToArray();
+        var frame = frameStart.Concat(frameEnd).ToArray();
         Debug.WriteLine($"RX: {string.Join(", ", frame)}");
 
         return Task.FromResult(frame);

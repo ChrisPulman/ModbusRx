@@ -32,7 +32,7 @@ public class BoolModbusDataCollectionFixture : ModbusDataCollectionFixture<bool>
     /// </summary>
     /// <returns>A bool.</returns>
     protected override bool[] GetArray() =>
-        new[] { false, false, true, false, false };
+        [false, false, true, false, false];
 
     /// <summary>
     /// Gets the non existent element.

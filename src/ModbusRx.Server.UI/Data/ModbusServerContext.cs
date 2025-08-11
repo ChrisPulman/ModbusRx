@@ -8,17 +8,12 @@ namespace ModbusRx.Server.UI.Data;
 /// <summary>
 /// Entity Framework database context for ModbusRx Server configuration.
 /// </summary>
-public class ModbusServerContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="ModbusServerContext"/> class.
+/// </remarks>
+/// <param name="options">The database context options.</param>
+public class ModbusServerContext(DbContextOptions<ModbusServerContext> options) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ModbusServerContext"/> class.
-    /// </summary>
-    /// <param name="options">The database context options.</param>
-    public ModbusServerContext(DbContextOptions<ModbusServerContext> options)
-        : base(options)
-    {
-    }
-
     /// <summary>
     /// Gets or sets the Modbus client configurations.
     /// </summary>

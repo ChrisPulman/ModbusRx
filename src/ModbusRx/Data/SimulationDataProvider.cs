@@ -21,10 +21,7 @@ public sealed class SimulationDataProvider : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="SimulationDataProvider"/> class.
     /// </summary>
-    public SimulationDataProvider()
-    {
-        _disposables.Add(_isRunning);
-    }
+    public SimulationDataProvider() => _disposables.Add(_isRunning);
 
     /// <summary>
     /// Gets an observable indicating if simulation is running.

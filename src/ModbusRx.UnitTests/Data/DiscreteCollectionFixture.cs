@@ -40,7 +40,7 @@ public class DiscreteCollectionFixture
     public void NetworkBytes()
     {
         var col = new DiscreteCollection(true, true);
-        Assert.Equal(new byte[] { 3 }, col.NetworkBytes);
+        Assert.Equal([3], col.NetworkBytes);
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public class DiscreteCollectionFixture
     public void CreateNewDiscreteCollectionFromBytesParamsOrder()
     {
         var col = new DiscreteCollection(194);
-        Assert.Equal(new bool[] { false, true, false, false, false, false, true, true }, col.ToArray());
+        Assert.Equal([false, true, false, false, false, false, true, true], col.ToArray());
     }
 
     /// <summary>
@@ -117,10 +117,9 @@ public class DiscreteCollectionFixture
     {
         var col = new DiscreteCollection(157, 7);
         Assert.Equal(
-            new bool[]
-            {
+            [
                 true, false, true, true, true, false, false, true, true, true, true, false, false, false, false, false,
-            },
+            ],
             col.ToArray());
     }
 
