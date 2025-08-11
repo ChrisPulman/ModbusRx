@@ -179,8 +179,9 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Reads the response.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void ReadResponse()
+    public async Task ReadResponse()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
         var transport = mock.Object;
@@ -200,8 +201,9 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Reads the response slave exception.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void ReadResponseSlaveException()
+    public async Task ReadResponseSlaveException()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
         var transport = mock.Object;

@@ -221,10 +221,7 @@ public abstract class ModbusTransport : IDisposable
         // message specific validation
         var req = request as IModbusRequest;
 
-        if (req is not null)
-        {
-            req.ValidateResponse(response);
-        }
+        req?.ValidateResponse(response);
 
         OnValidateResponse(request, response);
     }

@@ -30,8 +30,9 @@ public class ModbusSerialTransportFixture
     /// <summary>
     /// Creates the response.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void CreateResponse()
+    public async Task CreateResponse()
     {
         var transport = new ModbusAsciiTransport(StreamResource);
         var expectedResponse = new ReadCoilsInputsResponse(Modbus.ReadCoils, 2, 1, new DiscreteCollection(true, false, false, false, false, false, false, true));
@@ -59,8 +60,9 @@ public class ModbusSerialTransportFixture
     /// <summary>
     /// Creates the response erroneous LRC do not check frame.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
-    public async void CreateResponseErroneousLrcDoNotCheckFrame()
+    public async Task CreateResponseErroneousLrcDoNotCheckFrame()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = false };
         var frame = Task.FromResult(new byte[] { 19, Modbus.ReadCoils, 0, 0, 0, 2, 115 });

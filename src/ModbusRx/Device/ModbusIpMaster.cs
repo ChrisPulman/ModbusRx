@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.CompilerServices;
 using CP.IO.Ports;
 using ModbusRx.IO;
 
@@ -99,7 +100,7 @@ public sealed class ModbusIpMaster : ModbusMaster
     }
 
     /// <summary>
-    ///    Asynchronously reads from 1 to 2000 contiguous coils status.
+    /// Asynchronously reads from 1 to 2000 contiguous coils status.
     /// </summary>
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of coils to read.</param>
@@ -108,7 +109,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         ReadCoilsAsync(Modbus.DefaultIpSlaveUnitId, startAddress, numberOfPoints);
 
     /// <summary>
-    ///    Asynchronously reads from 1 to 2000 contiguous discrete input status.
+    /// Asynchronously reads from 1 to 2000 contiguous discrete input status.
     /// </summary>
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of discrete inputs to read.</param>
@@ -117,7 +118,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         ReadInputsAsync(Modbus.DefaultIpSlaveUnitId, startAddress, numberOfPoints);
 
     /// <summary>
-    ///    Asynchronously reads contiguous block of holding registers.
+    /// Asynchronously reads contiguous block of holding registers.
     /// </summary>
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of holding registers to read.</param>
@@ -126,7 +127,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         ReadHoldingRegistersAsync(Modbus.DefaultIpSlaveUnitId, startAddress, numberOfPoints);
 
     /// <summary>
-    ///    Asynchronously reads contiguous block of input registers.
+    /// Asynchronously reads contiguous block of input registers.
     /// </summary>
     /// <param name="startAddress">Address to begin reading.</param>
     /// <param name="numberOfPoints">Number of holding registers to read.</param>
@@ -135,7 +136,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         ReadInputRegistersAsync(Modbus.DefaultIpSlaveUnitId, startAddress, numberOfPoints);
 
     /// <summary>
-    ///    Asynchronously writes a single coil value.
+    /// Asynchronously writes a single coil value.
     /// </summary>
     /// <param name="coilAddress">Address to write value to.</param>
     /// <param name="value">Value to write.</param>
@@ -144,7 +145,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         WriteSingleCoilAsync(Modbus.DefaultIpSlaveUnitId, coilAddress, value);
 
     /// <summary>
-    ///    Asynchronously writes a single holding register.
+    /// Asynchronously writes a single holding register.
     /// </summary>
     /// <param name="registerAddress">Address to write.</param>
     /// <param name="value">Value to write.</param>
@@ -153,7 +154,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         WriteSingleRegisterAsync(Modbus.DefaultIpSlaveUnitId, registerAddress, value);
 
     /// <summary>
-    ///    Asynchronously writes a block of 1 to 123 contiguous registers.
+    /// Asynchronously writes a block of 1 to 123 contiguous registers.
     /// </summary>
     /// <param name="startAddress">Address to begin writing values.</param>
     /// <param name="data">Values to write.</param>
@@ -162,7 +163,7 @@ public sealed class ModbusIpMaster : ModbusMaster
         WriteMultipleRegistersAsync(Modbus.DefaultIpSlaveUnitId, startAddress, data);
 
     /// <summary>
-    ///    Asynchronously writes a sequence of coils.
+    /// Asynchronously writes a sequence of coils.
     /// </summary>
     /// <param name="startAddress">Address to begin writing values.</param>
     /// <param name="data">Values to write.</param>
@@ -171,8 +172,8 @@ public sealed class ModbusIpMaster : ModbusMaster
         WriteMultipleCoilsAsync(Modbus.DefaultIpSlaveUnitId, startAddress, data);
 
     /// <summary>
-    ///    Asynchronously performs a combination of one read operation and one write operation in a single Modbus transaction.
-    ///    The write operation is performed before the read.
+    /// Asynchronously performs a combination of one read operation and one write operation in a single Modbus transaction.
+    /// The write operation is performed before the read.
     /// </summary>
     /// <param name="startReadAddress">Address to begin reading (Holding registers are addressed starting at 0).</param>
     /// <param name="numberOfPointsToRead">Number of registers to read.</param>

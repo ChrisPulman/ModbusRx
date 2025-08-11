@@ -156,5 +156,5 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// </summary>
     /// <returns>A value of T.</returns>
     protected List<TData> GetList() =>
-        new(GetArray());
+        [.. GetArray()];
 }

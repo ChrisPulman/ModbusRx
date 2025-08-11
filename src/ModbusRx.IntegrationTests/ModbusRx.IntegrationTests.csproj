@@ -1,9 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);xUnit1048;xUnit2012;SA1028;RCS1037;SA1202;SA1204</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ModbusRx\ModbusRx.csproj" />

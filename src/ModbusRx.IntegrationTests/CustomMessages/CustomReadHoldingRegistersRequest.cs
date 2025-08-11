@@ -12,23 +12,15 @@ namespace ModbusRx.IntegrationTests.CustomMessages;
 /// CustomReadHoldingRegistersRequest.
 /// </summary>
 /// <seealso cref="ModbusRx.Message.IModbusMessage" />
-public class CustomReadHoldingRegistersRequest : IModbusMessage
+/// <remarks>
+/// Initializes a new instance of the <see cref="CustomReadHoldingRegistersRequest"/> class.
+/// </remarks>
+/// <param name="functionCode">The function code.</param>
+/// <param name="slaveAddress">The slave address.</param>
+/// <param name="startAddress">The start address.</param>
+/// <param name="numberOfPoints">The number of points.</param>
+public class CustomReadHoldingRegistersRequest(byte functionCode, byte slaveAddress, ushort startAddress, ushort numberOfPoints) : IModbusMessage
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CustomReadHoldingRegistersRequest"/> class.
-    /// </summary>
-    /// <param name="functionCode">The function code.</param>
-    /// <param name="slaveAddress">The slave address.</param>
-    /// <param name="startAddress">The start address.</param>
-    /// <param name="numberOfPoints">The number of points.</param>
-    public CustomReadHoldingRegistersRequest(byte functionCode, byte slaveAddress, ushort startAddress, ushort numberOfPoints)
-    {
-        FunctionCode = functionCode;
-        SlaveAddress = slaveAddress;
-        StartAddress = startAddress;
-        NumberOfPoints = numberOfPoints;
-    }
-
     /// <summary>
     /// Gets composition of the slave address and protocol data unit.
     /// </summary>
@@ -72,12 +64,12 @@ public class CustomReadHoldingRegistersRequest : IModbusMessage
     /// <summary>
     /// Gets or sets the function code tells the server what kind of action to perform.
     /// </summary>
-    public byte FunctionCode { get; set; }
+    public byte FunctionCode { get; set; } = functionCode;
 
     /// <summary>
     /// Gets or sets address of the slave (server).
     /// </summary>
-    public byte SlaveAddress { get; set; }
+    public byte SlaveAddress { get; set; } = slaveAddress;
 
     /// <summary>
     /// Gets or sets the start address.
@@ -85,7 +77,7 @@ public class CustomReadHoldingRegistersRequest : IModbusMessage
     /// <value>
     /// The start address.
     /// </value>
-    public ushort StartAddress { get; set; }
+    public ushort StartAddress { get; set; } = startAddress;
 
     /// <summary>
     /// Gets or sets the number of points.
@@ -93,7 +85,7 @@ public class CustomReadHoldingRegistersRequest : IModbusMessage
     /// <value>
     /// The number of points.
     /// </value>
-    public ushort NumberOfPoints { get; set; }
+    public ushort NumberOfPoints { get; set; } = numberOfPoints;
 
     /// <summary>
     /// Initializes a modbus message from the specified message frame.
