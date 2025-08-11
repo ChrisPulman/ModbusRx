@@ -80,14 +80,30 @@ public class ModbusServerTests
         // Act
         server.SimulationMode = true;
 
-        // Wait for simulation to run - use environment-appropriate timeout
+        // Wait for simulation to run - use environment-appropriate timeout with retries
         var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(600));
-        await Task.Delay(timeout);
+        var maxRetries = IsRunningInCI ? 5 : 2; // More retries in CI
+        var dataContainsNonZero = false;
 
-        var data = server.GetCurrentData();
+        for (var retry = 0; retry < maxRetries && !dataContainsNonZero; retry++)
+        {
+            await Task.Delay(timeout);
+            var data = server.GetCurrentData();
+
+            // Check if any holding registers have non-zero values
+            dataContainsNonZero = data.holdingRegisters.Any(x => x > 0);
+
+            if (!dataContainsNonZero && retry < maxRetries - 1)
+            {
+                // If no data yet, wait a bit more for next retry
+                await Task.Delay(GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200)));
+            }
+        }
 
         // Assert
-        Assert.Contains(data.holdingRegisters, x => x > 0);
+        Assert.True(
+            dataContainsNonZero,
+            $"Simulation should generate non-zero data after {maxRetries} attempts with {timeout.TotalMilliseconds}ms intervals");
 
         // Act
         server.SimulationMode = false;
