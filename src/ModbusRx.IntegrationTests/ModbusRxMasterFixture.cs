@@ -157,13 +157,6 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     private Process? Jamod { get; set; }
 
     /// <summary>
-    /// Gets a value indicating whether the tests are running in CI environment.
-    /// </summary>
-    private static bool IsRunningInCI =>
-        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
-        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
-
-    /// <summary>
     /// Creates the and open serial port.
     /// </summary>
     /// <param name="portName">Name of the port.</param>

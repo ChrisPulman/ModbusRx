@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ModbusRx.Data;
@@ -19,11 +20,11 @@ public class ModbusRxSerialRtuSlaveFixture : NetworkTestBase
     /// Tests the modbus serial rtu slave bonus character verify timeout.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [SkippableFact]
     public async Task ModbusRxSerialRtuSlave_BonusCharacter_VerifyTimeout()
     {
         // Skip this test in CI environments as serial ports are not available
-        SkipIfRunningInCI("Serial port tests require physical hardware not available in CI");
+        Skip.IfNot(!IsRunningInCI, "Serial port tests require physical hardware not available in CI");
 
 #if SERIAL
         var masterPort = ModbusRxMasterFixture.CreateAndOpenSerialPort(ModbusRxMasterFixture.DefaultMasterSerialPortName);
@@ -65,7 +66,7 @@ public class ModbusRxSerialRtuSlaveFixture : NetworkTestBase
         Assert.Equal(new bool[] { false, true }, await master.ReadCoilsAsync(1, 1, 2));
 #else
         // When SERIAL symbol is not defined, skip with explanation
-        throw new SkipException("SERIAL conditional compilation symbol not defined");
+        Skip.If(true, "SERIAL conditional compilation symbol not defined");
 #endif
     }
 }

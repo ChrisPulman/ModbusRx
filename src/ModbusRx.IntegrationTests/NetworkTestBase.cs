@@ -118,21 +118,10 @@ public abstract class NetworkTestBase : IDisposable
     /// Skips the test if running in CI environment to avoid network connectivity issues.
     /// </summary>
     /// <param name="reason">The reason for skipping (optional).</param>
+    [Obsolete("Use Skip.IfNot(!IsRunningInCI, reason) with [SkippableFact] instead")]
     protected static void SkipIfRunningInCI(string reason = "Live network tests are not supported in CI environments")
     {
         if (IsRunningInCI)
-        {
-            throw new Xunit.SkipException(reason);
-        }
-    }
-
-    /// <summary>
-    /// Skips the test if running in GitHub Actions specifically.
-    /// </summary>
-    /// <param name="reason">The reason for skipping (optional).</param>
-    protected static void SkipIfRunningInGitHubActions(string reason = "Live network tests are not supported in GitHub Actions")
-    {
-        if (IsRunningInGitHubActions)
         {
             throw new Xunit.SkipException(reason);
         }

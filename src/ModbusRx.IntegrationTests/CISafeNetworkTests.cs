@@ -19,19 +19,16 @@ public class CISafeNetworkTests : NetworkTestBase
     /// Test that requires live network connectivity - skipped in CI environments.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [SkippableFact]
     public async Task LiveNetworkTest_ShouldConnectToRealDevice()
     {
         // Skip this test if running in CI to avoid failures
-        SkipIfRunningInCI("This test requires a real Modbus device on the network");
+        Skip.IfNot(!IsRunningInCI, "This test requires a real Modbus device on the network");
 
         // This test would only run in local development environments
         var canConnect = await TryConnectAsync("192.168.1.100", 502);
         
-        if (!canConnect)
-        {
-            throw new Xunit.SkipException("No Modbus device found at 192.168.1.100:502");
-        }
+        Skip.IfNot(canConnect, "No Modbus device found at 192.168.1.100:502");
 
         // Proceed with actual device testing
         var client = new TcpClientRx("192.168.1.100", 502);
