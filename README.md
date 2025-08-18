@@ -135,38 +135,75 @@ catch (Exception ex)
 }
 ```
 
-### 2. Reactive TCP Master with Automatic Connection Management
+### 2. Reactive Masters with Automatic Connection Management
+
+#### TCP and UDP
 
 ```csharp
 using ModbusRx.Reactive;
 using System.Reactive.Linq;
 
-// Create a reactive TCP master with automatic connection management
-var masterStream = Create.TcpIpMaster("192.168.1.100", 502);
-
-// Continuously read holding registers with error handling
-var subscription = masterStream
+// Reactive TCP master
+var tcp = Create.TcpIpMaster("192.168.1.100", 502);
+var tcpSub = tcp
     .ReadHoldingRegisters(startAddress: 0, numberOfPoints: 10, interval: 1000)
-    .Retry(3) // Retry up to 3 times on errors
-    .Subscribe(
-        result => 
+    .Subscribe(result =>
+    {
+        if (result.error == null && result.data != null)
         {
-            if (result.error == null)
-            {
-                Console.WriteLine($"Registers: [{string.Join(", ", result.data)}]");
-            }
-            else
-            {
-                Console.WriteLine($"Error: {result.error.Message}");
-            }
-        },
-        error => Console.WriteLine($"Fatal error: {error.Message}"));
+            Console.WriteLine($"TCP: [{string.Join(", ", result.data)}]");
+        }
+    });
 
-// Let it run for 30 seconds
-await Task.Delay(30000);
+// Reactive UDP master
+var udp = Create.UdpIpMaster("192.168.1.101", 502);
+var udpSub = udp
+    .ReadHoldingRegisters(startAddress: 0, numberOfPoints: 10, interval: 1000)
+    .Subscribe(result =>
+    {
+        if (result.error == null && result.data != null)
+        {
+            Console.WriteLine($"UDP: [{string.Join(", ", result.data)}]");
+        }
+    });
+```
 
-// Clean up
-subscription.Dispose();
+#### Reactive Serial RTU/ASCII Masters
+
+```csharp
+using ModbusRx.Reactive;
+using System.IO.Ports;
+using System.Reactive.Linq;
+
+// Reactive Serial RTU master
+var rtu = Create.SerialRtuMaster("COM3", 19200, 8, Parity.None, StopBits.One);
+var rtuSub = rtu
+    .ReadHoldingRegisters(slaveAddress: 1, startAddress: 0, numberOfPoints: 10, interval: 500)
+    .Subscribe(result =>
+    {
+        if (result.error == null && result.data != null)
+        {
+            Console.WriteLine($"RTU: [{string.Join(", ", result.data)}]");
+        }
+    });
+
+
+// Convenience overload (defaults slave 1)
+var rtuQuickSub = rtu
+    .ReadHoldingRegisters(startAddress: 0, numberOfPoints: 5, interval: 1000)
+    .Subscribe();
+
+// Reactive Serial ASCII master
+var ascii = Create.SerialAsciiMaster("COM4", 9600, 7, Parity.Even, StopBits.One);
+var asciiSub = ascii
+    .ReadCoils(slaveAddress: 1, startAddress: 0, numberOfPoints: 8, interval: 1000)
+    .Subscribe(result =>
+    {
+        if (result.error == null && result.data != null)
+        {
+            Console.WriteLine($"ASCII Coils: {string.Join("", result.data.Select(c => c ? "1" : "0"))}");
+        }
+    });
 ```
 
 ### 3. UDP Master Operations
