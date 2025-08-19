@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SerialPortRx" Version="3.1.1" />
+    <PackageReference Include="SerialPortRx" Version="3.1.2" />
     <!-- Explicitly reference the core Rx package for reliability across TFMs -->
     <PackageReference Include="System.Reactive" Version="6.0.1" />
   </ItemGroup>
