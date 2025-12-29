@@ -19,12 +19,21 @@ jobs:
       with:
        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+    - name: Setup .NET (With cache)
+      uses: actions/setup-dotnet@v5.0.1
       with:
         dotnet-version: |
             8.0.x
             9.0.x
+            10.0.x
+        dotnet-quality: 'preview'
+        cache: true
+        cache-dependency-path: |
+            **/Directory.Packages.props
+            **/*.sln
+            **/*.csproj
+            **/global.json
+            **/nuget.config
 
     - name: Add MSBuild to PATH
       uses: glennawatson/setup-msbuild@v1.0.3

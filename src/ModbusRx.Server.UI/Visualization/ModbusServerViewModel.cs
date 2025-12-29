@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using ModbusRx.Data;
 using ModbusRx.Device;
