@@ -8,7 +8,7 @@ namespace ModbusRx.Server.UI.Data;
 /// <summary>
 /// Entity representing server configuration.
 /// </summary>
-public class ServerConfiguration
+public sealed class ServerConfiguration
 {
     /// <summary>
     /// Gets or sets the unique identifier for this configuration.
