@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CrissCross.WPF.UI" Version="2.6.55" />
+    <PackageReference Include="CrissCross.WPF.UI" Version="2.6.60" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
