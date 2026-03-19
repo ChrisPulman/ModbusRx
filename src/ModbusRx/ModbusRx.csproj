@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
-    <PackageReference Include="IndexRange" Version="1.1.0" />
+    <PackageReference Include="IndexRange" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>
