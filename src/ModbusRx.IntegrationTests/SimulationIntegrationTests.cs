@@ -31,7 +31,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// <summary>
     /// Tests that simulation generates realistic sine wave data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_SineWaveGeneration_ShouldBeRealistic()
     {
         // Arrange
@@ -46,19 +46,19 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         // Check that we have a proper sine wave
         Assert.Equal((ushort)amplitude, sineData[0]); // sin(0) = 0, shifted by amplitude
-        Assert.True(sineData[90] > amplitude); // sin(90°) = 1, should be > amplitude
-        Assert.Equal((ushort)amplitude, sineData[180]); // sin(180°) = 0, shifted by amplitude
-        Assert.True(sineData[270] < amplitude); // sin(270°) = -1, should be < amplitude
+        Assert.True(sineData[90] > amplitude); // sin(90 degrees) = 1, should be > amplitude
+        Assert.Equal((ushort)amplitude, sineData[180]); // sin(180 degrees) = 0, shifted by amplitude
+        Assert.True(sineData[270] < amplitude); // sin(270 degrees) = -1, should be < amplitude
     }
 
     /// <summary>
     /// Tests square wave generation with different duty cycles.
     /// </summary>
     /// <param name="dutyCycle">The duty cycle to test.</param>
-    [Theory]
-    [InlineData(0.25)]
-    [InlineData(0.5)]
-    [InlineData(0.75)]
+    [TUnit.Core.Test]
+    [TUnit.Core.Arguments(0.25)]
+    [TUnit.Core.Arguments(0.5)]
+    [TUnit.Core.Arguments(0.75)]
     public void SimulationDataProvider_SquareWaveGeneration_ShouldRespectDutyCycle(double dutyCycle)
     {
         // Arrange
@@ -81,7 +81,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// Tests that simulation provider can run continuously.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SimulationDataProvider_ContinuousSimulation_ShouldUpdateData()
     {
         // Arrange
@@ -116,7 +116,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// Tests different simulation types produce different patterns.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SimulationDataProvider_DifferentTypes_ShouldProduceDifferentPatterns()
     {
         // Arrange
@@ -144,7 +144,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// Tests that server with simulation can handle real client connections.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_WithSimulation_ShouldServeRealtimeData()
     {
         // Arrange
@@ -174,7 +174,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// <summary>
     /// Tests boolean pattern generation for coils and inputs.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_BooleanPatterns_ShouldBeCorrect()
     {
         // Arrange
@@ -183,11 +183,11 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         // Act & Assert - AllTrue pattern
         var allTrue = provider.GenerateBooleanPattern(length, BooleanPattern.AllTrue);
-        Assert.All(allTrue, Assert.True);
+        Assert.All(allTrue, value => Assert.True(value));
 
         // Act & Assert - AllFalse pattern
         var allFalse = provider.GenerateBooleanPattern(length, BooleanPattern.AllFalse);
-        Assert.All(allFalse, Assert.False);
+        Assert.All(allFalse, value => Assert.False(value));
 
         // Act & Assert - Alternating pattern
         var alternating = provider.GenerateBooleanPattern(length, BooleanPattern.Alternating);
@@ -204,7 +204,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// <summary>
     /// Tests that sawtooth wave increases linearly.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_SawtoothWave_ShouldIncreaseLinearly()
     {
         // Arrange
@@ -230,7 +230,7 @@ public sealed class SimulationIntegrationTests : IDisposable
     /// <summary>
     /// Tests comprehensive simulation with mixed data types.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_MixedDataTypes_ShouldLoadCorrectly()
     {
         // Arrange

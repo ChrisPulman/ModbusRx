@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -175,7 +175,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <summary>
     /// Setups the slave serial port.
     /// </summary>
-    public void SetupSlaveSerialPort()
+    protected void SetupSlaveSerialPort()
     {
         SlaveSerialPort = new SerialPortRx(DefaultSlaveSerialPortName)
         {
@@ -188,7 +188,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <summary>
     /// Starts the slave.
     /// </summary>
-    public void StartSlave()
+    protected void StartSlave()
     {
         if (Slave == null)
         {
@@ -234,24 +234,24 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// </summary>
     /// <param name="program">The program.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task StartJamodSlaveAsync(string program)
+    protected async Task StartJamodSlaveAsync(string program)
     {
         var pathToJamod = Path.Combine(
-            Path.GetDirectoryName(Assembly.GetAssembly(typeof(ModbusRxMasterFixture))!.Location)!, "../../../../tools/jamod");
+            Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(typeof(ModbusRxMasterFixture))!.Location)!, "../../../../tools/jamod");
         var classpath = string.Format(@"-classpath ""{0};{1};{2}""", Path.Combine(pathToJamod, "jamod.jar"), Path.Combine(pathToJamod, "comm.jar"), Path.Combine(pathToJamod, "."));
         var startInfo = new ProcessStartInfo("java", string.Format(CultureInfo.InvariantCulture, "{0} {1}", classpath, program));
         Jamod = Process.Start(startInfo);
 
         var timeout = GetEnvironmentAppropriateTimeout(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(2));
         await Task.Delay(timeout, CancellationToken);
-        Assert.False(Jamod?.HasExited, "Jamod Serial Ascii Slave did not start correctly.");
+        Assert.False(Jamod?.HasExited ?? true, "Jamod Serial Ascii Slave did not start correctly.");
     }
 
     /// <summary>
     /// Reads the coils.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadCoils()
     {
         var coils = await Master!.ReadCoilsAsync(SlaveAddress, 2048, 8);
@@ -262,7 +262,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Reads the inputs.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadInputs()
     {
         var inputs = await Master!.ReadInputsAsync(SlaveAddress, 150, 3);
@@ -273,7 +273,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Reads the holding registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadHoldingRegisters()
     {
         var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 2);
@@ -284,7 +284,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Reads the input registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadInputRegisters()
     {
         var registers = await Master!.ReadInputRegistersAsync(SlaveAddress, 104, 2);
@@ -295,7 +295,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Writes the single coil.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task WriteSingleCoil()
     {
         var coilValue = await Master!.ReadCoilsAsync(SlaveAddress, 10, 1);
@@ -309,7 +309,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Writes the single register.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task WriteSingleRegister()
     {
         const ushort testAddress = 200;
@@ -326,7 +326,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Writes the multiple registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task WriteMultipleRegisters()
     {
         const ushort testAddress = 120;
@@ -343,7 +343,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Writes the multiple coils.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task WriteMultipleCoils()
     {
         const ushort testAddress = 200;
@@ -360,7 +360,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Reads the maximum number of holding registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadMaximumNumberOfHoldingRegisters()
     {
         var registers = await Master!.ReadHoldingRegistersAsync(SlaveAddress, 104, 125);
@@ -371,7 +371,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Reads the write multiple registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task ReadWriteMultipleRegisters()
     {
         const ushort startReadAddress = 120;
@@ -391,7 +391,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// Simples the read registers performance test.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual async Task SimpleReadRegistersPerformanceTest()
     {
         var retries = Master!.Transport!.Retries;
@@ -410,7 +410,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <summary>
     /// Executes the custom message read holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ExecuteCustomMessage_ReadHoldingRegisters()
     {
         var request = new CustomReadHoldingRegistersRequest(3, SlaveAddress, 104, 2);
@@ -421,7 +421,7 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     /// <summary>
     /// Executes the custom message write multiple registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ExecuteCustomMessage_WriteMultipleRegisters()
     {
         const ushort testAddress = 120;

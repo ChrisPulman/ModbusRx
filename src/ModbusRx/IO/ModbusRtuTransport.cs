@@ -89,11 +89,13 @@ internal class ModbusRtuTransport : ModbusSerialTransport
     public virtual byte[] Read(int count)
     {
         var frameBytes = new byte[count];
-        var numBytesRead = 0;
-
-        while (numBytesRead != count)
+        for (var i = 0; i < count; i++)
         {
-            numBytesRead += StreamResource.ReadAsync(frameBytes, numBytesRead, count - numBytesRead).Result;
+            var br = StreamResource.ReadAsync(frameBytes, i, 1).Result;
+            if (br != 1)
+            {
+                throw new IOException($"Unable to read byte at position {i}");
+            }
         }
 
         return frameBytes;
@@ -120,7 +122,7 @@ internal class ModbusRtuTransport : ModbusSerialTransport
         var frameStart = Read(ResponseFrameStartLength);
         var frameEnd = Read(ResponseBytesToRead(frameStart));
         var frame = frameStart.Concat(frameEnd).ToArray();
-        Debug.WriteLine($"RX: {string.Join(", ", frame)}");
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} Master RX: {string.Join(", ", frame)}");
 
         return CreateResponse<T>(Task.FromResult(frame));
     }
@@ -130,7 +132,7 @@ internal class ModbusRtuTransport : ModbusSerialTransport
         var frameStart = Read(RequestFrameStartLength);
         var frameEnd = Read(RequestBytesToRead(frameStart));
         var frame = frameStart.Concat(frameEnd).ToArray();
-        Debug.WriteLine($"RX: {string.Join(", ", frame)}");
+        Console.WriteLine($"Slave RX: {string.Join(", ", frame)}");
 
         return Task.FromResult(frame);
     }

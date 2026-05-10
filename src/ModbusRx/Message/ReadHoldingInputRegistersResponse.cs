@@ -66,6 +66,11 @@ public class ReadHoldingInputRegistersResponse : AbstractModbusMessageWithData<R
         }
 
         ByteCount = frame[2];
+        if (ByteCount % 2 != 0)
+        {
+            throw new FormatException("Byte count must be even for register data.");
+        }
+
         Data = new RegisterCollection(frame.Slice(3, ByteCount).ToArray());
     }
 }

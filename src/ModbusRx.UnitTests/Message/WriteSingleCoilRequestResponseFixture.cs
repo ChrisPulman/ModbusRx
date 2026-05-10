@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Message;
@@ -14,7 +14,7 @@ public class WriteSingleCoilRequestResponseFixture
     /// <summary>
     /// Creates new writesinglecoilrequestresponse.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NewWriteSingleCoilRequestResponse()
     {
         var request = new WriteSingleCoilRequestResponse(11, 5, true);
@@ -27,7 +27,7 @@ public class WriteSingleCoilRequestResponseFixture
     /// <summary>
     /// Converts to string_true.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_True()
     {
         var request = new WriteSingleCoilRequestResponse(11, 5, true);
@@ -38,7 +38,7 @@ public class WriteSingleCoilRequestResponseFixture
     /// <summary>
     /// Converts to string_false.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_False()
     {
         var request = new WriteSingleCoilRequestResponse(11, 5, false);

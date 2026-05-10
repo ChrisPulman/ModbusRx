@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
@@ -10,12 +10,13 @@ namespace ModbusRx.UnitTests.Data;
 /// <summary>
 /// BoolModbusDataCollectionFixture.
 /// </summary>
+[TUnit.Core.InheritsTests]
 public class BoolModbusDataCollectionFixture : ModbusDataCollectionFixture<bool>
 {
     /// <summary>
     /// Removes from read only.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Remove_FromReadOnly()
     {
         bool[] source = { false, false, false, true, false, false };

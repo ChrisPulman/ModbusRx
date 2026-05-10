@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Modbuses the message ctor initializes properties.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusMessageCtorInitializesProperties()
     {
         var messageImpl = new ModbusMessageImpl(5, Modbus.ReadCoils);
@@ -26,7 +26,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Initializes this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Initialize()
     {
         var messageImpl = new ModbusMessageImpl();
@@ -38,7 +38,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Checcks the initialize frame null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ChecckInitializeFrameNull()
     {
         var messageImpl = new ModbusMessageImpl();
@@ -48,7 +48,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Initializes the invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void InitializeInvalidFrame()
     {
         var messageImpl = new ModbusMessageImpl();
@@ -58,7 +58,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Protocols the data unit.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
         var messageImpl = new ModbusMessageImpl(11, Modbus.ReadCoils);
@@ -69,7 +69,7 @@ public class ModbusMessageImplFixture
     /// <summary>
     /// Messages the frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void MessageFrame()
     {
         var messageImpl = new ModbusMessageImpl(11, Modbus.ReadHoldingRegisters);

@@ -28,7 +28,7 @@ public class SimulationDataProviderTests
     /// Tests that SimulationDataProvider can be created and disposed.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SimulationDataProvider_CreateAndDispose_ShouldNotThrow()
     {
         // Arrange & Act & Assert
@@ -42,7 +42,7 @@ public class SimulationDataProviderTests
     /// Tests that simulation can be started and stopped.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SimulationDataProvider_StartAndStop_ShouldUpdateRunningState()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests sine wave generation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSineWave_ShouldCreateValidData()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests square wave generation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSquareWave_ShouldCreateValidData()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests sawtooth wave generation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSawtoothWave_ShouldCreateValidData()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests random data generation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateRandomData_ShouldCreateValidData()
     {
         // Arrange
@@ -160,7 +160,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests test pattern loading.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_LoadTestPattern_ShouldUpdateDataStore()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests continuous simulation updates data store.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_ContinuousSimulation_ShouldUpdateDataStore()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class SimulationDataProviderTests
         var initialValue = dataStore.HoldingRegisters[1];
 
         // Act
-        provider.Start(dataStore, TimeSpan.FromMilliseconds(50), SimulationType.Random);
+        provider.Start(dataStore, TimeSpan.FromMilliseconds(50), SimulationType.CountingUp);
 
         // Use retry logic similar to ModbusServer tests for better reliability
         var maxRetries = IsRunningInCI ? 6 : 3; // More retries in CI, especially for .NET Framework 4.8
@@ -222,7 +222,7 @@ public class SimulationDataProviderTests
     /// <summary>
     /// Tests that different simulation types produce different patterns.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SimulationDataProvider_DifferentSimulationTypes_ShouldProduceDifferentPatterns()
     {
         // Arrange

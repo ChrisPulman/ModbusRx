@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -20,7 +20,7 @@ public class ModbusRxSerialRtuSlaveFixture : NetworkTestBase
     /// Tests the modbus serial rtu slave bonus character verify timeout.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [SkippableFact]
+    [TUnit.Core.Test]
     public async Task ModbusRxSerialRtuSlave_BonusCharacter_VerifyTimeout()
     {
         // Skip this test in CI environments as serial ports are not available

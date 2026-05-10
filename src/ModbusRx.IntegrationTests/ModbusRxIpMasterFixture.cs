@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -21,7 +21,7 @@ public class ModbusRxIpMasterFixture : NetworkTestBase
     /// Overrides the timeout on TCP client.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task OverrideTimeoutOnTcpClient()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class ModbusRxIpMasterFixture : NetworkTestBase
     /// Overrides the timeout on network stream.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task OverrideTimeoutOnNetworkStream()
     {
         // Arrange

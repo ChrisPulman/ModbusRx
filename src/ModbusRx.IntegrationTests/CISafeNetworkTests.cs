@@ -19,7 +19,7 @@ public class CISafeNetworkTests : NetworkTestBase
     /// Test that requires live network connectivity - skipped in CI environments.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [SkippableFact]
+    [TUnit.Core.Test]
     public async Task LiveNetworkTest_ShouldConnectToRealDevice()
     {
         // Skip this test if running in CI to avoid failures
@@ -44,7 +44,7 @@ public class CISafeNetworkTests : NetworkTestBase
     /// Test that works in both CI and local environments using localhost.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task LocalhostTest_ShouldWorkInAllEnvironments()
     {
         // This test uses localhost/loopback only - safe for CI
@@ -77,7 +77,7 @@ public class CISafeNetworkTests : NetworkTestBase
     /// Test that demonstrates conditional behavior based on environment.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ConditionalNetworkTest_ShouldAdaptToEnvironment()
     {
         if (IsRunningInGitHubActions)
@@ -134,7 +134,8 @@ public class CISafeNetworkTests : NetworkTestBase
     /// Test that requires external internet connectivity - always skipped in CI.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact(Skip = "Requires external internet connectivity - run manually for development testing")]
+    [TUnit.Core.Test]
+    [TUnit.Core.Skip("Requires external internet connectivity - run manually for development testing")]
     public async Task ExternalConnectivityTest_ManualTestOnly()
     {
         // This test is explicitly skipped but can be enabled manually

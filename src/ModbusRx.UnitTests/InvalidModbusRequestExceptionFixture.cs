@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
@@ -14,7 +14,7 @@ public class InvalidModbusRequestExceptionFixture
     /// <summary>
     /// Constructors the with exception code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithExceptionCode()
     {
         var e = new InvalidModbusRequestException(Modbus.SlaveDeviceBusy);
@@ -26,7 +26,7 @@ public class InvalidModbusRequestExceptionFixture
     /// <summary>
     /// Constructors the with exception code and inner exception.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithExceptionCodeAndInnerException()
     {
         var inner = new IOException("Bar");
@@ -39,7 +39,7 @@ public class InvalidModbusRequestExceptionFixture
     /// <summary>
     /// Constructors the with message and exception code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithMessageAndExceptionCode()
     {
         var e = new InvalidModbusRequestException("Hello World", Modbus.IllegalFunction);
@@ -51,7 +51,7 @@ public class InvalidModbusRequestExceptionFixture
     /// <summary>
     /// Constructors the with custom message and slave exception response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithCustomMessageAndSlaveExceptionResponse()
     {
         var inner = new IOException("Bar");

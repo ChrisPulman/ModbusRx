@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if SERIAL
@@ -29,63 +29,63 @@ public class NModbusSerialRtuMasterNModbusSerialRtuSlaveFixture : ModbusSerialMa
     /// <summary>
     /// Reads the coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void ReadCoils() =>
         base.ReadCoils();
 
     /// <summary>
     /// Reads the holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void ReadHoldingRegisters() =>
         base.ReadHoldingRegisters();
 
     /// <summary>
     /// Reads the inputs.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void ReadInputs() =>
         base.ReadInputs();
 
     /// <summary>
     /// Writes the single coil.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void WriteSingleCoil() =>
         base.WriteSingleCoil();
 
     /// <summary>
     /// Writes the multiple coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void WriteMultipleCoils() =>
         base.WriteMultipleCoils();
 
     /// <summary>
     /// Writes the single register.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void WriteSingleRegister() =>
         base.WriteSingleRegister();
 
     /// <summary>
     /// Writes the multiple registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void WriteMultipleRegisters() =>
         base.WriteMultipleRegisters();
 
     /// <summary>
     /// Reads the write multiple registers.
     /// </summary>
-    [Fact(Skip = "Need to fix RTU slave for this function code")]
+    [TUnit.Core.Test, TUnit.Core.Skip("Need to fix RTU slave for this function code")]
     public override void ReadWriteMultipleRegisters() =>
         base.ReadWriteMultipleRegisters();
 
     /// <summary>
     /// Returns the query data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void ReturnQueryData() =>
         base.ReturnQueryData();
 }

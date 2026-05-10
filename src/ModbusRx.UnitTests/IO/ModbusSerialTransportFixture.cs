@@ -1,8 +1,10 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ModbusRx.Data;
 using ModbusRx.IO;
@@ -31,7 +33,7 @@ public class ModbusSerialTransportFixture
     /// Creates the response.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task CreateResponse()
     {
         var transport = new ModbusAsciiTransport(StreamResource);
@@ -48,7 +50,7 @@ public class ModbusSerialTransportFixture
     /// Creates the response erroneous LRC.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task CreateResponseErroneousLrcAsync()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = true };
@@ -61,7 +63,7 @@ public class ModbusSerialTransportFixture
     /// Creates the response erroneous LRC do not check frame.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task CreateResponseErroneousLrcDoNotCheckFrame()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = false };
@@ -74,7 +76,7 @@ public class ModbusSerialTransportFixture
     /// When using the serial RTU protocol the beginning of the message could get mangled leading to an unsupported message type.
     /// We want to be sure to try the message again so clear the RX buffer and try again.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_PurgeReceiveBuffer()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -87,32 +89,22 @@ public class ModbusSerialTransportFixture
         serialResource.DiscardInBuffer();
         serialResource.Write(null!, 0, 0);
 
-        // mangled response
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 4), 0, 4).Result).Returns(4);
-
         serialResource.DiscardInBuffer();
         serialResource.Write(null!, 0, 0);
 
         // normal response
         var response = new ReadCoilsInputsResponse(Modbus.ReadCoils, 2, 1, new DiscreteCollection(true, false, true, false, false, false, false, false));
+        var responseBytes = new Queue<byte>(response.MessageFrame.Concat(ModbusUtility.CalculateCrc(response.MessageFrame)));
 
         // write request
         mock.Setup(s => s.Write(It.Is<byte[]>(x => x.Length == 8), 0, 8));
 
-        // read header
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 4), 0, 4).Result)
+        // read response
+        mock.Setup(s => s.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), 1).Result)
             .Returns((byte[] buf, int offset, int count) =>
             {
-                Array.Copy(response.MessageFrame, 0, buf, 0, 4);
-                return 4;
-            });
-
-        // read remainder
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 2), 0, 2).Result)
-            .Returns((byte[] buf, int offset, int count) =>
-            {
-                Array.Copy(ModbusUtility.CalculateCrc(response.MessageFrame), 0, buf, 0, 2);
-                return 2;
+                buf[offset] = responseBytes.Dequeue();
+                return 1;
             });
 
         var request = new ReadCoilsInputsRequest(Modbus.ReadCoils, 2, 3, 4);

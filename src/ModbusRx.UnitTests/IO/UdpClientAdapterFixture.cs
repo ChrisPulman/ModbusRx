@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -18,7 +18,7 @@ public class UdpClientAdapterFixture
     /// Reads the argument validation.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task Read_ArgumentValidationAsync()
     {
         var adapter = new UdpClientAdapter(new UdpClientRx());
@@ -37,7 +37,7 @@ public class UdpClientAdapterFixture
     /// <summary>
     /// Writes the argument validation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Write_ArgumentValidation()
     {
         var adapter = new UdpClientAdapter(new UdpClientRx());

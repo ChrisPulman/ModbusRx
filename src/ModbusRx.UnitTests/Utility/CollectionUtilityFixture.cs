@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -20,7 +20,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the middle.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceMiddle()
     {
         byte[] test = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -30,7 +30,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the beginning.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceBeginning()
     {
         byte[] test = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -40,7 +40,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the end.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceEnd()
     {
         byte[] test = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -50,7 +50,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the collection.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceCollection()
     {
         var col = new Collection<bool>(new bool[] { true, false, false, false, true, true });
@@ -60,7 +60,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the read only collection.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceReadOnlyCollection()
     {
         var col = new ReadOnlyCollection<bool>(new bool[] { true, false, false, false, true, true });
@@ -70,7 +70,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the null i collection.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceNullICollection()
     {
         ICollection<bool> col = null!;
@@ -80,7 +80,7 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Slices the null array.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SliceNullArray()
     {
         bool[] array = null!;
@@ -90,14 +90,14 @@ public class CollectionUtilityFixture
     /// <summary>
     /// Creates the default size of the collection negative.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateDefaultCollectionNegativeSize() =>
         Assert.Throws<ArgumentOutOfRangeException>(() => MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(0, -1));
 
     /// <summary>
     /// Creates the default collection.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateDefaultCollection()
     {
         var col = MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(3, 5);

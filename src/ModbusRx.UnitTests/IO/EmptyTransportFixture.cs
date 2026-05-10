@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -12,14 +12,14 @@ namespace ModbusRx.UnitTests.IO;
 /// <summary>
 /// EmptyTransportFixture.
 /// </summary>
-public static class EmptyTransportFixture
+public class EmptyTransportFixture
 {
     /// <summary>
     /// Negatives this instance.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
-    public static async Task NegativeAsync()
+    [TUnit.Core.Test]
+    public async Task NegativeAsync()
     {
         var transport = new EmptyTransport();
         await Assert.ThrowsAsync<NotImplementedException>(() => transport.ReadRequest());

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class WriteMultipleCoilsRequestFixture
     /// <summary>
     /// Creates the write multiple coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequest()
     {
         var col = new DiscreteCollection(true, false, true, false, true, true, true, false, false);
@@ -32,7 +32,7 @@ public class WriteMultipleCoilsRequestFixture
     /// <summary>
     /// Creates the write multiple coils request too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new WriteMultipleCoilsRequest(1, 2, MessageUtility.CreateDefaultCollection<DiscreteCollection, bool>(true, Modbus.MaximumDiscreteRequestResponseSize + 1)));
@@ -40,7 +40,7 @@ public class WriteMultipleCoilsRequestFixture
     /// <summary>
     /// Creates the maximum size of the write multiple coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequestMaxSize()
     {
         var request = new WriteMultipleCoilsRequest(1, 2, MessageUtility.CreateDefaultCollection<DiscreteCollection, bool>(true, Modbus.MaximumDiscreteRequestResponseSize));
@@ -51,7 +51,7 @@ public class WriteMultipleCoilsRequestFixture
     /// <summary>
     /// Converts to string_writemultiplecoilsrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_WriteMultipleCoilsRequest()
     {
         var col = new DiscreteCollection(true, false, true, false, true, true, true, false, false);

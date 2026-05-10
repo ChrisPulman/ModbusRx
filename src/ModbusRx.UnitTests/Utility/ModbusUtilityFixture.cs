@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Gets the ASCII bytes from empty.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetAsciiBytesFromEmpty()
     {
         Assert.Equal(Array.Empty<byte>(), ModbusUtility.GetAsciiBytes(Array.Empty<byte>()));
@@ -26,7 +26,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Gets the ASCII bytes from bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetAsciiBytesFromBytes()
     {
         byte[] buf = { 2, 5 };
@@ -38,7 +38,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Gets the ASCII bytes from ushorts.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetAsciiBytesFromUshorts()
     {
         ushort[] buf = { 300, 400 };
@@ -50,37 +50,37 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Hexadecimals to bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void HexToBytes() => Assert.Equal(new byte[] { 255 }, ModbusUtility.HexToBytes("FF"));
 
     /// <summary>
     /// Hexadecimals to bytes2.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void HexToBytes2() => Assert.Equal(new byte[] { 204, 255 }, ModbusUtility.HexToBytes("CCFF"));
 
     /// <summary>
     /// Hexadecimals to bytes empty.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void HexToBytesEmpty() => Assert.Equal(Array.Empty<byte>(), ModbusUtility.HexToBytes(string.Empty));
 
     /// <summary>
     /// Hexadecimals to bytes null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void HexToBytesNull() => Assert.Throws<ArgumentNullException>(() => ModbusUtility.HexToBytes(null!));
 
     /// <summary>
     /// Hexadecimals to bytes odd.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void HexToBytesOdd() => Assert.Throws<FormatException>(() => ModbusUtility.HexToBytes("CCF"));
 
     /// <summary>
     /// Calculates the CRC.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateCrc()
     {
         var result = ModbusUtility.CalculateCrc(new byte[] { 1, 1 });
@@ -90,7 +90,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Calculates the CRC2.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateCrc2()
     {
         var result = ModbusUtility.CalculateCrc(new byte[] { 2, 1, 5, 0 });
@@ -100,19 +100,19 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Calculates the CRC empty.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateCrcEmpty() => Assert.Equal(new byte[] { 255, 255 }, ModbusUtility.CalculateCrc(Array.Empty<byte>()));
 
     /// <summary>
     /// Calculates the CRC null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateCrcNull() => Assert.Throws<ArgumentNullException>(() => ModbusUtility.CalculateCrc(null!));
 
     /// <summary>
     /// Calculates the LRC.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateLrc()
     {
         var a = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 1, 10);
@@ -122,7 +122,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Calculates the LRC2.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateLrc2()
     {
         // : 02 01 0000 0001 FC
@@ -133,43 +133,43 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Calculates the LRC null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateLrcNull() => Assert.Throws<ArgumentNullException>(() => ModbusUtility.CalculateLrc(null!));
 
     /// <summary>
     /// Calculates the LRC empty.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CalculateLrcEmpty() => Assert.Equal(0, ModbusUtility.CalculateLrc(Array.Empty<byte>()));
 
     /// <summary>
     /// Networks the bytes to host u int16.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NetworkBytesToHostUInt16() => Assert.Equal(new ushort[] { 1, 2 }, ModbusUtility.NetworkBytesToHostUInt16(new byte[] { 0, 1, 0, 2 }));
 
     /// <summary>
     /// Networks the bytes to host u int16 null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NetworkBytesToHostUInt16Null() => Assert.Throws<ArgumentNullException>(() => ModbusUtility.NetworkBytesToHostUInt16(null!));
 
     /// <summary>
     /// Networks the bytes to host u int16 odd number of bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NetworkBytesToHostUInt16OddNumberOfBytes() => Assert.Throws<FormatException>(() => ModbusUtility.NetworkBytesToHostUInt16(new byte[] { 1 }));
 
     /// <summary>
     /// Networks the bytes to host u int16 empty bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NetworkBytesToHostUInt16EmptyBytes() => Assert.Equal(Array.Empty<ushort>(), ModbusUtility.NetworkBytesToHostUInt16(Array.Empty<byte>()));
 
     /// <summary>
     /// Gets the double.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetDouble()
     {
         Assert.Equal(0.0, ModbusUtility.GetDouble(0, 0, 0, 0));
@@ -181,7 +181,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Gets the single.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetSingle()
     {
         Assert.Equal(0F, ModbusUtility.GetSingle(0, 0));
@@ -193,7 +193,7 @@ public class ModbusUtilityFixture
     /// <summary>
     /// Gets the u int32.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetUInt32()
     {
         Assert.Equal(0U, ModbusUtility.GetUInt32(0, 0));

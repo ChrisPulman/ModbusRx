@@ -4,3 +4,4 @@
 using Xunit;
 
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true, MaxParallelThreads = 1)]
+[assembly: TUnit.Core.NotInParallel]

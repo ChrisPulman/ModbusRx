@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -22,7 +22,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Disposes the multiple times should not throw.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Dispose_MultipleTimes_ShouldNotThrow()
     {
         var streamMock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -39,7 +39,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Reads the write timeouts.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadWriteTimeouts()
     {
         const int expectedReadTimeout = 42;
@@ -67,7 +67,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Waits to retry milliseconds.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WaitToRetryMilliseconds()
     {
         var mock = new Mock<ModbusTransport>(MockBehavior.Strict) { CallBase = true };
@@ -85,7 +85,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage()
     {
         var data = new DiscreteCollection(true, false, true, false, false, false, false, false);
@@ -108,7 +108,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message wrong response function code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_WrongResponseFunctionCode()
     {
         var request = new ReadCoilsInputsRequest(Modbus.ReadInputs, 2, 3, 4);
@@ -133,7 +133,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message error slave exception.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_ErrorSlaveException()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -151,7 +151,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// We should reread the response w/o retransmitting the request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_AcknowlegeSlaveException()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -190,7 +190,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// We should retransmit the request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_SlaveDeviceBusySlaveException()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -233,7 +233,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// We should retransmit the request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_SlaveDeviceBusySlaveExceptionDoesNotFailAfterExceedingRetries()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -275,11 +275,11 @@ public class ModbusTransportFixture
 
     // TODO: uncomment test below and rewrite with Moq
 
-    ////[Theory]
-    ////[InlineData(typeof(TimeoutException))]
-    ////[InlineData(typeof(IOException))]
-    ////[InlineData(typeof(NotImplementedException))]
-    ////[InlineData(typeof(FormatException))]
+    ////[TUnit.Core.Test]
+    ////[TUnit.Core.Arguments(typeof(TimeoutException))]
+    ////[TUnit.Core.Arguments(typeof(IOException))]
+    ////[TUnit.Core.Arguments(typeof(NotImplementedException))]
+    ////[TUnit.Core.Arguments(typeof(FormatException))]
     ////public void UnicastMessage_SingleFailingException(Type exceptionType)
     ////{
     ////    MockRepository mocks = new MockRepository();
@@ -309,13 +309,18 @@ public class ModbusTransportFixture
     /// Unicasts the message too many failing exceptions.
     /// </summary>
     /// <param name="exceptionType">Type of the exception.</param>
-    [Theory]
-    [InlineData(typeof(TimeoutException))]
-    [InlineData(typeof(IOException))]
-    [InlineData(typeof(NotImplementedException))]
-    [InlineData(typeof(FormatException))]
+    [TUnit.Core.Test]
+    [TUnit.Core.Arguments(typeof(TimeoutException))]
+    [TUnit.Core.Arguments(typeof(IOException))]
+    [TUnit.Core.Arguments(typeof(NotImplementedException))]
+    [TUnit.Core.Arguments(typeof(FormatException))]
     public void UnicastMessage_TooManyFailingExceptions(Type exceptionType)
     {
+        if (exceptionType == null)
+        {
+            throw new ArgumentNullException(nameof(exceptionType));
+        }
+
         var mock = new Mock<ModbusTransport>() { CallBase = true };
         var transport = mock.Object;
         var writeCallsCount = 0;
@@ -339,7 +344,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message timeout exception.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_TimeoutException()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -364,7 +369,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message retries.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_Retries()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -391,7 +396,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Unicasts the message re reads if should retry return true.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UnicastMessage_ReReads_IfShouldRetryReturnTrue()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -428,7 +433,7 @@ public class ModbusTransportFixture
     /// Creates the response slave exception.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task CreateResponse_SlaveExceptionAsync()
     {
         var mock = new Mock<ModbusTransport>() { CallBase = true };
@@ -443,7 +448,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Shoulds the retry response returns false if different message.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ShouldRetryResponse_ReturnsFalse_IfDifferentMessage()
     {
         var mock = new Mock<ModbusTransport>(MockBehavior.Strict) { CallBase = true };
@@ -458,7 +463,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Validates the response mismatching function codes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ValidateResponse_MismatchingFunctionCodes()
     {
         var mock = new Mock<ModbusTransport>(MockBehavior.Strict) { CallBase = true };
@@ -473,7 +478,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Validates the response mismatching slave address.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ValidateResponse_MismatchingSlaveAddress()
     {
         var mock = new Mock<ModbusTransport>(MockBehavior.Strict) { CallBase = true };
@@ -488,7 +493,7 @@ public class ModbusTransportFixture
     /// <summary>
     /// Validates the response calls on validate response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ValidateResponse_CallsOnValidateResponse()
     {
         var mock = new Mock<ModbusTransport>(MockBehavior.Strict) { CallBase = true };

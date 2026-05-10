@@ -26,7 +26,7 @@ public abstract class ModbusSerialMasterFixture : ModbusRxMasterFixture
     /// <summary>
     /// Returns the query data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ReturnQueryData()
     {
         // This is a placeholder for the return query data test

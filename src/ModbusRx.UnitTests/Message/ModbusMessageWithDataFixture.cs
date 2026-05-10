@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -15,7 +15,7 @@ public class ModbusMessageWithDataFixture
     /// <summary>
     /// Modbuses the message with data fixture ctor initializes properties.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusMessageWithDataFixtureCtorInitializesProperties()
     {
         AbstractModbusMessageWithData<DiscreteCollection> message = new ReadCoilsInputsResponse(Modbus.ReadCoils, 10, 1, new DiscreteCollection(true, false, true));
@@ -26,7 +26,7 @@ public class ModbusMessageWithDataFixture
     /// <summary>
     /// Protocols the data unit read coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ProtocolDataUnitReadCoilsResponse()
     {
         AbstractModbusMessageWithData<DiscreteCollection> message = new ReadCoilsInputsResponse(Modbus.ReadCoils, 1, 2, new DiscreteCollection(true));
@@ -37,7 +37,7 @@ public class ModbusMessageWithDataFixture
     /// <summary>
     /// Datas the read coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataReadCoilsResponse()
     {
         var col = new DiscreteCollection(false, true, false, true, false, true, false, false, false, false);

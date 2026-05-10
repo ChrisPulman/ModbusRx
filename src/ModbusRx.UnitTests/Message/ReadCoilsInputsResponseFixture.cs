@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -15,7 +15,7 @@ public class ReadCoilsInputsResponseFixture
     /// <summary>
     /// Creates the read coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadCoilsResponse()
     {
         var response = new ReadCoilsInputsResponse(Modbus.ReadCoils, 5, 2, new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false));
@@ -29,7 +29,7 @@ public class ReadCoilsInputsResponseFixture
     /// <summary>
     /// Creates the read inputs response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadInputsResponse()
     {
         var response = new ReadCoilsInputsResponse(Modbus.ReadInputs, 5, 2, new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false));
@@ -43,7 +43,7 @@ public class ReadCoilsInputsResponseFixture
     /// <summary>
     /// Converts to string_coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_Coils()
     {
         var response = new ReadCoilsInputsResponse(Modbus.ReadCoils, 5, 2, new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false));
@@ -54,7 +54,7 @@ public class ReadCoilsInputsResponseFixture
     /// <summary>
     /// Converts to string_inputs.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_Inputs()
     {
         var response = new ReadCoilsInputsResponse(Modbus.ReadInputs, 5, 2, new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false));

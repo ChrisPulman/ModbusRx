@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Message;
@@ -14,7 +14,7 @@ public class WriteSingleRegisterRequestResponseFixture
     /// <summary>
     /// Creates new writesingleregisterrequestresponse.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NewWriteSingleRegisterRequestResponse()
     {
         var message = new WriteSingleRegisterRequestResponse(12, 5, 1200);
@@ -27,7 +27,7 @@ public class WriteSingleRegisterRequestResponseFixture
     /// <summary>
     /// Converts to stringoverride.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToStringOverride()
     {
         var message = new WriteSingleRegisterRequestResponse(12, 5, 1200);

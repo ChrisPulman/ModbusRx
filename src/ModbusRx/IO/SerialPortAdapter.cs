@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
 using System.IO.Ports;
 using CP.IO.Ports;
 
@@ -27,9 +26,12 @@ public class SerialPortAdapter : IStreamResource
     /// <param name="serialPort">The serial port.</param>
     public SerialPortAdapter(SerialPortRx serialPort)
     {
-        Debug.Assert(serialPort is not null, "Argument serialPort cannot be null.");
+        if (serialPort is null)
+        {
+            throw new ArgumentNullException(nameof(serialPort));
+        }
 
-        _serialPort = serialPort!;
+        _serialPort = serialPort;
         _serialPort.NewLine = NewLine;
     }
 
@@ -59,8 +61,7 @@ public class SerialPortAdapter : IStreamResource
     /// <summary>
     /// Purges the receive buffer.
     /// </summary>
-    public void DiscardInBuffer() =>
-        _serialPort.DiscardInBuffer();
+    public void DiscardInBuffer() => _serialPort.DiscardInBuffer();
 
     /// <summary>
     /// Reads a number of bytes from the input buffer and writes those bytes into a byte array at the specified offset.
@@ -71,8 +72,7 @@ public class SerialPortAdapter : IStreamResource
     /// <returns>
     /// The number of bytes read.
     /// </returns>
-    public Task<int> ReadAsync(byte[] buffer, int offset, int count) =>
-        _serialPort.ReadAsync(buffer, offset, count);
+    public Task<int> ReadAsync(byte[] buffer, int offset, int count) => _serialPort.ReadAsync(buffer, offset, count);
 
     /// <summary>
     /// Writes a specified number of bytes to the port from an output buffer, starting at the specified offset.
@@ -80,8 +80,7 @@ public class SerialPortAdapter : IStreamResource
     /// <param name="buffer">The byte array that contains the data to write to the port.</param>
     /// <param name="offset">The offset in the buffer array to begin writing.</param>
     /// <param name="count">The number of bytes to write.</param>
-    public void Write(byte[] buffer, int offset, int count) =>
-        _serialPort.Write(buffer, offset, count);
+    public void Write(byte[] buffer, int offset, int count) => _serialPort.Write(buffer, offset, count);
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -100,7 +99,7 @@ public class SerialPortAdapter : IStreamResource
     {
         if (disposing)
         {
-            _serialPort?.Dispose();
+            _serialPort.Dispose();
             _serialPort = null!;
         }
     }

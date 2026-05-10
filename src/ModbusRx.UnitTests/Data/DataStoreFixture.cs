@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ public class DataStoreFixture
     /// <summary>
     /// Reads the data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadData()
     {
         var slaveCol = new ModbusDataCollection<ushort>(0, 1, 2, 3, 4, 5, 6);
@@ -27,28 +27,28 @@ public class DataStoreFixture
     /// <summary>
     /// Reads the data start address too large.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadDataStartAddressTooLarge() =>
         Assert.Throws<InvalidModbusRequestException>(() => DataStore.ReadData<DiscreteCollection, bool>(new DataStore(), new ModbusDataCollection<bool>(), 3, 2, new object()));
 
     /// <summary>
     /// Reads the data count too large.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadDataCountTooLarge() =>
         Assert.Throws<InvalidModbusRequestException>(() => DataStore.ReadData<DiscreteCollection, bool>(new DataStore(), new ModbusDataCollection<bool>(true, false, true, true), 1, 5, new object()));
 
     /// <summary>
     /// Reads the data start address zero.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadDataStartAddressZero() =>
         DataStore.ReadData<DiscreteCollection, bool>(new DataStore(), new ModbusDataCollection<bool>(true, false, true, true, true, true), 0, 5, new object());
 
     /// <summary>
     /// Writes the data single.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteDataSingle()
     {
         var destination = new ModbusDataCollection<bool>(true, true);
@@ -60,7 +60,7 @@ public class DataStoreFixture
     /// <summary>
     /// Writes the data multiple.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteDataMultiple()
     {
         var destination = new ModbusDataCollection<bool>(false, false, false, false, false, false, true);
@@ -72,7 +72,7 @@ public class DataStoreFixture
     /// <summary>
     /// Writes the data too large.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteDataTooLarge()
     {
         var slaveCol = new ModbusDataCollection<bool>(true);
@@ -83,14 +83,14 @@ public class DataStoreFixture
     /// <summary>
     /// Writes the data start address zero.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteDataStartAddressZero() =>
         DataStore.WriteData(new DataStore(), new DiscreteCollection(false),            new ModbusDataCollection<bool>(true, true), 0, new object());
 
     /// <summary>
     /// Writes the data start address too large.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteDataStartAddressTooLarge() =>
         Assert.Throws<InvalidModbusRequestException>(() =>
         DataStore.WriteData(new DataStore(), new DiscreteCollection(true), new ModbusDataCollection<bool>(true), 2, new object()));
@@ -101,7 +101,7 @@ public class DataStoreFixture
     /// So reading Modbus address 0 should get you array index 1 in the DataStore.
     /// This implies that the DataStore array index 0 can never be used.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void TestReadMapping()
     {
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
@@ -115,7 +115,7 @@ public class DataStoreFixture
     /// <summary>
     /// Datas the store read from event read holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataStoreReadFromEvent_ReadHoldingRegisters()
     {
         var dataStore = DataStoreFactory.CreateTestDataStore();
@@ -141,7 +141,7 @@ public class DataStoreFixture
     /// <summary>
     /// Datas the store read from event read input registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataStoreReadFromEvent_ReadInputRegisters()
     {
         var dataStore = DataStoreFactory.CreateTestDataStore();
@@ -167,7 +167,7 @@ public class DataStoreFixture
     /// <summary>
     /// Datas the store read from event read inputs.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataStoreReadFromEvent_ReadInputs()
     {
         var dataStore = DataStoreFactory.CreateTestDataStore();
@@ -193,7 +193,7 @@ public class DataStoreFixture
     /// <summary>
     /// Datas the store written to event write coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataStoreWrittenToEvent_WriteCoils()
     {
         var dataStore = DataStoreFactory.CreateTestDataStore();
@@ -220,7 +220,7 @@ public class DataStoreFixture
     /// <summary>
     /// Datas the store written to event write holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DataStoreWrittenToEvent_WriteHoldingRegisters()
     {
         var dataStore = DataStoreFactory.CreateTestDataStore();
@@ -247,7 +247,7 @@ public class DataStoreFixture
     /// <summary>
     /// Updates this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Update()
     {
         var newItems = new List<int>(new int[] { 4, 5, 6 });
@@ -259,7 +259,7 @@ public class DataStoreFixture
     /// <summary>
     /// Updates the items too large.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UpdateItemsTooLarge()
     {
         var newItems = new List<int>(new int[] { 1, 2, 3, 7, 8, 9 });
@@ -270,7 +270,7 @@ public class DataStoreFixture
     /// <summary>
     /// Updates the index of the negative.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void UpdateNegativeIndex()
     {
         var newItems = new List<int>(new int[] { 1, 2, 3, 7, 8, 9 });

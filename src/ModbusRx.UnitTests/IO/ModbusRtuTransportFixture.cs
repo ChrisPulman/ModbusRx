@@ -1,7 +1,8 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Builds the message frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void BuildMessageFrame()
     {
         byte[] message = { 17, Modbus.ReadCoils, 0, 19, 0, 37, 14, 132 };
@@ -43,7 +44,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadCoils()
     {
         byte[] frameStart = { 0x11, 0x01, 0x05, 0xCD, 0x6B, 0xB2, 0x0E, 0x1B };
@@ -53,7 +54,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read coils no data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadCoilsNoData()
     {
         byte[] frameStart = { 0x11, 0x01, 0x00, 0x00, 0x00 };
@@ -63,7 +64,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read write coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadWriteCoilsResponse()
     {
         byte[] frameStart = { 0x11, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0, 0 };
@@ -73,7 +74,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read diagnostics.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadDiagnostics()
     {
         byte[] frameStart = { 0x01, 0x08, 0x00, 0x00 };
@@ -83,7 +84,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read slave exception.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadSlaveException()
     {
         byte[] frameStart = { 0x01, Modbus.ExceptionOffset + 1, 0x01 };
@@ -93,7 +94,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Responses the bytes to read invalid function code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ResponseBytesToReadInvalidFunctionCode()
     {
         byte[] frame = { 0x11, 0x16, 0x00, 0x01, 0x00, 0x02, 0x04 };
@@ -103,7 +104,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Requests the bytes to read diagnostics.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RequestBytesToReadDiagnostics()
     {
         byte[] frame = { 0x01, 0x08, 0x00, 0x00, 0xA5, 0x37, 0, 0 };
@@ -113,7 +114,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Requests the bytes to read coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RequestBytesToReadCoils()
     {
         byte[] frameStart = { 0x11, 0x01, 0x00, 0x13, 0x00, 0x25 };
@@ -123,7 +124,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Requests the bytes to read write coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RequestBytesToReadWriteCoilsRequest()
     {
         byte[] frameStart = { 0x11, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01 };
@@ -133,7 +134,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Requests the bytes to read write multiple holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RequestBytesToReadWriteMultipleHoldingRegisters()
     {
         byte[] frameStart = { 0x11, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04 };
@@ -143,7 +144,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Requests the bytes to read invalid function code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RequestBytesToReadInvalidFunctionCode()
     {
         byte[] frame = { 0x11, 0xFF, 0x00, 0x01, 0x00, 0x02, 0x04 };
@@ -153,7 +154,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Checksumses the match succeed.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ChecksumsMatchSucceed()
     {
         var transport = new ModbusRtuTransport(StreamResource);
@@ -166,7 +167,7 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Checksumses the match fail.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ChecksumsMatchFail()
     {
         var transport = new ModbusRtuTransport(StreamResource);
@@ -180,7 +181,7 @@ public class ModbusRtuTransportFixture
     /// Reads the response.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadResponse()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
@@ -202,7 +203,7 @@ public class ModbusRtuTransportFixture
     /// Reads the response slave exception.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadResponseSlaveException()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
@@ -231,7 +232,7 @@ public class ModbusRtuTransportFixture
     /// this must preceed throwing a SlaveException based on function code &gt; 127.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadResponseSlaveExceptionWithErroneousLrcAsync()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
@@ -257,7 +258,7 @@ public class ModbusRtuTransportFixture
     /// Reads the request.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestAsync()
     {
         var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
@@ -277,23 +278,17 @@ public class ModbusRtuTransportFixture
     /// <summary>
     /// Reads this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Read()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
+        var bytes = new Queue<byte>(new byte[] { 2, 2, 2, 3, 3 });
 
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 5), 0, 5).Result)
+        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 5), It.IsAny<int>(), 1).Result)
             .Returns((byte[] buf, int offset, int count) =>
             {
-                Array.Copy(new byte[] { 2, 2, 2 }, buf, 3);
-                return 3;
-            });
-
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 5), 3, 2).Result)
-            .Returns((byte[] buf, int offset, int count) =>
-            {
-                Array.Copy(new byte[] { 3, 3 }, 0, buf, 3, 2);
-                return 2;
+                buf[offset] = bytes.Dequeue();
+                return 1;
             });
 
         var transport = new ModbusRtuTransport(mock.Object);

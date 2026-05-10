@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -19,7 +19,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Defaults the contstructor.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DefaultContstructor()
     {
         var col = new ModbusDataCollection<TData>();
@@ -33,7 +33,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Contstructors the with parameters.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ContstructorWithParams()
     {
         var source = GetArray();
@@ -48,7 +48,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Contstructors the with i list.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ContstructorWithIList()
     {
         var source = GetList();
@@ -66,7 +66,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Contstructors the with i list from read only list.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ContstructorWithIList_FromReadOnlyList()
     {
         var source = GetList();
@@ -85,7 +85,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Sets the zero element using item.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SetZeroElementUsingItem()
     {
         var source = GetArray();
@@ -96,7 +96,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Zeroes the element using item negative.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ZeroElementUsingItem_Negative()
     {
         var source = GetArray();
@@ -113,7 +113,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Clears this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Clear()
     {
         var col = new ModbusDataCollection<TData>(GetArray());
@@ -125,7 +125,7 @@ public abstract class ModbusDataCollectionFixture<TData>
     /// <summary>
     /// Removes this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Remove()
     {
         var source = GetList();

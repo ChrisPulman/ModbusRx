@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Discriminateds the union create a.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DiscriminatedUnion_CreateA()
     {
         var du = DiscriminatedUnion<string, string>.CreateA("foo");
@@ -26,7 +26,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Discriminateds the union create b.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DiscriminatedUnion_CreateB()
     {
         var du = DiscriminatedUnion<string, string>.CreateB("foo");
@@ -37,7 +37,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Discriminateds the union allow nulls.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DiscriminatedUnion_AllowNulls()
     {
         var du = DiscriminatedUnion<object, object>.CreateB(null!);
@@ -48,7 +48,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Accesses the invalid option a.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void AccessInvalidOption_A()
     {
         var du = DiscriminatedUnion<string, string>.CreateB("foo");
@@ -58,7 +58,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Accesses the invalid option b.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void AccessInvalidOption_B()
     {
         var du = DiscriminatedUnion<string, string>.CreateA("foo");
@@ -68,7 +68,7 @@ public class DiscriminatedUnionFixture
     /// <summary>
     /// Discriminateds the union to string.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void DiscriminatedUnion_ToString()
     {
         var du = DiscriminatedUnion<string, string>.CreateA("foo");

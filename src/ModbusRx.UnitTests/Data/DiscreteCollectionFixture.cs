@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Bytes the count.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ByteCount()
     {
         var col = new DiscreteCollection(true, true, false, false, false, false, false, false, false);
@@ -26,7 +26,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Bytes the count even.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ByteCountEven()
     {
         var col = new DiscreteCollection(true, true, false, false, false, false, false, false);
@@ -36,7 +36,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Networks the bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NetworkBytes()
     {
         var col = new DiscreteCollection(true, true);
@@ -46,7 +46,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection initialize.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionInitialize()
     {
         var col = new DiscreteCollection(true, true, true);
@@ -57,7 +57,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection from bool parameters.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBoolParams()
     {
         var col = new DiscreteCollection(true, false, true);
@@ -67,7 +67,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection from bytes parameters.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams()
     {
         var col = new DiscreteCollection(1, 2, 3);
@@ -85,7 +85,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection from bytes parameters zero length array.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams_ZeroLengthArray()
     {
         var col = new DiscreteCollection(Array.Empty<byte>());
@@ -95,14 +95,14 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection from bytes parameters null array.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams_NullArray() =>
         Assert.Throws<ArgumentNullException>(() => new DiscreteCollection((byte[])null!));
 
     /// <summary>
     /// Creates the new discrete collection from bytes parameters order.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParamsOrder()
     {
         var col = new DiscreteCollection(194);
@@ -112,7 +112,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Creates the new discrete collection from bytes parameters order2.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParamsOrder2()
     {
         var col = new DiscreteCollection(157, 7);
@@ -126,7 +126,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Resizes this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Resize()
     {
         var col = new DiscreteCollection(byte.MaxValue, byte.MaxValue);
@@ -138,7 +138,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Byteses the persistence.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void BytesPersistence()
     {
         var col = new DiscreteCollection(byte.MaxValue, byte.MaxValue);
@@ -152,7 +152,7 @@ public class DiscreteCollectionFixture
     /// <summary>
     /// Adds the coil.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void AddCoil()
     {
         var col = new DiscreteCollection();

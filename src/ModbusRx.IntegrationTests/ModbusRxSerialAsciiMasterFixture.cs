@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class ModbusRxSerialAsciiMasterFixture : NetworkTestBase
     /// <summary>
     /// Tests the modbus ASCII master read timeout.
     /// </summary>
-    [SkippableFact]
+    [TUnit.Core.Test]
     public void ModbusRxAsciiMaster_ReadTimeout()
     {
         // Skip this test in CI environments as serial ports are not available

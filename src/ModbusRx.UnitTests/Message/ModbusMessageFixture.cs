@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Linq;
@@ -16,7 +16,7 @@ public class ModbusMessageFixture
     /// <summary>
     /// Protocols the data unit read coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ProtocolDataUnitReadCoilsRequest()
     {
         AbstractModbusMessage message = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 100, 9);
@@ -27,7 +27,7 @@ public class ModbusMessageFixture
     /// <summary>
     /// Messages the frame read coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void MessageFrameReadCoilsRequest()
     {
         AbstractModbusMessage message = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 2, 3);
@@ -38,7 +38,7 @@ public class ModbusMessageFixture
     /// <summary>
     /// Modbuses the message to string overriden.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusMessageToStringOverriden()
     {
         var messageTypes = from message in typeof(AbstractModbusMessage).GetTypeInfo().Assembly.GetTypes()

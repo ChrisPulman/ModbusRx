@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -15,7 +15,7 @@ public class ReturnQueryDataRequestResponseFixture
     /// <summary>
     /// Returns the query data request response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReturnQueryDataRequestResponse()
     {
         var data = new RegisterCollection(1, 2, 3, 4);
@@ -29,7 +29,7 @@ public class ReturnQueryDataRequestResponseFixture
     /// <summary>
     /// Protocols the data unit.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
         var data = new RegisterCollection(1, 2, 3, 4);

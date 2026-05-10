@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if SERIAL
@@ -30,7 +30,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Reads the discretes coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadDiscretesCoils()
     {
         var expectedResponse = new ReadCoilsInputsResponse(Modbus.ReadCoils, 1, 2, new DiscreteCollection(false, true, false, true, false, true, false, true, false));
@@ -43,7 +43,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Reads the discretes inputs.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadDiscretesInputs()
     {
         var expectedResponse = new ReadCoilsInputsResponse(Modbus.ReadInputs, 1, 2, new DiscreteCollection(true, false, true, false, true, false, true, false, true));
@@ -55,7 +55,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Reads the registers holding registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadRegistersHoldingRegisters()
     {
         var expectedResponse = new ReadHoldingInputRegistersResponse(Modbus.ReadHoldingRegisters, 1, new RegisterCollection(1, 2, 3, 4, 5, 6));
@@ -67,7 +67,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Reads the registers input registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadRegistersInputRegisters()
     {
         var expectedResponse = new ReadHoldingInputRegistersResponse(Modbus.ReadInputRegisters, 1, new RegisterCollection(10, 20, 30, 40, 50, 60));
@@ -79,7 +79,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Writes the single coil.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteSingleCoil()
     {
         const ushort addressToWrite = 35;
@@ -93,7 +93,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Writes the multiple coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteMultipleCoils()
     {
         const ushort startAddress = 35;
@@ -109,7 +109,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Writes the single register.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteSingleRegister()
     {
         const ushort startAddress = 35;
@@ -123,7 +123,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Writes the multiple registers.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteMultipleRegisters()
     {
         const ushort startAddress = 35;
@@ -138,7 +138,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// ApplyRequest_VerifyModbusRequestReceivedEventIsFired.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ApplyRequest_VerifyModbusRequestReceivedEventIsFired()
     {
         var eventFired = false;
@@ -158,7 +158,7 @@ public class ModbusSlaveFixture
     /// <summary>
     /// Writes the multip coils make sure we do not write remainder.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void WriteMultipCoils_MakeSureWeDoNotWriteRemainder()
     {
         // 0, false initialized data store

@@ -38,7 +38,7 @@ public class ReactiveSerialMasterTests
     /// Verifies that the reactive RTU master stream emits a status tuple upon subscription.
     /// </summary>
     /// <returns>A task.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SerialRtuMaster_Subscribe_ShouldEmitStatus()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class ReactiveSerialMasterTests
     /// Verifies that the reactive ASCII master stream emits a status tuple upon subscription.
     /// </summary>
     /// <returns>A task.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task SerialAsciiMaster_Subscribe_ShouldEmitStatus()
     {
         // Arrange

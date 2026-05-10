@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Creates the read holding registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadHoldingRegistersRequest()
     {
         var request = new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 5, 1, 10);
@@ -29,7 +29,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Creates the read input registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadInputRegistersRequest()
     {
         var request = new ReadHoldingInputRegistersRequest(Modbus.ReadInputRegisters, 5, 1, 10);
@@ -43,7 +43,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Creates the read holding input registers request too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadHoldingInputRegistersRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
@@ -51,7 +51,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Creates the maximum size of the read holding input registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadHoldingInputRegistersRequestMaxSize()
     {
         var response = new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 1, 2, Modbus.MaximumRegisterRequestResponseSize);
@@ -62,7 +62,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Converts to string_readholdingregistersrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_ReadHoldingRegistersRequest()
     {
         var request = new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 5, 1, 10);
@@ -73,7 +73,7 @@ public class ReadHoldingInputRegistersRequestFixture
     /// <summary>
     /// Converts to string_readinputregistersrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_ReadInputRegistersRequest()
     {
         var request = new ReadHoldingInputRegistersRequest(Modbus.ReadInputRegisters, 5, 1, 10);
