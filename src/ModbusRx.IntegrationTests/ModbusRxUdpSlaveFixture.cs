@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -22,7 +22,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
     /// Modbuses the UDP slave ensure the slave shuts down cleanly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusUdpSlave_EnsureTheSlaveShutsDownCleanly()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
     /// Modbuses the UDP slave not bound.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusUdpSlave_NotBound()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
     /// Modbuses the UDP slave multiple masters.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusUdpSlave_MultipleMasters()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
     /// Modbuses the UDP slave multi threaded.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusUdpSlave_MultiThreaded()
     {
         // Arrange

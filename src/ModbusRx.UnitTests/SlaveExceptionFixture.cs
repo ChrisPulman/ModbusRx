@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class SlaveExceptionFixture
     /// <summary>
     /// Empties the constructor.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void EmptyConstructor()
     {
         var e = new SlaveException();
@@ -30,7 +30,7 @@ public class SlaveExceptionFixture
     /// <summary>
     /// Constructors the with message.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithMessage()
     {
         var e = new SlaveException("Hello World");
@@ -44,7 +44,7 @@ public class SlaveExceptionFixture
     /// <summary>
     /// Constructors the with message and inner exception.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithMessageAndInnerException()
     {
         var inner = new IOException("Bar");
@@ -59,7 +59,7 @@ public class SlaveExceptionFixture
     /// <summary>
     /// Constructors the with slave exception response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithSlaveExceptionResponse()
     {
         var response = new SlaveExceptionResponse(12, Modbus.ReadCoils, 1);
@@ -78,7 +78,7 @@ public class SlaveExceptionFixture
     /// <summary>
     /// Constructors the with custom message and slave exception response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ConstructorWithCustomMessageAndSlaveExceptionResponse()
     {
         var response = new SlaveExceptionResponse(12, Modbus.ReadCoils, 2);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Device;
@@ -10,12 +10,13 @@ namespace ModbusRx.IntegrationTests;
 /// ModbusSerialMasterFixture.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusRxMasterFixture" />
+[TUnit.Core.InheritsTests]
 public abstract class ModbusRxSerialMasterFixture : ModbusRxMasterFixture
 {
     /// <summary>
     /// Returns the query data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ReturnQueryData()
     {
         Assert.True(((ModbusSerialMaster)Master!).ReturnQueryData(SlaveAddress, 18));

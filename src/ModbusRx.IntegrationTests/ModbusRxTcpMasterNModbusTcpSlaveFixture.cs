@@ -13,6 +13,7 @@ namespace ModbusRx.IntegrationTests;
 /// NModbusTcpMasterNModbusTcpSlaveFixture.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusRxMasterFixture" />
+[TUnit.Core.InheritsTests]
 public class ModbusRxTcpMasterNModbusTcpSlaveFixture : ModbusRxMasterFixture
 {
     /// <summary>

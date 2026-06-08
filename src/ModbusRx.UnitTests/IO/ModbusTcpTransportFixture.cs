@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -30,7 +30,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Builds the message frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void BuildMessageFrame()
     {
         var mock = new Mock<ModbusIpTransport>(StreamResourceMock) { CallBase = true };
@@ -44,7 +44,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Gets the mbap header.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetMbapHeader()
     {
         var message = new WriteMultipleRegistersRequest(3, 1, MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(0, 120));
@@ -55,7 +55,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Writes this instance.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void Write()
     {
         var streamMock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -78,7 +78,7 @@ public class ModbusTcpTransportFixture
     /// Reads the request response.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestResponse()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -107,7 +107,7 @@ public class ModbusTcpTransportFixture
     /// Reads the request response connection aborted while reading mbap header.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestResponse_ConnectionAbortedWhileReadingMBAPHeaderAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -122,7 +122,7 @@ public class ModbusTcpTransportFixture
     /// Reads the request response connection aborted while reading message frame.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestResponse_ConnectionAbortedWhileReadingMessageFrameAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -138,7 +138,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Gets the new transaction identifier.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void GetNewTransactionId()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -150,7 +150,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Called when [should retry response returns true if within threshold].
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void OnShouldRetryResponse_ReturnsTrue_IfWithinThreshold()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -167,7 +167,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Called when [should retry response returns false if threshold disabled].
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void OnShouldRetryResponse_ReturnsFalse_IfThresholdDisabled()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -184,7 +184,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Called when [should retry response returns false if equal transaction identifier].
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void OnShouldRetryResponse_ReturnsFalse_IfEqualTransactionId()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -201,7 +201,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Called when [should retry response returns false if outside threshold].
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void OnShouldRetryResponse_ReturnsFalse_IfOutsideThreshold()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -218,7 +218,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Validates the response mismatching transaction ids.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ValidateResponse_MismatchingTransactionIds()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);
@@ -234,7 +234,7 @@ public class ModbusTcpTransportFixture
     /// <summary>
     /// Validates the response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ValidateResponse()
     {
         var transport = new ModbusIpTransport(StreamResourceMock);

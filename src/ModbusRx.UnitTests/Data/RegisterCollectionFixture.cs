@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -14,7 +14,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Bytes the count.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ByteCount()
     {
         var col = new RegisterCollection(1, 2, 3);
@@ -24,7 +24,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Creates new registercollection.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NewRegisterCollection()
     {
         var col = new RegisterCollection(5, 3, 4, 6);
@@ -36,7 +36,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Creates new registercollectionfrombytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void NewRegisterCollectionFromBytes()
     {
         var col = new RegisterCollection([0, 1, 0, 2, 0, 3]);
@@ -50,7 +50,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Registers the collection network bytes.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RegisterCollectionNetworkBytes()
     {
         var col = new RegisterCollection(5, 3, 4, 6);
@@ -63,7 +63,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Registers the collection empty.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RegisterCollectionEmpty()
     {
         var col = new RegisterCollection();
@@ -74,7 +74,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Modifies the register.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModifyRegister()
     {
         var col = new RegisterCollection(1, 2, 3, 4)
@@ -86,7 +86,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Adds the register.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void AddRegister()
     {
         var col = new RegisterCollection();
@@ -99,7 +99,7 @@ public class RegisterCollectionFixture
     /// <summary>
     /// Removes the register.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void RemoveRegister()
     {
         var col = new RegisterCollection(3, 4, 5);

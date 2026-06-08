@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -36,7 +36,7 @@ public class ModbusMasterFixture
     /// Reads the coils.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadCoils()
     {
         await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadCoilsAsync(1, 1, 0));
@@ -47,7 +47,7 @@ public class ModbusMasterFixture
     /// Reads the inputs.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadInputs()
     {
         await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputsAsync(1, 1, 0));
@@ -58,7 +58,7 @@ public class ModbusMasterFixture
     /// Reads the holding registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadHoldingRegistersAsync()
     {
         await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadHoldingRegistersAsync(1, 1, 0));
@@ -69,7 +69,7 @@ public class ModbusMasterFixture
     /// Reads the input registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadInputRegistersAsync()
     {
         await Assert.ThrowsAsync<ArgumentException>(async () => await Master.ReadInputRegistersAsync(1, 1, 0));
@@ -80,7 +80,7 @@ public class ModbusMasterFixture
     /// Writes the multiple registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task WriteMultipleRegistersAsync()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleRegistersAsync(1, 1, null!));
@@ -92,7 +92,7 @@ public class ModbusMasterFixture
     /// Writes the multiple coils.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task WriteMultipleCoilsAsync()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await Master.WriteMultipleCoilsAsync(1, 1, null!));
@@ -104,7 +104,7 @@ public class ModbusMasterFixture
     /// Reads the write multiple registers.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadWriteMultipleRegistersAsync()
     {
         // validate numberOfPointsToRead

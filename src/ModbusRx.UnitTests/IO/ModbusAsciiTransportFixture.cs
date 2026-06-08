@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
@@ -27,7 +27,7 @@ public class ModbusAsciiTransportFixture
     /// <summary>
     /// Builds the message frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void BuildMessageFrame()
     {
         byte[] expected = { 58, 48, 50, 48, 49, 48, 48, 48, 48, 48, 48, 48, 49, 70, 67, 13, 10 };
@@ -42,7 +42,7 @@ public class ModbusAsciiTransportFixture
     /// Reads the request response.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestResponseAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -66,7 +66,7 @@ public class ModbusAsciiTransportFixture
     /// Reads the request response not enough bytes.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ReadRequestResponseNotEnoughBytesAsync()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
@@ -89,7 +89,7 @@ public class ModbusAsciiTransportFixture
     /// <summary>
     /// Checksumses the match succeed.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ChecksumsMatchSucceed()
     {
         var transport = new ModbusAsciiTransport(StreamResource);
@@ -102,7 +102,7 @@ public class ModbusAsciiTransportFixture
     /// <summary>
     /// Checksumses the match fail.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ChecksumsMatchFail()
     {
         var transport = new ModbusAsciiTransport(StreamResource);

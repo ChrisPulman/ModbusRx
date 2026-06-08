@@ -111,9 +111,6 @@ public sealed class ModbusSerialSlave : ModbusSlave
             {
                 try
                 {
-                    // TODO: remove delay once async will be implemented in transport level
-                    await Task.Delay(20).ConfigureAwait(false);
-
                     // read request and build message
                     var frame = await SerialTransport?.ReadRequest()!;
                     var request = ModbusMessageFactory.CreateModbusRequest(frame!);

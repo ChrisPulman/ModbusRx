@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Device;
@@ -15,7 +15,7 @@ public class ModbusRxSerialRtuMasterFixture : NetworkTestBase
     /// <summary>
     /// Tests the modbus RTU master read timeout.
     /// </summary>
-    [SkippableFact]
+    [TUnit.Core.Test]
     public void ModbusRxRtuMaster_ReadTimeout()
     {
         // Skip this test in CI environments as serial ports are not available

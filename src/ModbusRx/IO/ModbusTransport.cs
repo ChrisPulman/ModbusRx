@@ -114,6 +114,7 @@ public abstract class ModbusTransport : IDisposable
                 lock (_syncLock)
                 {
                     Write(message);
+                    Thread.Sleep(3000); // Allow response to arrive
 
                     bool readAgain;
                     do
@@ -165,12 +166,13 @@ public abstract class ModbusTransport : IDisposable
             }
             catch (Exception e)
             {
-                if (e is FormatException or
+                var actualException = e is AggregateException ae ? ae.GetBaseException() : e;
+                if (actualException is FormatException or
                     NotImplementedException or
                     TimeoutException or
                     IOException)
                 {
-                    Debug.WriteLine($"{e.GetType().Name}, {Retries - attempt + 1} retries remaining - {e}");
+                    Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} {actualException.GetType().Name}, {Retries - attempt + 1} retries remaining - {actualException}");
 
                     if (attempt++ > Retries)
                     {

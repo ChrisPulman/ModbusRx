@@ -25,7 +25,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests that the ModbusServer can serve data over TCP.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_TcpCommunication_ShouldWork()
     {
         // Arrange
@@ -60,7 +60,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests that the ModbusServer can serve data over UDP.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_UdpCommunication_ShouldWork()
     {
         // Arrange
@@ -98,7 +98,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests that simulation mode generates changing data.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_SimulationMode_ShouldGenerateData()
     {
         // Arrange
@@ -124,7 +124,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests reactive data observation.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_ReactiveObservation_ShouldEmitData()
     {
         // Arrange
@@ -152,7 +152,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests that multiple clients can connect to the same server.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_MultipleClients_ShouldWork()
     {
         // Arrange
@@ -191,11 +191,11 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests different simulation patterns.
     /// </summary>
     /// <param name="pattern">The test pattern to verify.</param>
-    [Theory]
-    [InlineData(TestPattern.CountingUp)]
-    [InlineData(TestPattern.SineWave)]
-    [InlineData(TestPattern.SquareWave)]
-    [InlineData(TestPattern.Random)]
+    [TUnit.Core.Test]
+    [TUnit.Core.Arguments(TestPattern.CountingUp)]
+    [TUnit.Core.Arguments(TestPattern.SineWave)]
+    [TUnit.Core.Arguments(TestPattern.SquareWave)]
+    [TUnit.Core.Arguments(TestPattern.Random)]
     public void ModbusServer_SimulationPatterns_ShouldLoadCorrectly(TestPattern pattern)
     {
         // Arrange
@@ -230,7 +230,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests writing data to the server.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_WriteOperations_ShouldWork()
     {
         // Arrange
@@ -267,7 +267,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests server start/stop functionality.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_StartStop_ShouldWork()
     {
         // Arrange
@@ -289,7 +289,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// <summary>
     /// Tests that server properly handles client aggregation.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_ClientAggregation_ShouldWork()
     {
         // Arrange
@@ -309,7 +309,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
     /// Tests performance under load.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_PerformanceTest_ShouldHandleMultipleRequests()
     {
         // Arrange

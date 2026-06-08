@@ -31,7 +31,7 @@ public class ModbusServerTests
     /// Tests that ModbusServer can be created and disposed properly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_CreateAndDispose_ShouldNotThrow()
     {
         // Arrange & Act & Assert
@@ -45,7 +45,7 @@ public class ModbusServerTests
     /// Tests that ModbusServer can start and stop properly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_StartAndStop_ShouldUpdateRunningState()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class ModbusServerTests
     /// Tests that simulation mode can be enabled and disabled.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_SimulationMode_ShouldUpdateDataStore()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class ModbusServerTests
     /// <summary>
     /// Tests that custom data can be loaded into the server.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_LoadSimulationData_ShouldUpdateDataStore()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class ModbusServerTests
     /// <summary>
     /// Tests that TCP server can be started and configured.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_StartTcpServer_ShouldReturnDisposable()
     {
         // Arrange
@@ -170,27 +170,38 @@ public class ModbusServerTests
     /// <summary>
     /// Tests that UDP server can be started and configured.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_StartUdpServer_ShouldReturnDisposable()
     {
         // Arrange
         using var server = new ModbusServer();
-        var port = GetAvailablePort();
+        IDisposable? subscription = null;
 
         // Act
-        var subscription = server.StartUdpServer(port, 1);
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                subscription = server.StartUdpServer(GetAvailableUdpPort(), 1);
+                break;
+            }
+            catch (System.Net.Sockets.SocketException) when (attempt < 4)
+            {
+                Thread.Sleep(25);
+            }
+        }
 
         // Assert
         Assert.NotNull(subscription);
 
         // Cleanup
-        subscription.Dispose();
+        subscription!.Dispose();
     }
 
     /// <summary>
     /// Tests reactive server extensions.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServerExtensions_CreateReactiveServer_ShouldWork()
     {
         // Arrange
@@ -211,7 +222,7 @@ public class ModbusServerTests
     /// Tests data observation extensions.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServerExtensions_ObserveDataChanges_ShouldEmitData()
     {
         // Arrange
@@ -219,51 +230,52 @@ public class ModbusServerTests
         server.Start();
         server.SimulationMode = true;
 
-        var dataReceived = false;
-        var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
+        var timeout = GetEnvironmentTimeout(TimeSpan.FromSeconds(2));
 
         // Act
-        using var subscription = server.ObserveDataChanges(50)
-            .Take(1)
-            .Subscribe(_ => dataReceived = true);
-
-        await Task.Delay(timeout);
+        var data = await server.ObserveDataChanges(50)
+            .FirstAsync()
+            .Timeout(timeout)
+            .ToTask();
 
         // Assert
-        Assert.True(dataReceived);
+        Assert.NotNull(data.holdingRegisters);
+        Assert.NotNull(data.inputRegisters);
+        Assert.NotNull(data.coils);
+        Assert.NotNull(data.inputs);
     }
 
     /// <summary>
     /// Tests holding register observation.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServerExtensions_ObserveHoldingRegisters_ShouldEmitChanges()
     {
         // Arrange
         using var server = new ModbusServer();
         server.Start();
 
-        var dataReceived = false;
         var expectedData = new ushort[] { 1, 2, 3, 4, 5 };
         var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // Act
         using var subscription = server.ObserveHoldingRegisters(0, 5, 50)
             .Take(1)
-            .Subscribe(_ => dataReceived = true);
+            .Subscribe(_ => completion.TrySetResult(true));
 
         server.LoadSimulationData(expectedData);
-        await Task.Delay(timeout);
+        var completedTask = await Task.WhenAny(completion.Task, Task.Delay(timeout));
 
         // Assert
-        Assert.True(dataReceived);
+        Assert.True(completedTask == completion.Task);
     }
 
     /// <summary>
     /// Tests adding TCP client configuration.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_AddTcpClient_WithValidParameters_ShouldThrowExpectedException()
     {
         // Arrange
@@ -279,7 +291,7 @@ public class ModbusServerTests
     /// <summary>
     /// Tests adding UDP client configuration.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_AddUdpClient_WithValidParameters_ShouldReturnDisposable()
     {
         // Arrange
@@ -299,10 +311,10 @@ public class ModbusServerTests
     /// Tests that invalid client names throw exceptions.
     /// </summary>
     /// <param name="name">The name.</param>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
+    [TUnit.Core.Test]
+    [TUnit.Core.Arguments(null)]
+    [TUnit.Core.Arguments("")]
+    [TUnit.Core.Arguments("   ")]
     public void ModbusServer_AddTcpClient_WithInvalidName_ShouldThrowException(string? name)
     {
         // Arrange
@@ -315,7 +327,7 @@ public class ModbusServerTests
     /// <summary>
     /// Tests custom data store assignment.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ModbusServer_CustomDataStore_ShouldBeUsed()
     {
         // Arrange
@@ -333,7 +345,7 @@ public class ModbusServerTests
     /// Tests that the server handles high-frequency data updates in CI environments.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusServer_HighFrequencyUpdates_ShouldWorkInCI()
     {
         // Arrange
@@ -362,7 +374,7 @@ public class ModbusServerTests
     /// <param name="normalTimeout">Normal timeout for local testing.</param>
     /// <returns>Appropriate timeout for the environment.</returns>
     private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
-            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5) :
+            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 2) :
             normalTimeout;
 
     private static int GetAvailablePort()
@@ -372,5 +384,11 @@ public class ModbusServerTests
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
+    }
+
+    private static int GetAvailableUdpPort()
+    {
+        using var udpClient = new CP.IO.Ports.UdpClientRx(0);
+        return ((IPEndPoint)udpClient.Client.LocalEndPoint!).Port;
     }
 }

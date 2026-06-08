@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -23,7 +23,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
     /// The goal is the test the exception in WriteCompleted when the slave attempts to read another request from an already closed master.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusTcpSlave_ConnectionClosesGracefully()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
     /// Tests possible exception when master closes gracefully and the ReadHeaderCompleted EndRead call returns 0 bytes.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
     /// Modbuses the TCP slave multi threaded.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
+    [TUnit.Core.Test]
     public async Task ModbusTcpSlave_MultiThreaded()
     {
         // Arrange

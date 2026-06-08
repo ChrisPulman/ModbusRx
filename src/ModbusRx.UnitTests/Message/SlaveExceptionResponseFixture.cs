@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Message;
@@ -14,7 +14,7 @@ public class SlaveExceptionResponseFixture
     /// <summary>
     /// Creates the slave exception response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateSlaveExceptionResponse()
     {
         var response = new SlaveExceptionResponse(11, Modbus.ReadCoils + Modbus.ExceptionOffset,            2);
@@ -26,7 +26,7 @@ public class SlaveExceptionResponseFixture
     /// <summary>
     /// Slaves the exception response pdu.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void SlaveExceptionResponsePDU()
     {
         var response = new SlaveExceptionResponse(11, Modbus.ReadCoils + Modbus.ExceptionOffset,            2);

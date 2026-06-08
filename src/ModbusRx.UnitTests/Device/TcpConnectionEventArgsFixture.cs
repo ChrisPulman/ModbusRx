@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,21 +15,21 @@ public class TcpConnectionEventArgsFixture
     /// <summary>
     /// TCPs the connection event arguments null end point.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void TcpConnectionEventArgs_NullEndPoint() =>
         Assert.Throws<ArgumentNullException>(() => new TcpConnectionEventArgs(null!));
 
     /// <summary>
     /// TCPs the connection event arguments empty end point.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void TcpConnectionEventArgs_EmptyEndPoint() =>
         Assert.Throws<ArgumentException>(() => new TcpConnectionEventArgs(string.Empty));
 
     /// <summary>
     /// TCPs the connection event arguments.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void TcpConnectionEventArgs()
     {
         var args = new TcpConnectionEventArgs("foo");

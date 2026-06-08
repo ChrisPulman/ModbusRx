@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if JAMOD
@@ -36,7 +36,7 @@ public class ModbusRxSerialAsciiMasterJamodSerialAsciiSlaveFixture : ModbusMaste
     /// <summary>
     /// Reads the coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public override void ReadCoils() =>
         base.ReadCoils();
 }

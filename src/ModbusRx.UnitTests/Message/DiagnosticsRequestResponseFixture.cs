@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -15,7 +15,7 @@ public class DiagnosticsRequestResponseFixture
     /// <summary>
     /// Converts to string_test.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_Test()
     {
         DiagnosticsRequestResponse response;

@@ -99,11 +99,17 @@ public sealed class SimulationDataProvider : IDisposable
     /// <param name="simulationType">The type of simulation to run.</param>
     public void Start(DataStore dataStore, TimeSpan interval, SimulationType simulationType = SimulationType.Random)
     {
+        if (dataStore == null)
+        {
+            throw new ArgumentNullException(nameof(dataStore));
+        }
+
         if (_isRunning.Value)
         {
             return;
         }
 
+        UpdateData(dataStore, simulationType);
         _timer = Observable.Interval(interval);
 
         _disposables.Add(_timer.Subscribe(_ => UpdateData(dataStore, simulationType)));

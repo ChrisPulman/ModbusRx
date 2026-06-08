@@ -6,12 +6,12 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
 using ModbusRx.Utility;
-using ReactiveMarbles.Extensions;
 
 namespace ModbusRx.Reactive
 {
@@ -230,7 +230,7 @@ namespace ModbusRx.Reactive
         /// <returns>
         /// A Observable of ushort.
         /// </returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
                 {
                     var isConnected = false;
@@ -279,7 +279,7 @@ namespace ModbusRx.Reactive
         /// <returns>
         /// A Observable of ushort.
         /// </returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
                 {
                     var isConnected = false;
@@ -289,6 +289,7 @@ namespace ModbusRx.Reactive
                     .Subscribe(
                         async modbus =>
                         {
+                            Console.WriteLine($"ReadHoldingRegisters polling: connected={modbus.connected}, error={modbus.error?.Message}");
                             try
                             {
                                 isConnected = modbus.connected;
@@ -311,6 +312,7 @@ namespace ModbusRx.Reactive
                                 modbus.master?.Dispose();
                                 modbus.master = null;
                                 isConnected = false;
+                                Console.WriteLine($"ReadHoldingRegisters error: {ex.Message}");
                                 observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
                             }
                         },
@@ -328,7 +330,7 @@ namespace ModbusRx.Reactive
         /// <returns>
         /// A Observable of bool.
         /// </returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
                 {
                     var isConnected = false;
@@ -377,7 +379,7 @@ namespace ModbusRx.Reactive
         /// <returns>
         /// A Observable of bool.
         /// </returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
                 {
                     var isConnected = false;
@@ -684,15 +686,17 @@ namespace ModbusRx.Reactive
                 var comdis = new CompositeDisposable();
 
                 // Subscribe to com ports available
-                SerialPortRx.PortNames().Do(x =>
+                SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
                             observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                            master = ModbusIpMaster.CreateIp(new SerialPortRx(port, baudRate));
+                            var serialport = new SerialPortRx(port, baudRate);
+                            master = ModbusIpMaster.CreateIp(serialport);
                             comdis.Add(master);
+                            await serialport.Open();
                             connected = true;
                             connectionMessageSent = false;
                             observer.OnNext((connected, null, master));
@@ -752,18 +756,20 @@ namespace ModbusRx.Reactive
                 throw new ArgumentOutOfRangeException(nameof(unitId));
             }
 
-            return Observable.Create<ModbusSerialSlave>(observer =>
+            return Observable.Create<ModbusSerialSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
                  Task? slaveThread = null;
-                 SerialPortRx.PortNames().Do(x =>
+                 SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
-                            using var slave = ModbusSerialSlave.CreateRtu(unitId, new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake));
+                            var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
+                            var slave = ModbusSerialSlave.CreateRtu(unitId, serialport);
+                            await serialport.Open();
                             slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
@@ -826,18 +832,20 @@ namespace ModbusRx.Reactive
                 throw new ArgumentOutOfRangeException(nameof(unitId));
             }
 
-            return Observable.Create<ModbusSerialSlave>(observer =>
+            return Observable.Create<ModbusSerialSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
                  Task? slaveThread = null;
-                 SerialPortRx.PortNames().Do(x =>
+                 SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
-                            using var slave = ModbusSerialSlave.CreateAscii(unitId, new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake));
+                            var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
+                            var slave = ModbusSerialSlave.CreateAscii(unitId, serialport);
+                            await serialport.Open();
                             slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
@@ -889,7 +897,7 @@ namespace ModbusRx.Reactive
             Parity parity = Parity.None,
             StopBits stopBits = StopBits.One,
             Handshake handshake = Handshake.None) =>
-            Observable.Create<(bool connected, Exception? error, IModbusSerialMaster? master)>(observer =>
+            Observable.Create<(bool connected, Exception? error, IModbusSerialMaster? master)>(async observer =>
             {
                 if (string.IsNullOrWhiteSpace(port))
                 {
@@ -919,49 +927,25 @@ namespace ModbusRx.Reactive
                     })
                     .DisposeWith(dis);
 
-                // Subscribe to COM port availability
-                var comDisposables = new CompositeDisposable();
-
-                SerialPortRx.PortNames()
-                    .Do(names =>
-                    {
-                        try
-                        {
-                            if (comDisposables?.Count == 0 && names.Contains(port))
-                            {
-                                observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                                var serial = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
-                                master = ModbusSerialMaster.CreateRtu(serial);
-                                comDisposables.Add(master);
-                                connected = true;
-                                connectionMessageSent = false;
-                                observer.OnNext((connected, null, master));
-                            }
-                            else
-                            {
-                                dis.Remove(comDisposables!);
-                                comDisposables?.Dispose();
-                                connected = false;
-                                master = null;
-                                observer.OnNext((connected, null, master));
-                                comDisposables = [];
-                                comDisposables.DisposeWith(dis);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            dis.Remove(comDisposables!);
-                            comDisposables?.Dispose();
-                            connected = false;
-                            master = null;
-                            observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Serial RTU Master Fault", ex), master));
-                            comDisposables = [];
-                            comDisposables.DisposeWith(dis);
-                        }
-                    })
-                    .Retry()
-                    .Subscribe()
-                    .DisposeWith(dis);
+                // Directly create master
+                try
+                {
+                    observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
+                    var serial = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
+                    await serial.Open();
+                    serial.ReadTimeout = 10000; // Set timeout to 10 seconds
+                    master = ModbusSerialMaster.CreateRtu(serial);
+                    connected = true;
+                    connectionMessageSent = false;
+                    observer.OnNext((connected, null, master));
+                }
+                catch (Exception ex)
+                {
+                    connected = false;
+                    master = null;
+                    Console.WriteLine($"SerialRtuMaster error: {ex.Message}");
+                    observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Serial RTU Master Fault", ex), master));
+                }
 
                 return dis;
             }).Publish().RefCount();
@@ -984,7 +968,7 @@ namespace ModbusRx.Reactive
             Parity parity = Parity.Even,
             StopBits stopBits = StopBits.One,
             Handshake handshake = Handshake.None) =>
-            Observable.Create<(bool connected, Exception? error, IModbusSerialMaster? master)>(observer =>
+            Observable.Create<(bool connected, Exception? error, IModbusSerialMaster? master)>(async observer =>
             {
                 if (string.IsNullOrWhiteSpace(port))
                 {
@@ -1014,49 +998,23 @@ namespace ModbusRx.Reactive
                     })
                     .DisposeWith(dis);
 
-                // Subscribe to COM port availability
-                var comDisposables = new CompositeDisposable();
-
-                SerialPortRx.PortNames()
-                    .Do(names =>
-                    {
-                        try
-                        {
-                            if (comDisposables?.Count == 0 && names.Contains(port))
-                            {
-                                observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                                var serial = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
-                                master = ModbusSerialMaster.CreateAscii(serial);
-                                comDisposables.Add(master);
-                                connected = true;
-                                connectionMessageSent = false;
-                                observer.OnNext((connected, null, master));
-                            }
-                            else
-                            {
-                                dis.Remove(comDisposables!);
-                                comDisposables?.Dispose();
-                                connected = false;
-                                master = null;
-                                observer.OnNext((connected, null, master));
-                                comDisposables = [];
-                                comDisposables.DisposeWith(dis);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            dis.Remove(comDisposables!);
-                            comDisposables?.Dispose();
-                            connected = false;
-                            master = null;
-                            observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Serial ASCII Master Fault", ex), master));
-                            comDisposables = [];
-                            comDisposables.DisposeWith(dis);
-                        }
-                    })
-                    .Retry()
-                    .Subscribe()
-                    .DisposeWith(dis);
+                // Directly create master
+                try
+                {
+                    observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
+                    var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
+                    master = ModbusSerialMaster.CreateAscii(serialport);
+                    await serialport.Open();
+                    connected = true;
+                    connectionMessageSent = false;
+                    observer.OnNext((connected, null, master));
+                }
+                catch (Exception ex)
+                {
+                    connected = false;
+                    master = null;
+                    observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Serial ASCII Master Fault", ex), master));
+                }
 
                 return dis;
             }).Publish().RefCount();
@@ -1070,7 +1028,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1080,12 +1038,17 @@ namespace ModbusRx.Reactive
                     .Subscribe(
                         async modbus =>
                         {
+                            if (modbus.master == null)
+                            {
+                                return;
+                            }
+
                             try
                             {
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadHoldingRegistersAsync(slaveAddress, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadHoldingRegistersAsync(slaveAddress, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1108,6 +1071,57 @@ namespace ModbusRx.Reactive
             }).Retry();
 
         /// <summary>
+        /// Reads the input registers using a reactive serial master stream.
+        /// </summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="slaveAddress">The Modbus slave address.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
+            {
+                var isConnected = false;
+                var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry()
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            if (modbus.master == null)
+                            {
+                                return;
+                            }
+
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                if (modbus.connected && modbus.error == null)
+                                {
+                                    var result = await modbus.master.ReadInputRegistersAsync(slaveAddress, startAddress, numberOfPoints);
+                                    if (result != null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                modbus.master?.Dispose();
+                                isConnected = false;
+                                observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
+                            }
+                        },
+                        exception => observer.OnError(exception));
+                return Disposable.Create(() => subscription.Dispose());
+            }).Retry();
+
+        /// <summary>
         /// Reads the coils using a reactive serial master stream.
         /// </summary>
         /// <param name="source">The source serial master stream.</param>
@@ -1116,7 +1130,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1126,12 +1140,17 @@ namespace ModbusRx.Reactive
                     .Subscribe(
                         async modbus =>
                         {
+                            if (modbus.master == null)
+                            {
+                                return;
+                            }
+
                             try
                             {
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadCoilsAsync(slaveAddress, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadCoilsAsync(slaveAddress, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1162,7 +1181,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1172,12 +1191,17 @@ namespace ModbusRx.Reactive
                     .Subscribe(
                         async modbus =>
                         {
+                            if (modbus.master == null)
+                            {
+                                return;
+                            }
+
                             try
                             {
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadInputsAsync(slaveAddress, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadInputsAsync(slaveAddress, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1207,7 +1231,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1217,12 +1241,13 @@ namespace ModbusRx.Reactive
                     .Subscribe(
                         async modbus =>
                         {
+                            Console.WriteLine($"ReadHoldingRegisters polling: connected={modbus.connected}, error={modbus.error?.Message}");
                             try
                             {
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadHoldingRegistersAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadHoldingRegistersAsync(1, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1235,8 +1260,11 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
+                                Console.WriteLine($"ReadHoldingRegisters error: {ex.Message}");
                                 observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
                             }
                         },
@@ -1252,7 +1280,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1267,7 +1295,7 @@ namespace ModbusRx.Reactive
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadInputRegistersAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadInputRegistersAsync(1, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1280,7 +1308,9 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
                             }
@@ -1297,7 +1327,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1312,7 +1342,7 @@ namespace ModbusRx.Reactive
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadCoilsAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadCoilsAsync(1, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1325,7 +1355,9 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnError(new ModbusCommunicationException("Read Coils Error", ex));
                             }
@@ -1342,7 +1374,7 @@ namespace ModbusRx.Reactive
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 100.0) =>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1357,7 +1389,7 @@ namespace ModbusRx.Reactive
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error == null)
                                 {
-                                    var result = await modbus.master!.ReadInputsAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master.ReadInputsAsync(1, startAddress, numberOfPoints);
                                     if (result != null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1370,7 +1402,9 @@ namespace ModbusRx.Reactive
                             }
                             catch (Exception ex)
                             {
+                                // Asume the connection is broken.
                                 modbus.master?.Dispose();
+                                modbus.master = null;
                                 isConnected = false;
                                 observer.OnError(new ModbusCommunicationException("Read Inputs Error", ex));
                             }
@@ -1378,5 +1412,17 @@ namespace ModbusRx.Reactive
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
             }).Retry();
+
+        private static SerialPortRx CreateSerialPort(string port, int baudRate, int dataBits, Parity parity, StopBits stopBits, Handshake handshake)
+        {
+#if NETSTANDARD2_0
+            _ = parity;
+            _ = stopBits;
+            _ = handshake;
+            return new SerialPortRx(port, baudRate, dataBits);
+#else
+            return new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+#endif
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -17,7 +17,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadCoilsRequest()
     {
         var request =
@@ -35,7 +35,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message read coils request with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadCoilsRequestWithInvalidFrameSize()
     {
         byte[] frame = { 11, Modbus.ReadCoils, 4, 1, 2 };
@@ -45,7 +45,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadCoilsResponse()
     {
         var response =
@@ -64,7 +64,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read coils response with no byte count.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadCoilsResponseWithNoByteCount()
     {
         byte[] frame = { 11, Modbus.ReadCoils };
@@ -74,7 +74,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message read coils response with invalid data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadCoilsResponseWithInvalidDataSize()
     {
         byte[] frame = { 11, Modbus.ReadCoils, 4, 1, 2, 3 };
@@ -84,7 +84,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read holding registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadHoldingRegistersRequest()
     {
         var request =
@@ -104,7 +104,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message read holding registers request with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadHoldingRegistersRequestWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<ReadHoldingInputRegistersRequest>(
@@ -113,7 +113,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read holding registers response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadHoldingRegistersResponse()
     {
         var response =
@@ -130,14 +130,14 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message read holding registers response with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadHoldingRegistersResponseWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() => ModbusMessageFactory.CreateModbusMessage<ReadHoldingInputRegistersResponse>(new byte[] { 11, Modbus.ReadHoldingRegisters }));
 
     /// <summary>
     /// Creates the modbus message slave exception response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageSlaveExceptionResponse()
     {
         var response =
@@ -154,7 +154,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message slave exception response with invalid function code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageSlaveExceptionResponseWithInvalidFunctionCode() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<SlaveExceptionResponse>(new byte[] { 11, 128, 2 }));
@@ -162,7 +162,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message slave exception response with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageSlaveExceptionResponseWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<SlaveExceptionResponse>(new byte[] { 11, 128 }));
@@ -170,7 +170,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write single coil request response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteSingleCoilRequestResponse()
     {
         var request =
@@ -189,7 +189,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message write single coil request response with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteSingleCoilRequestResponseWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<WriteSingleCoilRequestResponse>(new byte[] { 11, Modbus.WriteSingleCoil, 0, 105, byte.MaxValue }));
@@ -197,7 +197,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write single register request response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteSingleRegisterRequestResponse()
     {
         var request =
@@ -217,7 +217,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message write single register request response with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteSingleRegisterRequestResponseWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<WriteSingleRegisterRequestResponse>(new byte[] { 11, Modbus.WriteSingleRegister, 0, 1, 0 }));
@@ -225,7 +225,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write multiple registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleRegistersRequest()
     {
         var request =
@@ -247,7 +247,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message write multiple registers request with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleRegistersRequestWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<WriteMultipleRegistersRequest>(new byte[] { 11, Modbus.WriteMultipleRegisters, 0, 5, 0, 1, 2 }));
@@ -255,7 +255,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write multiple registers response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleRegistersResponse()
     {
         var response =
@@ -273,7 +273,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write multiple coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleCoilsRequest()
     {
         var request =
@@ -295,7 +295,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message write multiple coils request with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleCoilsRequestWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<WriteMultipleCoilsRequest>(new byte[] { 17, Modbus.WriteMultipleCoils, 0, 19, 0, 10, 2 }));
@@ -303,7 +303,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message write multiple coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleCoilsResponse()
     {
         var response =
@@ -321,7 +321,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message write multiple coils response with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageWriteMultipleCoilsResponseWithInvalidFrameSize() =>
         Assert.Throws<FormatException>(() =>
             ModbusMessageFactory.CreateModbusMessage<WriteMultipleCoilsResponse>(new byte[] { 17, Modbus.WriteMultipleCoils, 0, 19, 0 }));
@@ -329,7 +329,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message read write multiple registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadWriteMultipleRegistersRequest()
     {
         var request =
@@ -345,7 +345,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the size of the modbus message read write multiple registers request with invalid frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReadWriteMultipleRegistersRequestWithInvalidFrameSize()
     {
         byte[] frame = { 17, Modbus.ReadWriteMultipleRegisters, 1, 2, 3 };
@@ -356,7 +356,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message return query data request response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReturnQueryDataRequestResponse()
     {
         const byte slaveAddress = 5;
@@ -373,7 +373,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus message return query data request response too small.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusMessageReturnQueryDataRequestResponseTooSmall()
     {
         var frame = new byte[] { 5, 8, 0, 0, 5 };
@@ -384,21 +384,21 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus request with invalid message frame.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusRequestWithInvalidMessageFrame() =>
         Assert.Throws<FormatException>(() => ModbusMessageFactory.CreateModbusRequest(new byte[] { 0, 1 }));
 
     /// <summary>
     /// Creates the modbus request with invalid function code.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusRequestWithInvalidFunctionCode() =>
         Assert.Throws<ArgumentException>(() => ModbusMessageFactory.CreateModbusRequest(new byte[] { 1, 99, 0, 0, 0, 1, 23 }));
 
     /// <summary>
     /// Creates the modbus request for read coils.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusRequestForReadCoils()
     {
         var req = new ReadCoilsInputsRequest(1, 2, 1, 10);
@@ -409,7 +409,7 @@ public class ModbusMessageFactoryFixture
     /// <summary>
     /// Creates the modbus request for diagnostics.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateModbusRequestForDiagnostics()
     {
         var diagnosticsRequest = new DiagnosticsRequestResponse(0, 2, new RegisterCollection(45));

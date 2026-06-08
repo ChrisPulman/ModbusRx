@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
@@ -15,7 +15,7 @@ public class ReadWriteMultipleRegistersRequestFixture
     /// <summary>
     /// Reads the write multiple registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ReadWriteMultipleRegistersRequest()
     {
         var writeCollection = new RegisterCollection(255, 255, 255);
@@ -39,7 +39,7 @@ public class ReadWriteMultipleRegistersRequestFixture
     /// <summary>
     /// Protocols the data unit.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
         var writeCollection = new RegisterCollection(255, 255, 255);
@@ -54,7 +54,7 @@ public class ReadWriteMultipleRegistersRequestFixture
     /// <summary>
     /// Converts to string_readwritemultipleregistersrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_ReadWriteMultipleRegistersRequest()
     {
         var writeCollection = new RegisterCollection(255, 255, 255);

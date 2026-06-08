@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class WriteMultipleRegistersResponseFixture
     /// <summary>
     /// Creates the write multiple registers response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersResponse()
     {
         var response = new WriteMultipleRegistersResponse(12, 39, 2);
@@ -28,13 +28,13 @@ public class WriteMultipleRegistersResponseFixture
     /// <summary>
     /// Creates the write multiple registers response too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersResponseTooMuchData() => Assert.Throws<ArgumentOutOfRangeException>(() => new WriteMultipleRegistersResponse(1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
 
     /// <summary>
     /// Creates the maximum size of the write multiple registers response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersResponseMaxSize()
     {
         var response = new WriteMultipleRegistersResponse(1, 2, Modbus.MaximumRegisterRequestResponseSize);
@@ -44,7 +44,7 @@ public class WriteMultipleRegistersResponseFixture
     /// <summary>
     /// Converts to string_test.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_Test()
     {
         var response = new WriteMultipleRegistersResponse(1, 2, 3);

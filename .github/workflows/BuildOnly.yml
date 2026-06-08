@@ -52,13 +52,25 @@ jobs:
       working-directory: src
 
     - name: Run Unit Tests and Generate Coverage
-      uses: glennawatson/coverlet-msbuild@v2
-      with:
-        project-files: 'src/**/*Tests*.csproj'
-        no-build: true
-        include-filter: 'ModbusRx*'
-        output-format: cobertura
-        configuration: Release
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $testProjects = @(
+          'src\ModbusRx.UnitTests\ModbusRx.UnitTests.csproj',
+          'src\ModbusRx.Generators.Tests\ModbusRx.Generators.Tests.csproj',
+          'src\ModbusRx.IntegrationTests\ModbusRx.IntegrationTests.csproj'
+        )
+
+        foreach ($project in $testProjects) {
+          $projectName = [System.IO.Path]::GetFileNameWithoutExtension($project)
+          dotnet test $project `
+            --configuration Release `
+            --no-build `
+            /p:CollectCoverage=true `
+            /p:Include="ModbusRx*" `
+            /p:CoverletOutputFormat=cobertura `
+            /p:CoverletOutput="$env:GITHUB_WORKSPACE\TestResults\coverage\$projectName\"
+        }
 
     - name: Upload Code Coverage
       uses: codecov/codecov-action@v5

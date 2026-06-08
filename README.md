@@ -18,9 +18,11 @@ ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET ap
 
 - **🔧 Full Modbus Protocol Support**: RTU, ASCII, TCP, and UDP variants
 - **⚡ Reactive Design**: Built with Rx.NET for responsive, event-driven applications  
+- **🔁 Async Observables**: `IObservableAsync<T>` bridges for ReactiveUI.Extensions on modern .NET targets
+- **🧩 Source Generators**: Attribute-driven register maps that expose properties and matching observable streams
 - **🏭 Master/Slave Architecture**: Complete client and server implementations
 - **🚀 High Performance**: Optimized for speed with memory-efficient operations
-- **✅ Comprehensive Testing**: Extensive unit and integration test coverage
+- **✅ TUnit Testing**: Unit, integration, and generator tests run on Microsoft Testing Platform
 - **📊 Advanced Simulation**: Built-in simulation capabilities for testing and development
 - **📡 Connection Management**: Automatic reconnection and health monitoring
 - **🔄 Data Type Conversions**: Built-in support for float, double, and custom data types
@@ -38,7 +40,8 @@ ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET ap
 **Target Frameworks:**
 - `.NET Standard 2.0` (Cross-platform compatibility)
 - `.NET 8` (Long-term support)
-- `.NET 9` (Latest features)
+- `.NET 9`
+- `.NET 10`
 - `.NET Framework 4.8` (Legacy support)
 
 ## Installation
@@ -621,6 +624,149 @@ combinedData.Dispose();
 multiDataSubscription.Dispose();
 ```
 
+### 4. Async Observables with ReactiveUI.Extensions
+
+Modern .NET targets (`net8.0` and later) include adapters for [ReactiveUI.Extensions async observables](https://github.com/reactiveui/Extensions#async-observables-iobservableasynct). These APIs let ModbusRx streams participate in `IObservableAsync<T>` pipelines while keeping the classic Rx APIs available for `netstandard2.0` consumers.
+
+```csharp
+using ModbusRx.Reactive;
+using ReactiveUI.Extensions.Async;
+
+var masterStream = Create.TcpIpMaster("192.168.1.100", 502);
+
+// Bridge an existing ModbusRx connection stream into IObservableAsync<T>.
+var asyncMasterStream = masterStream.ToModbusObservableAsync();
+
+var holdingRegisters = asyncMasterStream.ReadHoldingRegisters(
+    startAddress: 0,
+    numberOfPoints: 10,
+    interval: 500);
+
+await using var subscription = await holdingRegisters.SubscribeAsync(result =>
+{
+    if (result.error != null)
+    {
+        Console.WriteLine($"Read failed: {result.error.Message}");
+        return;
+    }
+
+    Console.WriteLine($"Holding registers: [{string.Join(", ", result.data ?? Array.Empty<ushort>())}]");
+});
+```
+
+The direct bridge helpers `ReadHoldingRegistersAsyncObservable`, `ReadInputRegistersAsyncObservable`, `ReadCoilsAsyncObservable`, and `ReadInputsAsyncObservable` are available when the source stream is still a classic `IObservable<T>`.
+
+Serial streams keep the slave address explicit:
+
+```csharp
+using ModbusRx.Device;
+using ModbusRx.Reactive;
+using ReactiveUI.Extensions.Async;
+using System.IO.Ports;
+
+var serial = Create.SerialRtuMaster("COM3", 19200, 8, Parity.None, StopBits.One);
+
+var inputs = serial.ReadInputsAsyncObservable(
+    slaveAddress: 2,
+    startAddress: 0,
+    numberOfPoints: 16,
+    interval: 250);
+
+var first = await inputs.FirstAsync(CancellationToken.None);
+```
+
+Server-side streams and write pipelines are also available as async observables:
+
+```csharp
+using ModbusRx.Device;
+using ModbusRx.Reactive;
+using ReactiveUI.Extensions.Async;
+
+using var server = new ModbusServer();
+server.SimulationMode = true;
+server.Start();
+
+var changes = server.ObserveDataChangesAsync(interval: 100);
+await using var subscription = await changes.SubscribeAsync(snapshot =>
+{
+    Console.WriteLine($"Holding[0]: {snapshot.holdingRegisters[0]}");
+});
+```
+
+### 5. Generated Reactive Register Maps
+
+`ModbusRx.Generators` can generate strongly typed register-map members from attributes. The generator updates the annotated property when matching Modbus data is received and exposes both the latest property value and an observable stream for that property.
+
+When referencing the generator from source, add it as an analyzer:
+
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\ModbusRx.Generators\ModbusRx.Generators.csproj"
+                    OutputItemType="Analyzer"
+                    ReferenceOutputAssembly="false"
+                    PrivateAssets="all" />
+</ItemGroup>
+```
+
+Then define a partial map class and partial properties:
+
+```csharp
+using ModbusRx.Device;
+using ModbusRx.Generators;
+using ModbusRx.Reactive;
+
+[ModbusReactiveDevice(ConnectionMember = nameof(MasterStream), DefaultInterval = 500)]
+public partial class BoilerMap
+{
+    public IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> MasterStream { get; }
+
+    [HoldingRegister(0)]
+    public partial ushort? Temperature { get; private set; }
+
+    [Coil(4)]
+    public partial bool? PumpRunning { get; private set; }
+
+    public BoilerMap(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> masterStream)
+    {
+        MasterStream = masterStream;
+    }
+}
+
+var map = new BoilerMap(Create.TcpIpMaster("192.168.1.100", 502));
+
+using var bindings = map.BindGeneratedModbusStreams();
+using var temperatureSub = map.TemperatureObservable.Subscribe(value =>
+{
+    Console.WriteLine($"Temperature register changed to {value}");
+});
+```
+
+The generated members include:
+
+- The annotated property, updated from the matching Modbus stream.
+- `{PropertyName}Observable` as `IObservable<T>` for consumers that want a stream.
+- `{PropertyName}Error` for the last read error observed by that property binding.
+- `BindGeneratedModbusStreams()` and `BindGeneratedModbusStreams(CompositeDisposable)` for lifecycle management.
+
+For serial maps, set the master kind and slave address on the device attribute:
+
+```csharp
+[ModbusReactiveDevice(
+    ConnectionMember = nameof(MasterStream),
+    MasterKind = ModbusReactiveMasterKind.Serial,
+    SlaveAddress = 2,
+    DefaultInterval = 250)]
+public partial class DriveMap
+{
+    public IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> MasterStream { get; }
+
+    [InputRegister(10)]
+    public partial short? Speed { get; private set; }
+}
+```
+
+Supported point attributes are `HoldingRegister`, `InputRegister`, `Coil`, and `DiscreteInput`. Supported generated property types include nullable and non-nullable `bool`, `ushort`, `short`, `uint`, `int`, `float`, and `double`; wider numeric types read the number of registers required by the target type.
+
 ## Simulation and Testing Features
 
 ### 1. Using the Simulation Data Provider
@@ -1122,16 +1268,29 @@ await Task.WhenAll(tasks);
 
 ## Testing and Debugging
 
+The repository test projects use [TUnit](https://tunit.dev/docs/getting-started/installation/) and run through Microsoft Testing Platform. The shared test configuration intentionally does not reference `Microsoft.NET.Test.Sdk` or Coverlet; TUnit test projects build as executable test apps and can be run with `dotnet test` from the solution or project level.
+
+```bash
+# Run the full test suite
+dotnet test
+
+# Run focused projects during development
+dotnet test src/ModbusRx.UnitTests/ModbusRx.UnitTests.csproj --framework net9.0
+dotnet test src/ModbusRx.Generators.Tests/ModbusRx.Generators.Tests.csproj --framework net9.0
+```
+
 ### 1. Unit Testing with ModbusRx
 
 ```csharp
+using CP.IO.Ports;
 using ModbusRx.Device;
 using ModbusRx.Data;
-using Xunit;
+using TUnit.Assertions;
+using TUnit.Core;
 
 public class ModbusTests
 {
-    [Fact]
+    [Test]
     public async Task TestModbusReadWrite()
     {
         // Arrange - Create test server
@@ -1151,12 +1310,12 @@ public class ModbusTests
         var result = await master.ReadHoldingRegistersAsync(1, 0, 5);
         
         // Assert
-        Assert.Equal(5, result.Length);
-        Assert.Equal(1, result[0]);
-        Assert.Equal(5, result[4]);
+        await Assert.That(result.Length).IsEqualTo(5);
+        await Assert.That(result[0]).IsEqualTo((ushort)1);
+        await Assert.That(result[4]).IsEqualTo((ushort)5);
     }
 
-    [Fact]
+    [Test]
     public async Task TestModbusWriteOperations()
     {
         using var server = new ModbusServer();
@@ -1170,13 +1329,13 @@ public class ModbusTests
         // Test write single register
         await master.WriteSingleRegisterAsync(1, 0, 12345);
         var readResult = await master.ReadHoldingRegistersAsync(1, 0, 1);
-        Assert.Equal(12345, readResult[0]);
+        await Assert.That(readResult[0]).IsEqualTo((ushort)12345);
         
         // Test write multiple registers
         var writeData = new ushort[] { 1000, 2000, 3000 };
         await master.WriteMultipleRegistersAsync(1, 10, writeData);
         var multiReadResult = await master.ReadHoldingRegistersAsync(1, 10, 3);
-        Assert.Equal(writeData, multiReadResult);
+        await Assert.That(multiReadResult.SequenceEqual(writeData)).IsTrue();
     }
 
     private static int GetAvailablePort()
@@ -1194,38 +1353,39 @@ public class ModbusTests
 
 ```csharp
 using ModbusRx.Data;
-using Xunit;
+using TUnit.Assertions;
+using TUnit.Core;
 
 public class SimulationTests
 {
-    [Fact]
-    public void TestSimulationPatterns()
+    [Test]
+    public async Task TestSimulationPatterns()
     {
         using var provider = new SimulationDataProvider();
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
         
         // Test counting pattern
         provider.LoadTestPattern(dataStore, TestPattern.CountingUp);
-        Assert.Equal(0, dataStore.HoldingRegisters[1]);
-        Assert.Equal(1, dataStore.HoldingRegisters[2]);
-        Assert.Equal(2, dataStore.HoldingRegisters[3]);
+        await Assert.That(dataStore.HoldingRegisters[1]).IsEqualTo((ushort)0);
+        await Assert.That(dataStore.HoldingRegisters[2]).IsEqualTo((ushort)1);
+        await Assert.That(dataStore.HoldingRegisters[3]).IsEqualTo((ushort)2);
         
         // Test sine wave pattern
         provider.LoadTestPattern(dataStore, TestPattern.SineWave);
-        Assert.True(dataStore.HoldingRegisters.Skip(1).Take(100).Any(x => x > 0));
+        await Assert.That(dataStore.HoldingRegisters.Skip(1).Take(100).Any(x => x > 0)).IsTrue();
     }
 
-    [Fact]
-    public void TestWaveGeneration()
+    [Test]
+    public async Task TestWaveGeneration()
     {
         var sineWave = SimulationDataProvider.GenerateSineWave(360, 32767);
-        Assert.Equal(360, sineWave.Length);
-        Assert.Equal(32767, sineWave[0]); // sin(0) + amplitude
-        Assert.True(sineWave[90] > 32767); // sin(90°) = 1
+        await Assert.That(sineWave.Length).IsEqualTo(360);
+        await Assert.That(sineWave[0]).IsEqualTo((ushort)32767); // sin(0) + amplitude
+        await Assert.That(sineWave[90] > 32767).IsTrue(); // sin(90°) = 1
         
         var squareWave = SimulationDataProvider.GenerateSquareWave(100, 1000, 0, 0.5);
         var highCount = squareWave.Count(x => x == 1000);
-        Assert.True(Math.Abs(highCount - 50) <= 1); // 50% duty cycle
+        await Assert.That(Math.Abs(highCount - 50) <= 1).IsTrue(); // 50% duty cycle
     }
 }
 ```
@@ -1481,6 +1641,14 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 4. **Run tests**
    ```bash
    dotnet test
+   dotnet test src/ModbusRx.UnitTests/ModbusRx.UnitTests.csproj --framework net9.0
+   dotnet test src/ModbusRx.Generators.Tests/ModbusRx.Generators.Tests.csproj --framework net9.0
+   ```
+
+   Tests use TUnit on Microsoft Testing Platform. For coverage, use the TUnit/MTP coverage switch instead of Coverlet:
+
+   ```bash
+   dotnet run --project src/ModbusRx.UnitTests/ModbusRx.UnitTests.csproj --framework net9.0 --coverage
    ```
 
 ### Project Structure
@@ -1488,10 +1656,13 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ```
 ModbusRx/
 └── src/
-    ├── ModbusRx/                  # Core library
-    ├── ModbusRx.UnitTests/        # Unit tests
-    ├── ModbusRx.IntegrationTests/ # Integration tests
-    └── ModbusRx.Server.UI/        # WPF visualization app
+    ├── ModbusRx/                   # Core library
+    ├── ModbusRx.Generators/        # Reactive register-map source generator
+    ├── ModbusRx.Generators.Tests/  # Source generator tests
+    ├── ModbusRx.Testing/           # Shared TUnit compatibility helpers
+    ├── ModbusRx.UnitTests/         # Unit tests
+    ├── ModbusRx.IntegrationTests/  # Integration tests
+    └── ModbusRx.Server.UI/         # WPF visualization app
 ```
 
 ### Building for Different Targets
@@ -1501,7 +1672,9 @@ ModbusRx/
 dotnet build
 
 # Build for specific framework
+dotnet build -f net10.0
 dotnet build -f net9.0
+dotnet build -f net8.0
 dotnet build -f netstandard2.0
 dotnet build -f net48
 ```

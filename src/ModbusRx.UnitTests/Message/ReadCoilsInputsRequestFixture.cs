@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class ReadCoilsInputsRequestFixture
     /// <summary>
     /// Creates the read coils request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadCoilsRequest()
     {
         var request = new ReadCoilsInputsRequest(Modbus.ReadCoils, 5, 1, 10);
@@ -28,7 +28,7 @@ public class ReadCoilsInputsRequestFixture
     /// <summary>
     /// Creates the read inputs request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadInputsRequest()
     {
         var request = new ReadCoilsInputsRequest(Modbus.ReadInputs, 5, 1, 10);
@@ -41,14 +41,14 @@ public class ReadCoilsInputsRequestFixture
     /// <summary>
     /// Creates the read coils inputs request too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadCoilsInputsRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() => new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
 
     /// <summary>
     /// Creates the maximum size of the read coils inputs request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateReadCoilsInputsRequestMaxSize()
     {
         var response = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 2, Modbus.MaximumDiscreteRequestResponseSize);
@@ -58,7 +58,7 @@ public class ReadCoilsInputsRequestFixture
     /// <summary>
     /// Converts to string_readcoilsrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_ReadCoilsRequest()
     {
         var request = new ReadCoilsInputsRequest(Modbus.ReadCoils, 5, 1, 10);
@@ -69,7 +69,7 @@ public class ReadCoilsInputsRequestFixture
     /// <summary>
     /// Converts to string_readinputsrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_ReadInputsRequest()
     {
         var request = new ReadCoilsInputsRequest(Modbus.ReadInputs, 5, 1, 10);

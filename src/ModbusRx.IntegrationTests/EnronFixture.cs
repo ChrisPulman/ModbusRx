@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if SERIAL
@@ -16,7 +16,7 @@ public class EnronFixture : NModbusSerialRtuMasterDl06SlaveFixture
     /// <summary>
     /// Reads the holding registers32.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ReadHoldingRegisters32()
     {
         var registers = Master?.ReadHoldingRegisters32(SlaveAddress, 104, 2);
@@ -26,7 +26,7 @@ public class EnronFixture : NModbusSerialRtuMasterDl06SlaveFixture
     /// <summary>
     /// Reads the input registers32.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void ReadInputRegisters32()
     {
         var registers = Master?.ReadInputRegisters32(SlaveAddress, 104, 2);
@@ -36,7 +36,7 @@ public class EnronFixture : NModbusSerialRtuMasterDl06SlaveFixture
     /// <summary>
     /// Writes the single register32.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void WriteSingleRegister32()
     {
         const ushort testAddress = 200;
@@ -52,7 +52,7 @@ public class EnronFixture : NModbusSerialRtuMasterDl06SlaveFixture
     /// <summary>
     /// Writes the multiple registers32.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public virtual void WriteMultipleRegisters32()
     {
         const ushort testAddress = 120;

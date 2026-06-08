@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class WriteMultipleRegistersRequestFixture
     /// <summary>
     /// Creates the write multiple registers request fixture.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestFixture()
     {
         var col = new RegisterCollection(10, 20, 30, 40, 50);
@@ -32,7 +32,7 @@ public class WriteMultipleRegistersRequestFixture
     /// <summary>
     /// Creates the write multiple registers request too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new WriteMultipleRegistersRequest(1, 2, MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(3, Modbus.MaximumRegisterRequestResponseSize + 1)));
@@ -40,7 +40,7 @@ public class WriteMultipleRegistersRequestFixture
     /// <summary>
     /// Creates the maximum size of the write multiple registers request.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestMaxSize()
     {
         var request = new WriteMultipleRegistersRequest(1, 2, MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(3, Modbus.MaximumRegisterRequestResponseSize));
@@ -51,7 +51,7 @@ public class WriteMultipleRegistersRequestFixture
     /// <summary>
     /// Converts to string_writemultipleregistersrequest.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_WriteMultipleRegistersRequest()
     {
         var col = new RegisterCollection(10, 20, 30, 40, 50);

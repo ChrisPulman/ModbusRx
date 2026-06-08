@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ public class DataStoreEventArgsFixture
     /// <summary>
     /// Creates the data store event arguments.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateDataStoreEventArgs()
     {
         var eventArgs = DataStoreEventArgs.CreateDataStoreEventArgs(5, ModbusDataType.HoldingRegister, new ushort[] { 1, 2, 3 });
@@ -28,14 +28,14 @@ public class DataStoreEventArgsFixture
     /// <summary>
     /// Creates the type of the data store event arguments invalid.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateDataStoreEventArgs_InvalidType() =>
         Assert.Throws<ArgumentException>(() => DataStoreEventArgs.CreateDataStoreEventArgs(5, ModbusDataType.HoldingRegister, new int[] { 1, 2, 3 }));
 
     /// <summary>
     /// Creates the data store event arguments data null.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateDataStoreEventArgs_DataNull() =>
         Assert.Throws<ArgumentNullException>(() =>
             DataStoreEventArgs.CreateDataStoreEventArgs(5, ModbusDataType.HoldingRegister, default(ushort[])!));

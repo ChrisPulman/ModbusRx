@@ -1,4 +1,4 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
+// Copyright (c) Chris Pulman. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,7 +15,7 @@ public class WriteMultipleCoilsResponseFixture
     /// <summary>
     /// Creates the write multiple coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsResponse()
     {
         var response = new WriteMultipleCoilsResponse(17, 19, 45);
@@ -28,13 +28,13 @@ public class WriteMultipleCoilsResponseFixture
     /// <summary>
     /// Creates the write multiple coils response too much data.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsResponseTooMuchData() => Assert.Throws<ArgumentOutOfRangeException>(() => new WriteMultipleCoilsResponse(1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
 
     /// <summary>
     /// Creates the maximum size of the write multiple coils response.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsResponseMaxSize()
     {
         var response = new WriteMultipleCoilsResponse(1, 2, Modbus.MaximumDiscreteRequestResponseSize);
@@ -44,7 +44,7 @@ public class WriteMultipleCoilsResponseFixture
     /// <summary>
     /// Converts to string_test.
     /// </summary>
-    [Fact]
+    [TUnit.Core.Test]
     public void ToString_Test()
     {
         var response = new WriteMultipleCoilsResponse(1, 2, 3);
