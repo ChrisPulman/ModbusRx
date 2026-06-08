@@ -230,18 +230,19 @@ public class ModbusServerTests
         server.Start();
         server.SimulationMode = true;
 
-        var dataReceived = false;
-        var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
+        var timeout = GetEnvironmentTimeout(TimeSpan.FromSeconds(2));
 
         // Act
-        using var subscription = server.ObserveDataChanges(50)
-            .Take(1)
-            .Subscribe(_ => dataReceived = true);
-
-        await Task.Delay(timeout);
+        var data = await server.ObserveDataChanges(50)
+            .FirstAsync()
+            .Timeout(timeout)
+            .ToTask();
 
         // Assert
-        Assert.True(dataReceived);
+        Assert.NotNull(data.holdingRegisters);
+        Assert.NotNull(data.inputRegisters);
+        Assert.NotNull(data.coils);
+        Assert.NotNull(data.inputs);
     }
 
     /// <summary>
