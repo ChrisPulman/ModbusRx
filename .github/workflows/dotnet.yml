@@ -77,7 +77,7 @@ jobs:
         }
 
     - name: Upload Code Coverage
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v7
 
     - name: Create NuGet Artifacts
       uses: actions/upload-artifact@master
