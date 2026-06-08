@@ -767,7 +767,7 @@ namespace ModbusRx.Reactive
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
-                            var serialport = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+                            var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateRtu(unitId, serialport);
                             await serialport.Open();
                             slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
@@ -843,7 +843,7 @@ namespace ModbusRx.Reactive
                     {
                         if (comdis?.Count == 0 && x.Contains(port))
                         {
-                            var serialport = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+                            var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateAscii(unitId, serialport);
                             await serialport.Open();
                             slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
@@ -931,7 +931,7 @@ namespace ModbusRx.Reactive
                 try
                 {
                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                    var serial = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+                    var serial = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                     await serial.Open();
                     serial.ReadTimeout = 10000; // Set timeout to 10 seconds
                     master = ModbusSerialMaster.CreateRtu(serial);
@@ -1002,7 +1002,7 @@ namespace ModbusRx.Reactive
                 try
                 {
                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                    var serialport = new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+                    var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                     master = ModbusSerialMaster.CreateAscii(serialport);
                     await serialport.Open();
                     connected = true;
@@ -1412,5 +1412,17 @@ namespace ModbusRx.Reactive
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
             }).Retry();
+
+        private static SerialPortRx CreateSerialPort(string port, int baudRate, int dataBits, Parity parity, StopBits stopBits, Handshake handshake)
+        {
+#if NETSTANDARD2_0
+            _ = parity;
+            _ = stopBits;
+            _ = handshake;
+            return new SerialPortRx(port, baudRate, dataBits);
+#else
+            return new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
+#endif
+        }
     }
 }

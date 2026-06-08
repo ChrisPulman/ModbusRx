@@ -175,16 +175,27 @@ public class ModbusServerTests
     {
         // Arrange
         using var server = new ModbusServer();
-        var port = GetAvailablePort();
+        IDisposable? subscription = null;
 
         // Act
-        var subscription = server.StartUdpServer(port, 1);
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                subscription = server.StartUdpServer(GetAvailableUdpPort(), 1);
+                break;
+            }
+            catch (System.Net.Sockets.SocketException) when (attempt < 4)
+            {
+                Thread.Sleep(25);
+            }
+        }
 
         // Assert
         Assert.NotNull(subscription);
 
         // Cleanup
-        subscription.Dispose();
+        subscription!.Dispose();
     }
 
     /// <summary>
@@ -244,20 +255,20 @@ public class ModbusServerTests
         using var server = new ModbusServer();
         server.Start();
 
-        var dataReceived = false;
         var expectedData = new ushort[] { 1, 2, 3, 4, 5 };
         var timeout = GetEnvironmentTimeout(TimeSpan.FromMilliseconds(200));
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // Act
         using var subscription = server.ObserveHoldingRegisters(0, 5, 50)
             .Take(1)
-            .Subscribe(_ => dataReceived = true);
+            .Subscribe(_ => completion.TrySetResult(true));
 
         server.LoadSimulationData(expectedData);
-        await Task.Delay(timeout);
+        var completedTask = await Task.WhenAny(completion.Task, Task.Delay(timeout));
 
         // Assert
-        Assert.True(dataReceived);
+        Assert.True(completedTask == completion.Task);
     }
 
     /// <summary>
@@ -362,7 +373,7 @@ public class ModbusServerTests
     /// <param name="normalTimeout">Normal timeout for local testing.</param>
     /// <returns>Appropriate timeout for the environment.</returns>
     private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
-            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5) :
+            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 2) :
             normalTimeout;
 
     private static int GetAvailablePort()
@@ -372,5 +383,11 @@ public class ModbusServerTests
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
+    }
+
+    private static int GetAvailableUdpPort()
+    {
+        using var udpClient = new CP.IO.Ports.UdpClientRx(0);
+        return ((IPEndPoint)udpClient.Client.LocalEndPoint!).Port;
     }
 }

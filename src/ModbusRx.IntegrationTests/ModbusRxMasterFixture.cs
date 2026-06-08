@@ -394,6 +394,8 @@ public abstract class ModbusRxMasterFixture : NetworkTestBase
     [TUnit.Core.Test]
     public virtual async Task SimpleReadRegistersPerformanceTest()
     {
+        Skip.If(IsRunningInCI, "Performance timing assertions are unreliable in CI environments.");
+
         var retries = Master!.Transport!.Retries;
         Master.Transport!.Retries = 5;
         var actualAverageReadTime = await CalculateAverageAsync(Master);
