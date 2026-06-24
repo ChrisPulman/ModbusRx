@@ -49,7 +49,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <PackageReference Include="TUnit" Version="1.56.25" />
+    <PackageReference Include="TUnit" Version="1.56.35" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\TUnitXunitCompat.cs" Link="TUnitXunitCompat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\ModuleInitializerAttribute.cs" Link="ModuleInitializerAttribute.cs" />
