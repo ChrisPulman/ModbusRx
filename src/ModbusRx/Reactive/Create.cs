@@ -1,61 +1,60 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.IO.Ports;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using CP.IO.Ports;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Device;
+#else
 using ModbusRx.Device;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Utility;
+#else
 using ModbusRx.Utility;
+#endif
 
+#if REACTIVE_SHIM
 namespace ModbusRx.Reactive
+#else
+namespace ModbusRx
+#endif
 {
-    /// <summary>
-    /// ModbusRx.
-    /// </summary>
+    /// <summary>ModbusRx.</summary>
     public static class Create
     {
-        /// <summary>
-        /// Gets or sets the ping interval.
-        /// </summary>
+        /// <summary>Gets or sets the ping interval.</summary>
         /// <value>
         /// The ping interval.
         /// </value>
         public static TimeSpan PingInterval { get; set; } = TimeSpan.FromSeconds(10);
 
-        /// <summary>
-        /// Gets or sets the check connection interval.
-        /// </summary>
+        /// <summary>Gets or sets the check connection interval.</summary>
         /// <value>
         /// The check connection interval.
         /// </value>
         public static TimeSpan CheckConnectionInterval { get; set; } = TimeSpan.FromSeconds(5);
 
-        /// <summary>
-        /// Convert ushort span to float with high-performance operations.
-        /// </summary>
+        /// <summary>Convert ushort span to float with high-performance operations.</summary>
         /// <param name="inputs">The inputs span.</param>
         /// <param name="start">The start index.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         /// <returns>A float value or null if insufficient data.</returns>
         public static float? ToFloat(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
         {
-            if (inputs.Length < start + 2)
-            {
-                return null;
-            }
-
-            return ModbusUtility.ReadSingle(inputs[start..], swapWords);
+            return inputs.Length < start + 2 ? null : ModbusUtility.ReadSingle(inputs[start..], swapWords);
         }
 
-        /// <summary>
-        /// Convert ushort array to float.
-        /// </summary>
+        /// <summary>Convert ushort array to float.</summary>
         /// <param name="inputs">The inputs.</param>
         /// <param name="start">The start.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
@@ -64,51 +63,30 @@ namespace ModbusRx.Reactive
         /// </returns>
         public static float? ToFloat(this ushort[]? inputs, int start, bool swapWords = true)
         {
-            if (inputs == null || inputs.Length < start + 2)
-            {
-                return null;
-            }
-
-            return inputs.AsSpan().ToFloat(start, swapWords);
+            return inputs is null || inputs.Length < start + 2 ? null : inputs.AsSpan().ToFloat(start, swapWords);
         }
 
-        /// <summary>
-        /// Convert ushort span to double with high-performance operations.
-        /// </summary>
+        /// <summary>Convert ushort span to double with high-performance operations.</summary>
         /// <param name="inputs">The inputs span.</param>
         /// <param name="start">The start index.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         /// <returns>A double value or null if insufficient data.</returns>
         public static double? ToDouble(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
         {
-            if (inputs.Length < start + 4)
-            {
-                return null;
-            }
-
-            return ModbusUtility.ReadDouble(inputs[start..], swapWords);
+            return inputs.Length < start + 4 ? null : ModbusUtility.ReadDouble(inputs[start..], swapWords);
         }
 
-        /// <summary>
-        /// Converts to double.
-        /// </summary>
+        /// <summary>Converts to double.</summary>
         /// <param name="inputs">The inputs.</param>
         /// <param name="start">The start.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         /// <returns>A double.</returns>
         public static double? ToDouble(this ushort[]? inputs, int start, bool swapWords = true)
         {
-            if (inputs == null || inputs.Length < start + 4)
-            {
-                return null;
-            }
-
-            return inputs.AsSpan().ToDouble(start, swapWords);
+            return inputs is null || inputs.Length < start + 4 ? null : inputs.AsSpan().ToDouble(start, swapWords);
         }
 
-        /// <summary>
-        /// Write float to ushort span with high-performance operations.
-        /// </summary>
+        /// <summary>Write float to ushort span with high-performance operations.</summary>
         /// <param name="input">The input value.</param>
         /// <param name="output">The output span.</param>
         /// <param name="start">The start index.</param>
@@ -124,16 +102,14 @@ namespace ModbusRx.Reactive
             ModbusUtility.WriteSingle(input, output[start..], swapWords);
         }
 
-        /// <summary>
-        /// Froms the float.
-        /// </summary>
+        /// <summary>Froms the float.</summary>
         /// <param name="input">The input.</param>
         /// <param name="output">The output.</param>
         /// <param name="start">The start.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         public static void FromFloat(this float input, ushort[] output, int start, bool swapWords = true)
         {
-            if (output == null || output.Length < start + 2)
+            if (output is null || output.Length < start + 2)
             {
                 return;
             }
@@ -141,9 +117,7 @@ namespace ModbusRx.Reactive
             input.FromFloat(output.AsSpan(), start, swapWords);
         }
 
-        /// <summary>
-        /// Write double to ushort span with high-performance operations.
-        /// </summary>
+        /// <summary>Write double to ushort span with high-performance operations.</summary>
         /// <param name="input">The input value.</param>
         /// <param name="output">The output span.</param>
         /// <param name="start">The start index.</param>
@@ -159,16 +133,14 @@ namespace ModbusRx.Reactive
             ModbusUtility.WriteDouble(input, output[start..], swapWords);
         }
 
-        /// <summary>
-        /// Froms the double.
-        /// </summary>
+        /// <summary>Froms the double.</summary>
         /// <param name="input">The input.</param>
         /// <param name="output">The output.</param>
         /// <param name="start">The start.</param>
         /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
         public static void FromDouble(this double input, ushort[] output, int start, bool swapWords = true)
         {
-            if (output == null || output.Length < start + 4)
+            if (output is null || output.Length < start + 4)
             {
                 return;
             }
@@ -176,53 +148,43 @@ namespace ModbusRx.Reactive
             input.FromDouble(output.AsSpan(), start, swapWords);
         }
 
-        /// <summary>
-        /// Observes the data store written to.
-        /// </summary>
+        /// <summary>Observes the data store written to.</summary>
         /// <param name="slave">The slave.</param>
         /// <returns>An Observable of DataStoreEventArgs.</returns>
         public static IObservable<DataStoreEventArgs> ObserveDataStoreReadFrom(this ModbusSlave slave) =>
-            Observable.FromEvent<EventHandler<DataStoreEventArgs>, DataStoreEventArgs>(
-                handler => (sender, args) => handler(args),
+            Observable.FromEventPattern<DataStoreEventArgs>(
                 handler => slave.DataStore.DataStoreReadFrom += handler,
-                handler => slave.DataStore.DataStoreReadFrom -= handler);
+                handler => slave.DataStore.DataStoreReadFrom -= handler)
+                .Select(pattern => pattern.EventArgs);
 
-        /// <summary>
-        /// Observes the data store written to.
-        /// </summary>
+        /// <summary>Observes the data store written to.</summary>
         /// <param name="slave">The slave.</param>
         /// <returns>An Observable of DataStoreEventArgs.</returns>
         public static IObservable<DataStoreEventArgs> ObserveDataStoreWrittenTo(this ModbusSlave slave) =>
-            Observable.FromEvent<EventHandler<DataStoreEventArgs>, DataStoreEventArgs>(
-                handler => (sender, args) => handler(args),
+            Observable.FromEventPattern<DataStoreEventArgs>(
                 handler => slave.DataStore.DataStoreWrittenTo += handler,
-                handler => slave.DataStore.DataStoreWrittenTo -= handler);
+                handler => slave.DataStore.DataStoreWrittenTo -= handler)
+                .Select(pattern => pattern.EventArgs);
 
-        /// <summary>
-        /// Observes the request.
-        /// </summary>
+        /// <summary>Observes the request.</summary>
         /// <param name="slave">The slave.</param>
         /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
         public static IObservable<ModbusSlaveRequestEventArgs> ObserveRequest(this ModbusSlave slave) =>
-            Observable.FromEvent<EventHandler<ModbusSlaveRequestEventArgs>, ModbusSlaveRequestEventArgs>(
-                handler => (sender, args) => handler(args),
+            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
                 handler => slave.ModbusSlaveRequestReceived += handler,
-                handler => slave.ModbusSlaveRequestReceived -= handler);
+                handler => slave.ModbusSlaveRequestReceived -= handler)
+                .Select(pattern => pattern.EventArgs);
 
-        /// <summary>
-        /// Observes the write complete.
-        /// </summary>
+        /// <summary>Observes the write complete.</summary>
         /// <param name="slave">The slave.</param>
         /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
         public static IObservable<ModbusSlaveRequestEventArgs> ObserveWriteComplete(this ModbusSlave slave) =>
-            Observable.FromEvent<EventHandler<ModbusSlaveRequestEventArgs>, ModbusSlaveRequestEventArgs>(
-                handler => (sender, args) => handler(args),
+            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
                 handler => slave.WriteComplete += handler,
-                handler => slave.WriteComplete -= handler);
+                handler => slave.WriteComplete -= handler)
+                .Select(pattern => pattern.EventArgs);
 
-        /// <summary>
-        /// Reads the input registers.
-        /// </summary>
+        /// <summary>Reads the input registers.</summary>
         /// <param name="source">The source.</param>
         /// <param name="startAddress">The start address.</param>
         /// <param name="numberOfPoints">The number of points.</param>
@@ -236,17 +198,17 @@ namespace ModbusRx.Reactive
                     var isConnected = false;
                     var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master!.ReadInputRegistersAsync(startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -267,11 +229,9 @@ namespace ModbusRx.Reactive
                         },
                         (exception) => observer.OnError(exception));
                     return Disposable.Create(() => subscription.Dispose());
-                }).Retry();
+                }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the holding registers.
-        /// </summary>
+        /// <summary>Reads the holding registers.</summary>
         /// <param name="source">The source.</param>
         /// <param name="startAddress">The start address.</param>
         /// <param name="numberOfPoints">The number of points.</param>
@@ -285,7 +245,7 @@ namespace ModbusRx.Reactive
                     var isConnected = false;
                     var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
@@ -293,10 +253,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master!.ReadHoldingRegistersAsync(startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -318,11 +278,9 @@ namespace ModbusRx.Reactive
                         },
                         (exception) => observer.OnError(exception));
                     return Disposable.Create(() => subscription.Dispose());
-                }).Retry();
+                }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the coils.
-        /// </summary>
+        /// <summary>Reads the coils.</summary>
         /// <param name="source">The source.</param>
         /// <param name="startAddress">The start address.</param>
         /// <param name="numberOfPoints">The number of points.</param>
@@ -336,17 +294,17 @@ namespace ModbusRx.Reactive
                     var isConnected = false;
                     var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master!.ReadCoilsAsync(startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -367,11 +325,9 @@ namespace ModbusRx.Reactive
                         },
                         (exception) => observer.OnError(exception));
                     return Disposable.Create(() => subscription.Dispose());
-                }).Retry();
+                }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the coils.
-        /// </summary>
+        /// <summary>Reads the coils.</summary>
         /// <param name="source">The source.</param>
         /// <param name="startAddress">The start address.</param>
         /// <param name="numberOfPoints">The number of points.</param>
@@ -385,17 +341,17 @@ namespace ModbusRx.Reactive
                     var isConnected = false;
                     var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master!.ReadInputsAsync(startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -416,11 +372,9 @@ namespace ModbusRx.Reactive
                         },
                         (exception) => observer.OnError(exception));
                     return Disposable.Create(() => subscription.Dispose());
-                }).Retry();
+                }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Create a TcpIpMaster with the specified ip address.
-        /// </summary>
+        /// <summary>Create a TcpIpMaster with the specified ip address.</summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
         /// <returns>
@@ -438,22 +392,24 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
-                    if (connected && master == null)
+                    if (connected && master is null)
                     {
                         observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected && !connectionMessageSent)
+                    if (connected || connectionMessageSent)
                     {
-                        connectionMessageSent = true;
-                        observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                        return;
                     }
+
+                    connectionMessageSent = true;
+                    observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                 }));
 
                 dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
-                    .Select(async _ => await pingSender.SendPingAsync(ipAddress, 1000).ConfigureAwait(false))
+                    .Select(_ => pingSender.SendPingAsync(ipAddress, 1000))
                     .Select(x =>
                     {
                         var res = default(PingReply);
@@ -466,7 +422,7 @@ namespace ModbusRx.Reactive
                         {
                             try
                             {
-                                if (master == null && res?.Status == IPStatus.Success)
+                                if (master is null && res?.Status == IPStatus.Success)
                                 {
                                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                                     master = ModbusIpMaster.CreateIp(new TcpClientRx(ipAddress, port));
@@ -486,13 +442,11 @@ namespace ModbusRx.Reactive
                         }
 
                         return res;
-                    }).Retry().Subscribe());
+                    }).Retry(int.MaxValue).Subscribe());
                 return dis;
             }).Publish().RefCount();
 
-        /// <summary>
-        /// TCPs the ip slave.
-        /// </summary>
+        /// <summary>TCPs the ip slave.</summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
@@ -535,12 +489,10 @@ namespace ModbusRx.Reactive
                        slaveListener.Stop();
                        dis.Dispose();
                    });
-             }).Retry().Publish().RefCount();
+             }).Retry(int.MaxValue).Publish().RefCount();
         }
 
-        /// <summary>
-        /// Create a UdpIpMaster with the specified ip address.
-        /// </summary>
+        /// <summary>Create a UdpIpMaster with the specified ip address.</summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
         /// <returns>
@@ -558,22 +510,24 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Timer(PingInterval, CheckConnectionInterval).Subscribe(_ =>
                 {
-                    if (connected && master == null)
+                    if (connected && master is null)
                     {
                         observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected && !connectionMessageSent)
+                    if (connected || connectionMessageSent)
                     {
-                        connectionMessageSent = true;
-                        observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                        return;
                     }
+
+                    connectionMessageSent = true;
+                    observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                 }));
 
                 dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
-                    .Select(async _ => await pingSender.SendPingAsync(ipAddress, 1000).ConfigureAwait(false))
+                    .Select(_ => pingSender.SendPingAsync(ipAddress, 1000))
                     .Select(x =>
                     {
                         var res = default(PingReply);
@@ -586,7 +540,7 @@ namespace ModbusRx.Reactive
                         {
                             try
                             {
-                                if (master == null && res?.Status == IPStatus.Success)
+                                if (master is null && res?.Status == IPStatus.Success)
                                 {
                                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                                     master = ModbusIpMaster.CreateIp(new UdpClientRx(ipAddress, port));
@@ -606,14 +560,12 @@ namespace ModbusRx.Reactive
                         }
 
                         return res;
-                    }).Retry().Subscribe());
+                    }).Retry(int.MaxValue).Subscribe());
 
                 return dis;
             }).Publish().RefCount();
 
-        /// <summary>
-        /// Creates an UdpIp slave.
-        /// </summary>
+        /// <summary>Creates an UdpIp slave.</summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
@@ -649,12 +601,10 @@ namespace ModbusRx.Reactive
                  dis.Add(slave);
                  observer.OnNext(slave);
                  return Disposable.Create(() => dis.Dispose());
-             }).Retry().Publish().RefCount();
+             }).Retry(int.MaxValue).Publish().RefCount();
         }
 
-        /// <summary>
-        /// Create a SerialIpMaster with the specified ip address.
-        /// </summary>
+        /// <summary>Create a SerialIpMaster with the specified ip address.</summary>
         /// <param name="port">The COM Port.</param>
         /// <param name="baudRate">The baud rate.</param>
         /// <returns>
@@ -670,23 +620,25 @@ namespace ModbusRx.Reactive
 
                 dis.Add(Observable.Interval(CheckConnectionInterval).Subscribe(_ =>
                 {
-                    if (connected && master == null)
+                    if (connected && master is null)
                     {
                         observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                         connected = false;
                     }
 
-                    if (!connected && !connectionMessageSent)
+                    if (connected || connectionMessageSent)
                     {
-                        connectionMessageSent = true;
-                        observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                        return;
                     }
+
+                    connectionMessageSent = true;
+                    observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
                 }));
 
                 var comdis = new CompositeDisposable();
 
                 // Subscribe to com ports available
-                SerialPortRx.PortNames().Do(async x =>
+                dis.Add(SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
@@ -703,33 +655,31 @@ namespace ModbusRx.Reactive
                         }
                         else
                         {
-                            dis.Remove(comdis!);
+                            _ = dis.Remove(comdis!);
                             comdis?.Dispose();
                             connected = false;
                             master = null;
                             observer.OnNext((connected, null, master));
                             comdis = [];
-                            comdis.DisposeWith(dis);
+                            dis.Add(comdis);
                         }
                     }
                     catch (Exception ex)
                     {
-                        dis.Remove(comdis!);
+                        _ = dis.Remove(comdis!);
                         comdis?.Dispose();
                         connected = false;
                         master = null;
                         observer.OnNext((connected, new ModbusCommunicationException("ModbusRx Master Fault", ex), master));
                         comdis = [];
-                        comdis.DisposeWith(dis);
+                        dis.Add(comdis);
                     }
-                }).Retry().Subscribe().DisposeWith(dis);
+                }).Retry(int.MaxValue).Subscribe());
 
                 return dis;
             }).Publish().RefCount();
 
-        /// <summary>
-        /// Creates an Serial Rtu Slave.
-        /// </summary>
+        /// <summary>Creates an Serial Rtu Slave.</summary>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
         /// <param name="baudRate">The baud rate.</param>
@@ -761,7 +711,7 @@ namespace ModbusRx.Reactive
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
                  Task? slaveThread = null;
-                 SerialPortRx.PortNames().Do(async x =>
+                 _ = SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
@@ -770,42 +720,40 @@ namespace ModbusRx.Reactive
                             var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateRtu(unitId, serialport);
                             await serialport.Open();
-                            slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
+                            slaveThread = new(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
                             observer.OnNext(slave);
                         }
                         else
                         {
-                            dis.Remove(comdis!);
+                            _ = dis.Remove(comdis!);
                             comdis?.Dispose();
                             slaveThread?.Dispose();
                             comdis = [];
-                            comdis.DisposeWith(dis);
+                            dis.Add(comdis);
                         }
                     }
                     catch (Exception ex)
                     {
                         observer.OnError(new ModbusCommunicationException("ModbusRx Slave Fault", ex));
-                        dis.Remove(comdis!);
+                        _ = dis.Remove(comdis!);
                         comdis?.Dispose();
                         slaveThread?.Dispose();
                         comdis = [];
-                        comdis.DisposeWith(dis);
+                        dis.Add(comdis);
                     }
-                }).Retry().Subscribe();
+                }).Retry(int.MaxValue).Subscribe();
 
                  return Disposable.Create(() =>
                    {
                        slaveThread?.Dispose();
                        dis.Dispose();
                    });
-             }).Retry().Publish().RefCount();
+             }).Retry(int.MaxValue).Publish().RefCount();
         }
 
-        /// <summary>
-        /// Creates an Serial Ascii Slave.
-        /// </summary>
+        /// <summary>Creates an Serial Ascii Slave.</summary>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
         /// <param name="baudRate">The baud rate.</param>
@@ -837,7 +785,7 @@ namespace ModbusRx.Reactive
                  var dis = new CompositeDisposable();
                  var comdis = new CompositeDisposable();
                  Task? slaveThread = null;
-                 SerialPortRx.PortNames().Do(async x =>
+                 _ = SerialPortRx.PortNames().Do(async x =>
                 {
                     try
                     {
@@ -846,42 +794,40 @@ namespace ModbusRx.Reactive
                             var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateAscii(unitId, serialport);
                             await serialport.Open();
-                            slaveThread = new Task(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
+                            slaveThread = new(async () => await slave.ListenAsync(), TaskCreationOptions.LongRunning);
                             slaveThread.Start();
                             dis.Add(slave);
                             observer.OnNext(slave);
                         }
                         else
                         {
-                            dis.Remove(comdis!);
+                            _ = dis.Remove(comdis!);
                             comdis?.Dispose();
                             slaveThread?.Dispose();
                             comdis = [];
-                            comdis.DisposeWith(dis);
+                            dis.Add(comdis);
                         }
                     }
                     catch (Exception ex)
                     {
                         observer.OnError(new ModbusCommunicationException("ModbusRx Slave Fault", ex));
-                        dis.Remove(comdis!);
+                        _ = dis.Remove(comdis!);
                         comdis?.Dispose();
                         slaveThread?.Dispose();
                         comdis = [];
-                        comdis.DisposeWith(dis);
+                        dis.Add(comdis);
                     }
-                }).Retry().Subscribe();
+                }).Retry(int.MaxValue).Subscribe();
 
                  return Disposable.Create(() =>
                    {
                        slaveThread?.Dispose();
                        dis.Dispose();
                    });
-             }).Retry().Publish().RefCount();
+             }).Retry(int.MaxValue).Publish().RefCount();
         }
 
-        /// <summary>
-        /// Create a reactive Modbus Serial RTU master that automatically manages connection state.
-        /// </summary>
+        /// <summary>Create a reactive Modbus Serial RTU master that automatically manages connection state.</summary>
         /// <param name="port">The COM port (e.g., "COM1").</param>
         /// <param name="baudRate">The baud rate.</param>
         /// <param name="dataBits">The data bits.</param>
@@ -910,22 +856,23 @@ namespace ModbusRx.Reactive
                 var connectionMessageSent = false;
 
                 // Connection watchdog
-                Observable.Interval(CheckConnectionInterval)
+                dis.Add(Observable.Interval(CheckConnectionInterval)
                     .Subscribe(_ =>
                     {
-                        if (connected && master == null)
+                        if (connected && master is null)
                         {
                             observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                             connected = false;
                         }
 
-                        if (!connected && !connectionMessageSent)
+                        if (connected || connectionMessageSent)
                         {
-                            connectionMessageSent = true;
-                            observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                            return;
                         }
-                    })
-                    .DisposeWith(dis);
+
+                        connectionMessageSent = true;
+                        observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                    }));
 
                 // Directly create master
                 try
@@ -950,9 +897,7 @@ namespace ModbusRx.Reactive
                 return dis;
             }).Publish().RefCount();
 
-        /// <summary>
-        /// Create a reactive Modbus Serial ASCII master that automatically manages connection state.
-        /// </summary>
+        /// <summary>Create a reactive Modbus Serial ASCII master that automatically manages connection state.</summary>
         /// <param name="port">The COM port (e.g., "COM1").</param>
         /// <param name="baudRate">The baud rate.</param>
         /// <param name="dataBits">The data bits.</param>
@@ -981,22 +926,23 @@ namespace ModbusRx.Reactive
                 var connectionMessageSent = false;
 
                 // Connection watchdog
-                Observable.Interval(CheckConnectionInterval)
+                dis.Add(Observable.Interval(CheckConnectionInterval)
                     .Subscribe(_ =>
                     {
-                        if (connected && master == null)
+                        if (connected && master is null)
                         {
                             observer.OnNext((false, new ModbusCommunicationException("Reset connected Master is null"), null));
                             connected = false;
                         }
 
-                        if (!connected && !connectionMessageSent)
+                        if (connected || connectionMessageSent)
                         {
-                            connectionMessageSent = true;
-                            observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                            return;
                         }
-                    })
-                    .DisposeWith(dis);
+
+                        connectionMessageSent = true;
+                        observer.OnNext((connected, new ModbusCommunicationException("Lost Communication"), master));
+                    }));
 
                 // Directly create master
                 try
@@ -1019,9 +965,7 @@ namespace ModbusRx.Reactive
                 return dis;
             }).Publish().RefCount();
 
-        /// <summary>
-        /// Reads the holding registers using a reactive serial master stream.
-        /// </summary>
+        /// <summary>Reads the holding registers using a reactive serial master stream.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="slaveAddress">The Modbus slave address.</param>
         /// <param name="startAddress">The starting address.</param>
@@ -1034,11 +978,11 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
-                            if (modbus.master == null)
+                            if (modbus.master is null)
                             {
                                 return;
                             }
@@ -1046,10 +990,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadHoldingRegistersAsync(slaveAddress, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1068,11 +1012,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the input registers using a reactive serial master stream.
-        /// </summary>
+        /// <summary>Reads the input registers using a reactive serial master stream.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="slaveAddress">The Modbus slave address.</param>
         /// <param name="startAddress">The starting address.</param>
@@ -1085,11 +1027,11 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
-                            if (modbus.master == null)
+                            if (modbus.master is null)
                             {
                                 return;
                             }
@@ -1097,10 +1039,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadInputRegistersAsync(slaveAddress, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1119,11 +1061,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the coils using a reactive serial master stream.
-        /// </summary>
+        /// <summary>Reads the coils using a reactive serial master stream.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="slaveAddress">The Modbus slave address.</param>
         /// <param name="startAddress">The starting address.</param>
@@ -1136,11 +1076,11 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
-                            if (modbus.master == null)
+                            if (modbus.master is null)
                             {
                                 return;
                             }
@@ -1148,10 +1088,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadCoilsAsync(slaveAddress, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1170,11 +1110,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Reads the discrete inputs using a reactive serial master stream.
-        /// </summary>
+        /// <summary>Reads the discrete inputs using a reactive serial master stream.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="slaveAddress">The Modbus slave address.</param>
         /// <param name="startAddress">The starting address.</param>
@@ -1187,11 +1125,11 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
-                            if (modbus.master == null)
+                            if (modbus.master is null)
                             {
                                 return;
                             }
@@ -1199,10 +1137,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadInputsAsync(slaveAddress, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1221,11 +1159,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Convenience overload that defaults the slave address to 1 for ReadHoldingRegisters.
-        /// </summary>
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadHoldingRegisters.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="startAddress">The starting address.</param>
         /// <param name="numberOfPoints">The number of points to read.</param>
@@ -1237,7 +1173,7 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
@@ -1245,10 +1181,10 @@ namespace ModbusRx.Reactive
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadHoldingRegistersAsync(1, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1270,11 +1206,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Convenience overload that defaults the slave address to 1 for ReadInputRegisters.
-        /// </summary>
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputRegisters.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="startAddress">The starting address.</param>
         /// <param name="numberOfPoints">The number of points to read.</param>
@@ -1286,17 +1220,17 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadInputRegistersAsync(1, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1317,11 +1251,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Convenience overload that defaults the slave address to 1 for ReadCoils.
-        /// </summary>
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadCoils.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="startAddress">The starting address.</param>
         /// <param name="numberOfPoints">The number of points to read.</param>
@@ -1333,17 +1265,17 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadCoilsAsync(1, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1364,11 +1296,9 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
+            }).Retry(int.MaxValue);
 
-        /// <summary>
-        /// Convenience overload that defaults the slave address to 1 for ReadInputs.
-        /// </summary>
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputs.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="startAddress">The starting address.</param>
         /// <param name="numberOfPoints">The number of points to read.</param>
@@ -1380,17 +1310,17 @@ namespace ModbusRx.Reactive
                 var isConnected = false;
                 var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry()
+                    .Retry(int.MaxValue)
                     .Subscribe(
                         async modbus =>
                         {
                             try
                             {
                                 isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error == null)
+                                if (modbus.connected && modbus.error is null)
                                 {
                                     var result = await modbus.master.ReadInputsAsync(1, startAddress, numberOfPoints);
-                                    if (result != null)
+                                    if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
                                     }
@@ -1411,18 +1341,6 @@ namespace ModbusRx.Reactive
                         },
                         exception => observer.OnError(exception));
                 return Disposable.Create(() => subscription.Dispose());
-            }).Retry();
-
-        private static SerialPortRx CreateSerialPort(string port, int baudRate, int dataBits, Parity parity, StopBits stopBits, Handshake handshake)
-        {
-#if NETSTANDARD2_0
-            _ = parity;
-            _ = stopBits;
-            _ = handshake;
-            return new SerialPortRx(port, baudRate, dataBits);
-#else
-            return new SerialPortRx(port, baudRate, dataBits, parity, stopBits, handshake);
-#endif
-        }
+            }).Retry(int.MaxValue);
     }
 }

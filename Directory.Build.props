@@ -15,8 +15,8 @@
     <PackageIcon>ModbusRx.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Configurations>Debug;Release;PreRelease</Configurations>
-    <PackageReleaseNotes>Compatability with Net 6/7/8 and netstandard2.0</PackageReleaseNotes>
-    <PackageTags>modbus;nmodbus4;modbusrx;Master;Slave;TCP;UDP;Serial;rx;reactive;extensions;observable;LINQ;net;netstandard</PackageTags>
+    <PackageReleaseNotes>Compatibility with .NET Framework 4.8 and .NET 8/9/10/11 using ReactiveUI.Primitives.</PackageReleaseNotes>
+    <PackageTags>modbus;nmodbus4;modbusrx;Master;Slave;TCP;UDP;Serial;rx;reactive;primitives;observable;LINQ;net</PackageTags>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
 
@@ -36,6 +36,18 @@
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
@@ -57,19 +69,34 @@
     <Using Include="Xunit.Skip" Alias="Skip" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
+  <!-- Alias Lock to the dedicated System.Threading.Lock on .NET 9+ (faster EnterScope fast path),
+     and to a plain object elsewhere (the lock statement falls back to Monitor). -->
+  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+    <Using Include="System.Threading.Lock" Alias="Lock"/>
+  </ItemGroup>
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+    <Using Include="System.Object" Alias="Lock"/>
+  </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)images\ModbusRx.png" Pack="true" PackagePath="\"/>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="LICENSE" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="TUnit" Version="1.57.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\TUnitAssert.cs" Link="TUnitAssert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\ModuleInitializerAttribute.cs" Link="ModuleInitializerAttribute.cs" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+    <Using Include="ModbusRx.Testing.TUnitAssert" Alias="Assert" />
+    <Using Include="ModbusRx.Testing.TUnitSkip" Alias="Skip" />
+  </ItemGroup>
 
   <ItemGroup>
     <!--<Compile Update="**\*.cs" DependentUpon="I%(Filename).cs" />-->
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.10.85" PrivateAssets="all" />
-    <PackageReference Include="stylecop.analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+    <PackageReference Include="StyleSharp.Analyzers" Version="3.13.4" PrivateAssets="all" />
     <PackageReference Include="Roslynator.Analyzers" Version="4.15.0" PrivateAssets="All" />
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
   </ItemGroup>
 </Project>
