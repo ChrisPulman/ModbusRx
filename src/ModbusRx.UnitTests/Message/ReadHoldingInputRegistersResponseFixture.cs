@@ -1,27 +1,22 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReadHoldingInputRegistersResponseFixture.
-/// </summary>
+/// <summary>Tests the ReadHoldingInputRegistersResponseFixture behavior.</summary>
 public class ReadHoldingInputRegistersResponseFixture
 {
-    /// <summary>
-    /// Reads the holding input registers response null data.
-    /// </summary>
+    /// <summary>Reads the holding input registers response null data.</summary>
     [TUnit.Core.Test]
-    public void ReadHoldingInputRegistersResponse_NullData() => Assert.Throws<ArgumentNullException>(() => new ReadHoldingInputRegistersResponse(0, 0, null!));
+    public void ReadHoldingInputRegistersResponse_NullData() =>
+        Assert.Throws<ArgumentNullException>(() => _ = new ReadHoldingInputRegistersResponse(0, 0, null!));
 
-    /// <summary>
-    /// Reads the holding registers response.
-    /// </summary>
+    /// <summary>Reads the holding registers response.</summary>
     [TUnit.Core.Test]
     public void ReadHoldingRegistersResponse()
     {
@@ -33,9 +28,7 @@ public class ReadHoldingInputRegistersResponseFixture
         Assert.Equal(col.NetworkBytes, response.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Converts to string_readholdingregistersresponse.
-    /// </summary>
+    /// <summary>Converts to string_readholdingregistersresponse.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadHoldingRegistersResponse()
     {
@@ -43,9 +36,7 @@ public class ReadHoldingInputRegistersResponseFixture
         Assert.Equal("Read 1 holding registers.", response.ToString());
     }
 
-    /// <summary>
-    /// Reads the input registers response.
-    /// </summary>
+    /// <summary>Reads the input registers response.</summary>
     [TUnit.Core.Test]
     public void ReadInputRegistersResponse()
     {
@@ -57,9 +48,7 @@ public class ReadHoldingInputRegistersResponseFixture
         Assert.Equal(col.NetworkBytes, response.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Converts to string_readinputregistersresponse.
-    /// </summary>
+    /// <summary>Converts to string_readinputregistersresponse.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadInputRegistersResponse()
     {

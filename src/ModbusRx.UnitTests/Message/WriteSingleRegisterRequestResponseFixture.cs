@@ -1,32 +1,26 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// WriteSingleRegisterRequestResponseFixture.
-/// </summary>
+/// <summary>Tests the WriteSingleRegisterRequestResponseFixture behavior.</summary>
 public class WriteSingleRegisterRequestResponseFixture
 {
-    /// <summary>
-    /// Creates new writesingleregisterrequestresponse.
-    /// </summary>
+    /// <summary>Creates new writesingleregisterrequestresponse.</summary>
     [TUnit.Core.Test]
     public void NewWriteSingleRegisterRequestResponse()
     {
         var message = new WriteSingleRegisterRequestResponse(12, 5, 1200);
         Assert.Equal(12, message.SlaveAddress);
         Assert.Equal(5, message.StartAddress);
-        Assert.Single(message.Data);
+        _ = Assert.Single(message.Data);
         Assert.Equal(1200, message.Data[0]);
     }
 
-    /// <summary>
-    /// Converts to stringoverride.
-    /// </summary>
+    /// <summary>Converts to stringoverride.</summary>
     [TUnit.Core.Test]
     public void ToStringOverride()
     {

@@ -1,18 +1,22 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Buffers.Binary;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Utility;
+#else
 namespace ModbusRx.Utility;
+#endif
 
-/// <summary>
-///     Modbus utility methods with high-performance optimizations.
-/// </summary>
+/// <summary>Modbus utility methods with high-performance optimizations.</summary>
 public static class ModbusUtility
 {
+    /// <summary>Defines the Crc Table value.</summary>
     private static readonly ushort[] CrcTable =
     {
             0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
@@ -49,9 +53,7 @@ public static class ModbusUtility
             0X8201, 0X42C0, 0X4380, 0X8341, 0X4100, 0X81C1, 0X8081, 0X4040,
     };
 
-    /// <summary>
-    ///     Converts four UInt16 values into a IEEE 64 floating point format using optimized memory operations.
-    /// </summary>
+    /// <summary>Converts four UInt16 values into a IEEE 64 floating point format using optimized memory operations.</summary>
     /// <param name="b3">Highest-order ushort value.</param>
     /// <param name="b2">Second-to-highest-order ushort value.</param>
     /// <param name="b1">Second-to-lowest-order ushort value.</param>
@@ -59,48 +61,42 @@ public static class ModbusUtility
     /// <returns>IEEE 64 floating point value.</returns>
     public static double GetDouble(ushort b3, ushort b2, ushort b1, ushort b0)
     {
-        var value = BitConverter.GetBytes(b0)
-            .Concat(BitConverter.GetBytes(b1))
-            .Concat(BitConverter.GetBytes(b2))
-            .Concat(BitConverter.GetBytes(b3))
-            .ToArray();
+        var value = new byte[8];
+        Array.Copy(BitConverter.GetBytes(b0), 0, value, 0, 2);
+        Array.Copy(BitConverter.GetBytes(b1), 0, value, 2, 2);
+        Array.Copy(BitConverter.GetBytes(b2), 0, value, 4, 2);
+        Array.Copy(BitConverter.GetBytes(b3), 0, value, 6, 2);
 
         return BitConverter.ToDouble(value, 0);
     }
 
-    /// <summary>
-    ///     Converts two UInt16 values into a IEEE 32 floating point format using optimized memory operations.
-    /// </summary>
+    /// <summary>Converts two UInt16 values into a IEEE 32 floating point format using optimized memory operations.</summary>
     /// <param name="highOrderValue">High order ushort value.</param>
     /// <param name="lowOrderValue">Low order ushort value.</param>
     /// <returns>IEEE 32 floating point value.</returns>
     public static float GetSingle(ushort highOrderValue, ushort lowOrderValue)
     {
-        var value = BitConverter.GetBytes(lowOrderValue)
-            .Concat(BitConverter.GetBytes(highOrderValue))
-            .ToArray();
+        var value = new byte[4];
+        Array.Copy(BitConverter.GetBytes(lowOrderValue), 0, value, 0, 2);
+        Array.Copy(BitConverter.GetBytes(highOrderValue), 0, value, 2, 2);
 
         return BitConverter.ToSingle(value, 0);
     }
 
-    /// <summary>
-    /// Converts two UInt16 values into a UInt32 using optimized memory operations.
-    /// </summary>
+    /// <summary>Converts two UInt16 values into a UInt32 using optimized memory operations.</summary>
     /// <param name="highOrderValue">The high order value.</param>
     /// <param name="lowOrderValue">The low order value.</param>
     /// <returns>A UInt32 value.</returns>
     public static uint GetUInt32(ushort highOrderValue, ushort lowOrderValue)
     {
-        var value = BitConverter.GetBytes(lowOrderValue)
-            .Concat(BitConverter.GetBytes(highOrderValue))
-            .ToArray();
+        var value = new byte[4];
+        Array.Copy(BitConverter.GetBytes(lowOrderValue), 0, value, 0, 2);
+        Array.Copy(BitConverter.GetBytes(highOrderValue), 0, value, 2, 2);
 
         return BitConverter.ToUInt32(value, 0);
     }
 
-    /// <summary>
-    ///     Converts a span of bytes to an ASCII byte array using high-performance operations.
-    /// </summary>
+    /// <summary>Converts a span of bytes to an ASCII byte array using high-performance operations.</summary>
     /// <param name="numbers">The byte span.</param>
     /// <returns>An array of ASCII byte values.</returns>
     public static byte[] GetAsciiBytes(ReadOnlySpan<byte> numbers)
@@ -115,9 +111,7 @@ public static class ModbusUtility
         return result.ToArray();
     }
 
-    /// <summary>
-    ///     Converts a span of UInt16 to an ASCII byte array using high-performance operations.
-    /// </summary>
+    /// <summary>Converts a span of UInt16 to an ASCII byte array using high-performance operations.</summary>
     /// <param name="numbers">The ushort span.</param>
     /// <returns>An array of ASCII byte values.</returns>
     public static byte[] GetAsciiBytes(ReadOnlySpan<ushort> numbers)
@@ -132,25 +126,19 @@ public static class ModbusUtility
         return result.ToArray();
     }
 
-    /// <summary>
-    ///     Converts an array of bytes to an ASCII byte array.
-    /// </summary>
+    /// <summary>Converts an array of bytes to an ASCII byte array.</summary>
     /// <param name="numbers">The byte array.</param>
     /// <returns>An array of ASCII byte values.</returns>
     public static byte[] GetAsciiBytes(params byte[] numbers) =>
-        Encoding.UTF8.GetBytes(numbers.SelectMany(n => n.ToString("X2")).ToArray());
+        GetAsciiBytes((ReadOnlySpan<byte>)numbers);
 
-    /// <summary>
-    ///     Converts an array of UInt16 to an ASCII byte array.
-    /// </summary>
+    /// <summary>Converts an array of UInt16 to an ASCII byte array.</summary>
     /// <param name="numbers">The ushort array.</param>
     /// <returns>An array of ASCII byte values.</returns>
     public static byte[] GetAsciiBytes(params ushort[] numbers) =>
-        Encoding.UTF8.GetBytes(numbers.SelectMany(n => n.ToString("X4")).ToArray());
+        GetAsciiBytes((ReadOnlySpan<ushort>)numbers);
 
-    /// <summary>
-    ///     Converts a network order byte span to a span of UInt16 values in host order using high-performance operations.
-    /// </summary>
+    /// <summary>Converts a network order byte span to a span of UInt16 values in host order using high-performance operations.</summary>
     /// <param name="networkBytes">The network order byte span.</param>
     /// <param name="result">The result span to write to.</param>
     /// <returns>The number of UInt16 values written.</returns>
@@ -177,16 +165,14 @@ public static class ModbusUtility
         return count;
     }
 
-    /// <summary>
-    ///     Converts a network order byte array to an array of UInt16 values in host order.
-    /// </summary>
+    /// <summary>Converts a network order byte array to an array of UInt16 values in host order.</summary>
     /// <param name="networkBytes">The network order byte array.</param>
     /// <returns>The host order ushort array.</returns>
     /// <exception cref="ArgumentNullException">Thrown when networkBytes is null.</exception>
     /// <exception cref="FormatException">Thrown when networkBytes length is not even.</exception>
     public static ushort[] NetworkBytesToHostUInt16(byte[] networkBytes)
     {
-        if (networkBytes == null)
+        if (networkBytes is null)
         {
             throw new ArgumentNullException(nameof(networkBytes));
         }
@@ -206,9 +192,7 @@ public static class ModbusUtility
         return result;
     }
 
-    /// <summary>
-    ///     Converts a hex string to bytes using high-performance parsing.
-    /// </summary>
+    /// <summary>Converts a hex string to bytes using high-performance parsing.</summary>
     /// <param name="hex">The hex string.</param>
     /// <param name="result">The result span to write to.</param>
     /// <returns>The number of bytes written.</returns>
@@ -240,16 +224,14 @@ public static class ModbusUtility
         return count;
     }
 
-    /// <summary>
-    ///     Converts a hex string to a byte array.
-    /// </summary>
+    /// <summary>Converts a hex string to a byte array.</summary>
     /// <param name="hex">The hex string.</param>
     /// <returns>Array of bytes.</returns>
     /// <exception cref="ArgumentNullException">Thrown when hex is null.</exception>
     /// <exception cref="FormatException">Thrown when hex length is not even.</exception>
     public static byte[] HexToBytes(string hex)
     {
-        if (hex == null)
+        if (hex is null)
         {
             throw new ArgumentNullException(nameof(hex));
         }
@@ -269,9 +251,7 @@ public static class ModbusUtility
         return bytes;
     }
 
-    /// <summary>
-    ///     Calculate Longitudinal Redundancy Check using high-performance operations.
-    /// </summary>
+    /// <summary>Calculate Longitudinal Redundancy Check using high-performance operations.</summary>
     /// <param name="data">The data span used in LRC.</param>
     /// <returns>LRC value.</returns>
     public static byte CalculateLrc(ReadOnlySpan<byte> data)
@@ -285,15 +265,13 @@ public static class ModbusUtility
         return (byte)((lrc ^ 0xFF) + 1);
     }
 
-    /// <summary>
-    ///     Calculate Longitudinal Redundancy Check.
-    /// </summary>
+    /// <summary>Calculate Longitudinal Redundancy Check.</summary>
     /// <param name="data">The data used in LRC.</param>
     /// <returns>LRC value.</returns>
     /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
     public static byte CalculateLrc(byte[] data)
     {
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -305,14 +283,10 @@ public static class ModbusUtility
             lrc += b;
         }
 
-        lrc = (byte)((lrc ^ 0xFF) + 1);
-
-        return lrc;
+        return (byte)((lrc ^ 0xFF) + 1);
     }
 
-    /// <summary>
-    ///     Calculate Cyclical Redundancy Check using high-performance operations.
-    /// </summary>
+    /// <summary>Calculate Cyclical Redundancy Check using high-performance operations.</summary>
     /// <param name="data">The data span used in CRC.</param>
     /// <param name="result">The result span to write CRC bytes to (must be at least 2 bytes).</param>
     /// <returns>The number of bytes written (always 2).</returns>
@@ -336,15 +310,13 @@ public static class ModbusUtility
         return 2;
     }
 
-    /// <summary>
-    ///     Calculate Cyclical Redundancy Check.
-    /// </summary>
+    /// <summary>Calculate Cyclical Redundancy Check.</summary>
     /// <param name="data">The data used in CRC.</param>
     /// <returns>CRC value as byte array.</returns>
     /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
     public static byte[] CalculateCrc(byte[] data)
     {
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -361,9 +333,7 @@ public static class ModbusUtility
         return BitConverter.GetBytes(crc);
     }
 
-    /// <summary>
-    /// Writes a double value to a span of UInt16 registers using optimized operations.
-    /// </summary>
+    /// <summary>Writes a double value to a span of UInt16 registers using optimized operations.</summary>
     /// <param name="value">The double value to write.</param>
     /// <param name="registers">The span of registers to write to (must be at least 4 elements).</param>
     /// <param name="swapWords">Whether to swap word order.</param>
@@ -393,9 +363,7 @@ public static class ModbusUtility
         }
     }
 
-    /// <summary>
-    /// Writes a float value to a span of UInt16 registers using optimized operations.
-    /// </summary>
+    /// <summary>Writes a float value to a span of UInt16 registers using optimized operations.</summary>
     /// <param name="value">The float value to write.</param>
     /// <param name="registers">The span of registers to write to (must be at least 2 elements).</param>
     /// <param name="swapWords">Whether to swap word order.</param>
@@ -421,9 +389,7 @@ public static class ModbusUtility
         }
     }
 
-    /// <summary>
-    /// Reads a double value from a span of UInt16 registers using optimized operations.
-    /// </summary>
+    /// <summary>Reads a double value from a span of UInt16 registers using optimized operations.</summary>
     /// <param name="registers">The span of registers to read from (must be at least 4 elements).</param>
     /// <param name="swapWords">Whether words are swapped.</param>
     /// <returns>The double value.</returns>
@@ -465,9 +431,7 @@ public static class ModbusUtility
         return BitConverter.ToDouble(bytes, 0);
     }
 
-    /// <summary>
-    /// Reads a float value from a span of UInt16 registers using optimized operations.
-    /// </summary>
+    /// <summary>Reads a float value from a span of UInt16 registers using optimized operations.</summary>
     /// <param name="registers">The span of registers to read from (must be at least 2 elements).</param>
     /// <param name="swapWords">Whether words are swapped.</param>
     /// <returns>The float value.</returns>

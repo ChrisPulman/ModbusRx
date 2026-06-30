@@ -1,29 +1,28 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
 using ModbusRx.Reactive;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// Integration tests for the new ModbusServer functionality.
-/// </summary>
-[Collection("NetworkTests")]
+/// <summary>Integration tests for the new ModbusServer functionality.</summary>
 public sealed class ModbusServerIntegrationTests : NetworkTestBase
 {
-    /// <summary>
-    /// Tests that the ModbusServer can serve data over TCP.
-    /// </summary>
+    /// <summary>The intentionally unavailable TCP port used by client aggregation tests.</summary>
+    private const int UnavailableTcpPort = 10_502;
+
+    /// <summary>The value written by the single-register write integration test.</summary>
+    private const ushort WrittenRegisterValue = 12_345;
+
+    /// <summary>Tests that the ModbusServer can serve data over TCP.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_TcpCommunication_ShouldWork()
@@ -36,7 +35,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         server.LoadSimulationData(testData);
 
         var tcpPort = await GetAvailablePortAsync();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.Start();
 
         // Give server time to start
@@ -56,9 +55,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.Equal(500, result[4]);
     }
 
-    /// <summary>
-    /// Tests that the ModbusServer can serve data over UDP.
-    /// </summary>
+    /// <summary>Tests that the ModbusServer can serve data over UDP.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_UdpCommunication_ShouldWork()
@@ -71,7 +68,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         server.LoadSimulationData(coils: testCoils);
 
         var udpPort = await GetAvailablePortAsync();
-        server.StartUdpServer(udpPort, 1);
+        _ = server.StartUdpServer(udpPort, 1);
         server.Start();
 
         // Give server time to start
@@ -94,9 +91,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.True(result[4]);
     }
 
-    /// <summary>
-    /// Tests that simulation mode generates changing data.
-    /// </summary>
+    /// <summary>Tests that simulation mode generates changing data.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_SimulationMode_ShouldGenerateData()
@@ -117,12 +112,10 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         var data2 = server.GetCurrentData();
 
         // Assert - data should have changed
-        Assert.True(data1.holdingRegisters.Zip(data2.holdingRegisters, (a, b) => a != b).Any(changed => changed));
+        Assert.True(HasAnyChange(data1.holdingRegisters, data2.holdingRegisters));
     }
 
-    /// <summary>
-    /// Tests reactive data observation.
-    /// </summary>
+    /// <summary>Tests reactive data observation.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_ReactiveObservation_ShouldEmitData()
@@ -137,9 +130,13 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         var dataReceived = false;
 
         // Act
-        var subscription = server.ObserveDataChanges(100)
-            .Take(1)
-            .Subscribe(_ => dataReceived = true);
+        IDisposable? subscription = null;
+        subscription = server.ObserveDataChanges(100)
+            .Subscribe(_ =>
+            {
+                dataReceived = true;
+                subscription?.Dispose();
+            });
         RegisterDisposable(subscription);
 
         await Task.Delay(200, CancellationToken);
@@ -148,9 +145,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.True(dataReceived);
     }
 
-    /// <summary>
-    /// Tests that multiple clients can connect to the same server.
-    /// </summary>
+    /// <summary>Tests that multiple clients can connect to the same server.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_MultipleClients_ShouldWork()
@@ -163,7 +158,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         server.LoadSimulationData(testData);
 
         var tcpPort = await GetAvailablePortAsync();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.Start();
 
         await Task.Delay(200, CancellationToken);
@@ -187,9 +182,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.Equal(333, result1[2]);
     }
 
-    /// <summary>
-    /// Tests different simulation patterns.
-    /// </summary>
+    /// <summary>Tests different simulation patterns.</summary>
     /// <param name="pattern">The test pattern to verify.</param>
     [TUnit.Core.Test]
     [TUnit.Core.Arguments(TestPattern.CountingUp)]
@@ -212,23 +205,23 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         switch (pattern)
         {
             case TestPattern.CountingUp:
-                Assert.Equal(0, data.holdingRegisters[0]);
-                Assert.Equal(1, data.holdingRegisters[1]);
-                Assert.Equal(2, data.holdingRegisters[2]);
-                break;
+                {
+                    Assert.Equal(0, data.holdingRegisters[0]);
+                    Assert.Equal(1, data.holdingRegisters[1]);
+                    Assert.Equal(2, data.holdingRegisters[2]);
+                    break;
+                }
 
-            case TestPattern.SineWave:
-            case TestPattern.SquareWave:
-            case TestPattern.Random:
-                // For these patterns, just verify data was loaded
-                Assert.Contains(data.holdingRegisters.Take(10), x => x > 0);
-                break;
+            case TestPattern.SineWave or TestPattern.SquareWave or TestPattern.Random:
+                {
+                    // For these patterns, just verify data was loaded
+                    Assert.True(ContainsPositiveValue(data.holdingRegisters, 10));
+                    break;
+                }
         }
     }
 
-    /// <summary>
-    /// Tests writing data to the server.
-    /// </summary>
+    /// <summary>Tests writing data to the server.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_WriteOperations_ShouldWork()
@@ -238,7 +231,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         RegisterDisposable(server);
 
         var tcpPort = await GetAvailablePortAsync();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.Start();
 
         await Task.Delay(200, CancellationToken);
@@ -248,11 +241,11 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         RegisterDisposable(master);
 
         // Act - Write single register
-        await master.WriteSingleRegisterAsync(1, 0, 12345);
+        await master.WriteSingleRegisterAsync(1, 0, WrittenRegisterValue);
         var readResult = await master.ReadHoldingRegistersAsync(1, 0, 1);
 
         // Assert
-        Assert.Equal(12345, readResult[0]);
+        Assert.Equal(WrittenRegisterValue, readResult[0]);
 
         // Act - Write multiple registers
         var writeData = new ushort[] { 1000, 2000, 3000 };
@@ -263,9 +256,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.Equal(writeData, multiReadResult);
     }
 
-    /// <summary>
-    /// Tests server start/stop functionality.
-    /// </summary>
+    /// <summary>Tests server start/stop functionality.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_StartStop_ShouldWork()
@@ -286,9 +277,7 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         Assert.False(await server.IsRunning.FirstAsync());
     }
 
-    /// <summary>
-    /// Tests that server properly handles client aggregation.
-    /// </summary>
+    /// <summary>Tests that server properly handles client aggregation.</summary>
     [TUnit.Core.Test]
     public void ModbusServer_ClientAggregation_ShouldWork()
     {
@@ -299,15 +288,12 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         // This test verifies the method doesn't throw during setup,
         // but the actual connection will fail since no server is running on that port
         // which is expected behavior in a test environment
-
         // Act & Assert - Should throw SocketException since no server is running
-        Assert.Throws<System.Net.Sockets.SocketException>(() =>
-            server.AddTcpClient("test-client", "127.0.0.1", 10502, 1));
+        _ = Assert.Throws<System.Net.Sockets.SocketException>(() =>
+            server.AddTcpClient("test-client", "127.0.0.1", UnavailableTcpPort, 1));
     }
 
-    /// <summary>
-    /// Tests performance under load.
-    /// </summary>
+    /// <summary>Tests performance under load.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_PerformanceTest_ShouldHandleMultipleRequests()
@@ -316,10 +302,10 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         var server = new ModbusServer();
         RegisterDisposable(server);
 
-        server.LoadSimulationData(Enumerable.Range(0, 1000).Select(i => (ushort)i).ToArray());
+        server.LoadSimulationData(CreateSequentialRegisters(1_000));
 
         var tcpPort = await GetAvailablePortAsync();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.Start();
 
         await Task.Delay(200, CancellationToken);
@@ -344,5 +330,58 @@ public sealed class ModbusServerIntegrationTests : NetworkTestBase
         {
             Assert.Equal(10, result.Length);
         }
+    }
+
+    /// <summary>Creates a sequence of register values.</summary>
+    /// <param name="count">The number of values to create.</param>
+    /// <returns>The created register values.</returns>
+    private static ushort[] CreateSequentialRegisters(int count)
+    {
+        var values = new ushort[count];
+
+        for (var i = 0; i < values.Length; i++)
+        {
+            values[i] = (ushort)i;
+        }
+
+        return values;
+    }
+
+    /// <summary>Determines whether the first values contain a value greater than zero.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <param name="count">The number of values to inspect.</param>
+    /// <returns><c>true</c> when a matching value is found; otherwise, <c>false</c>.</returns>
+    private static bool ContainsPositiveValue(ushort[] values, int count)
+    {
+        var length = Math.Min(values.Length, count);
+
+        for (var i = 0; i < length; i++)
+        {
+            if (values[i] > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Determines whether any values differ between two arrays.</summary>
+    /// <param name="left">The left values.</param>
+    /// <param name="right">The right values.</param>
+    /// <returns><c>true</c> when any value differs; otherwise, <c>false</c>.</returns>
+    private static bool HasAnyChange(ushort[] left, ushort[] right)
+    {
+        var length = Math.Min(left.Length, right.Length);
+
+        for (var i = 0; i < length; i++)
+        {
+            if (left[i] != right[i])
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

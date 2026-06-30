@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Utility;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Utility;
 
-/// <summary>
-/// DiscriminatedUnionFixture.
-/// </summary>
+/// <summary>Tests the DiscriminatedUnionFixture behavior.</summary>
 public class DiscriminatedUnionFixture
 {
-    /// <summary>
-    /// Discriminateds the union create a.
-    /// </summary>
+    /// <summary>Discriminateds the union create a.</summary>
     [TUnit.Core.Test]
     public void DiscriminatedUnion_CreateA()
     {
@@ -23,9 +19,7 @@ public class DiscriminatedUnionFixture
         Assert.Equal("foo", du.A);
     }
 
-    /// <summary>
-    /// Discriminateds the union create b.
-    /// </summary>
+    /// <summary>Discriminateds the union create b.</summary>
     [TUnit.Core.Test]
     public void DiscriminatedUnion_CreateB()
     {
@@ -34,9 +28,7 @@ public class DiscriminatedUnionFixture
         Assert.Equal("foo", du.B);
     }
 
-    /// <summary>
-    /// Discriminateds the union allow nulls.
-    /// </summary>
+    /// <summary>Discriminateds the union allow nulls.</summary>
     [TUnit.Core.Test]
     public void DiscriminatedUnion_AllowNulls()
     {
@@ -45,29 +37,23 @@ public class DiscriminatedUnionFixture
         Assert.Null(du.B);
     }
 
-    /// <summary>
-    /// Accesses the invalid option a.
-    /// </summary>
+    /// <summary>Accesses the invalid option a.</summary>
     [TUnit.Core.Test]
     public void AccessInvalidOption_A()
     {
         var du = DiscriminatedUnion<string, string>.CreateB("foo");
-        Assert.Throws<InvalidOperationException>(() => du.A?.ToString());
+        _ = Assert.Throws<InvalidOperationException>(() => du.A?.ToString());
     }
 
-    /// <summary>
-    /// Accesses the invalid option b.
-    /// </summary>
+    /// <summary>Accesses the invalid option b.</summary>
     [TUnit.Core.Test]
     public void AccessInvalidOption_B()
     {
         var du = DiscriminatedUnion<string, string>.CreateA("foo");
-        Assert.Throws<InvalidOperationException>(() => du.B?.ToString());
+        _ = Assert.Throws<InvalidOperationException>(() => du.B?.ToString());
     }
 
-    /// <summary>
-    /// Discriminateds the union to string.
-    /// </summary>
+    /// <summary>Discriminateds the union to string.</summary>
     [TUnit.Core.Test]
     public void DiscriminatedUnion_ToString()
     {

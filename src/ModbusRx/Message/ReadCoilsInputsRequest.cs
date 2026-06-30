@@ -1,27 +1,26 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Net;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// ReadCoilsInputsRequest.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.AbstractModbusMessage" />
-/// <seealso cref="ModbusRx.Message.IModbusRequest" />
+/// <summary>Provides ReadCoilsInputsRequest functionality.</summary>
+/// <seealso cref="AbstractModbusMessage" />
+/// <seealso cref="IModbusRequest" />
 public class ReadCoilsInputsRequest : AbstractModbusMessage, IModbusRequest
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadCoilsInputsRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadCoilsInputsRequest"/> class.</summary>
     public ReadCoilsInputsRequest()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadCoilsInputsRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadCoilsInputsRequest"/> class.</summary>
     /// <param name="functionCode">The function code.</param>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
@@ -33,12 +32,8 @@ public class ReadCoilsInputsRequest : AbstractModbusMessage, IModbusRequest
         NumberOfPoints = numberOfPoints;
     }
 
-    /// <summary>
-    /// Gets or sets the start address.
-    /// </summary>
-    /// <value>
-    /// The start address.
-    /// </value>
+    /// <summary>Gets or sets the start address.</summary>
+/// <value>The start address.</value>
     public ushort StartAddress
     {
         get => MessageImpl.StartAddress!.Value;
@@ -48,13 +43,9 @@ public class ReadCoilsInputsRequest : AbstractModbusMessage, IModbusRequest
     /// <inheritdoc/>
     public override int MinimumFrameSize => 6;
 
-    /// <summary>
-    /// Gets or sets the number of points.
-    /// </summary>
-    /// <value>
-    /// The number of points.
-    /// </value>
+    /// <summary>Gets or sets the number of points.</summary>
     /// <exception cref="System.ArgumentOutOfRangeException">NumberOfPoints.</exception>
+    /// The number of points.
     public ushort NumberOfPoints
     {
         get => MessageImpl.NumberOfPoints!.Value;
@@ -82,11 +73,13 @@ public class ReadCoilsInputsRequest : AbstractModbusMessage, IModbusRequest
         // best effort validation - the same response for a request for 1 vs 6 coils (same byte count) will pass validation.
         var expectedByteCount = (NumberOfPoints + 7) / 8;
 
-        if (expectedByteCount != typedResponse?.ByteCount)
+        if (expectedByteCount == typedResponse?.ByteCount)
         {
-            var msg = $"Unexpected byte count. Expected {expectedByteCount}, received {typedResponse?.ByteCount}.";
-            throw new IOException(msg);
+            return;
         }
+
+        var msg = $"Unexpected byte count. Expected {expectedByteCount}, received {typedResponse?.ByteCount}.";
+        throw new IOException(msg);
     }
 
     /// <inheritdoc/>

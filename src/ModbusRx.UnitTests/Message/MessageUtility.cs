@@ -1,19 +1,16 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// MessageUtility.
-/// </summary>
+/// <summary>Tests the MessageUtility behavior.</summary>
 public static class MessageUtility
 {
-    /// <summary>
-    /// Creates a collection initialized to a default value.
-    /// </summary>
+    /// <summary>Creates a collection initialized to a default value.</summary>
     /// <typeparam name="T">The Key.</typeparam>
     /// <typeparam name="TV">The type of the v.</typeparam>
     /// <param name="defaultValue">The default value.</param>

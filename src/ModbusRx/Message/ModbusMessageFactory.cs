@@ -1,21 +1,20 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-///     Modbus message factory.
-/// </summary>
+/// <summary>Modbus message factory.</summary>
 public static class ModbusMessageFactory
 {
-    /// <summary>
-    ///     Minimum request frame length.
-    /// </summary>
+    /// <summary>Minimum request frame length.</summary>
     private const int MinRequestFrameLength = 3;
 
-    /// <summary>
-    ///     Create a Modbus message.
-    /// </summary>
+    /// <summary>Create a Modbus message.</summary>
     /// <typeparam name="T">Modbus message type.</typeparam>
     /// <param name="frame">Bytes of Modbus frame.</param>
     /// <returns>New Modbus message based on type and frame bytes.</returns>
@@ -28,9 +27,7 @@ public static class ModbusMessageFactory
         return (T)message;
     }
 
-    /// <summary>
-    ///     Create a Modbus request.
-    /// </summary>
+    /// <summary>Create a Modbus request.</summary>
     /// <param name="frame">Bytes of Modbus frame.</param>
     /// <returns>Modbus request.</returns>
     public static IModbusMessage CreateModbusRequest(byte[] frame)

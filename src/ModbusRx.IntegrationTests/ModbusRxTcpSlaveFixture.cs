@@ -1,22 +1,20 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// NModbusTcpSlaveFixture.
-/// </summary>
-[Collection("NetworkTests")]
-public class ModbusRxTcpSlaveFixture : NetworkTestBase
+/// <summary>Tests the NModbusTcpSlaveFixture behavior.</summary>
+public sealed class ModbusRxTcpSlaveFixture : NetworkTestBase
 {
     /// <summary>
     /// Tests possible exception when master closes gracefully immediately after transaction
@@ -32,7 +30,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
         RegisterDisposable(slave);
 
-        var slaveTask = Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {
@@ -46,12 +44,12 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
             {
                 // Expected when disposed
             }
-            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            catch (SocketException ex) when (ex.ErrorCode == 995)
             {
                 // Expected when I/O operation is aborted due to thread exit or application request
                 // This is normal during test cleanup in CI environments
             }
-            catch (System.Net.Sockets.SocketException)
+            catch (SocketException)
             {
                 // Other socket exceptions during cleanup are also expected
             }
@@ -68,8 +66,8 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
 
             var coils = await master.ReadCoilsAsync(1, 1);
 
-            Assert.Single(coils);
-            Assert.Single(slave.Masters);
+            _ = Assert.Single(coils);
+            _ = Assert.Single(slave.Masters);
         }
 
         // Give the slave some time to remove the master
@@ -78,9 +76,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         Assert.Empty(slave.Masters);
     }
 
-    /// <summary>
-    /// Tests possible exception when master closes gracefully and the ReadHeaderCompleted EndRead call returns 0 bytes.
-    /// </summary>
+    /// <summary>Tests possible exception when master closes gracefully and the ReadHeaderCompleted EndRead call returns 0 bytes.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusTcpSlave_ConnectionSlowlyClosesGracefully()
@@ -92,7 +88,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         RegisterDisposable(slave);
 
         var startedEvent = new ManualResetEventSlim(false);
-        var slaveTask = Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {
@@ -107,12 +103,12 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
             {
                 // Expected when listener is disposed
             }
-            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            catch (SocketException ex) when (ex.ErrorCode == 995)
             {
                 // Expected when I/O operation is aborted due to thread exit or application request
                 // This is normal during test cleanup in CI environments
             }
-            catch (System.Net.Sockets.SocketException)
+            catch (SocketException)
             {
                 // Other socket exceptions during cleanup are also expected
             }
@@ -131,9 +127,9 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
             master.Transport!.Retries = 0;
 
             var coils = await master.ReadCoilsAsync(1, 1);
-            Assert.Single(coils);
+            _ = Assert.Single(coils);
 
-            Assert.Single(slave.Masters);
+            _ = Assert.Single(slave.Masters);
 
             // Wait a bit to let slave move on to read header
             await Task.Delay(GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(100)), CancellationToken);
@@ -144,9 +140,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         Assert.Empty(slave.Masters);
     }
 
-    /// <summary>
-    /// Modbuses the TCP slave multi threaded.
-    /// </summary>
+    /// <summary>Modbuses the TCP slave multi threaded.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusTcpSlave_MultiThreaded()
@@ -157,7 +151,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         var slave = ModbusTcpSlave.CreateTcp(ModbusRxMasterFixture.SlaveAddress, slaveListener);
         RegisterDisposable(slave);
 
-        var slaveTask = Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {
@@ -171,12 +165,12 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
             {
                 // Expected when disposed
             }
-            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            catch (SocketException ex) when (ex.ErrorCode == 995)
             {
                 // Expected when I/O operation is aborted due to thread exit or application request
                 // This is normal during test cleanup in CI environments
             }
-            catch (System.Net.Sockets.SocketException)
+            catch (SocketException)
             {
                 // Other socket exceptions during cleanup are also expected
             }
@@ -192,9 +186,7 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         await Task.WhenAll(workerTask1, workerTask2);
     }
 
-    /// <summary>
-    /// Reads from the specified port asynchronously.
-    /// </summary>
+    /// <summary>Reads from the specified port asynchronously.</summary>
     /// <param name="port">The port to connect to.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task ReadAsync(int port)
@@ -203,14 +195,13 @@ public class ModbusRxTcpSlaveFixture : NetworkTestBase
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
-        var random = new Random();
         for (var i = 0; i < 5; i++)
         {
             var coils = await master.ReadCoilsAsync(1, 1);
-            Assert.Single(coils);
+            _ = Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
 
-            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(random.Next(100)));
+            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(100)));
             await Task.Delay(delay, CancellationToken);
         }
     }

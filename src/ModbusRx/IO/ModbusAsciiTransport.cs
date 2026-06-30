@@ -1,18 +1,31 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
 using System.Text;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Message;
+#else
 using ModbusRx.Message;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Utility;
+#else
 using ModbusRx.Utility;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.IO;
+#else
 namespace ModbusRx.IO;
+#endif
 
-/// <summary>
-///     Refined Abstraction - http://en.wikipedia.org/wiki/Bridge_Pattern.
-/// </summary>
-internal class ModbusAsciiTransport : ModbusSerialTransport
+/// <summary>Refined Abstraction - http://en.wikipedia.org/wiki/Bridge_Pattern.</summary>
+internal sealed class ModbusAsciiTransport : ModbusSerialTransport
 {
+    /// <summary>Initializes a new instance of the Modbus Ascii Transport class.</summary>
+    /// <param name="streamResource">The stream Resource value.</param>
     internal ModbusAsciiTransport(IStreamResource streamResource)
         : base(streamResource) => Debug.Assert(streamResource is not null, "Argument streamResource cannot be null.");
 
@@ -22,13 +35,13 @@ internal class ModbusAsciiTransport : ModbusSerialTransport
 
         var msgFrameAscii = ModbusUtility.GetAsciiBytes(msgFrame);
         var lrcAscii = ModbusUtility.GetAsciiBytes(ModbusUtility.CalculateLrc(msgFrame));
-        var nlAscii = Encoding.UTF8.GetBytes(Modbus.NewLine.ToCharArray());
+        var newLineAsciiBytes = Encoding.UTF8.GetBytes(Modbus.NewLine.ToCharArray());
 
-        var frame = new MemoryStream(1 + msgFrameAscii.Length + lrcAscii.Length + nlAscii.Length);
+        var frame = new MemoryStream(1 + msgFrameAscii.Length + lrcAscii.Length + newLineAsciiBytes.Length);
         frame.WriteByte((byte)':');
         frame.Write(msgFrameAscii, 0, msgFrameAscii.Length);
         frame.Write(lrcAscii, 0, lrcAscii.Length);
-        frame.Write(nlAscii, 0, nlAscii.Length);
+        frame.Write(newLineAsciiBytes, 0, newLineAsciiBytes.Length);
 
         return frame.ToArray();
     }
@@ -42,6 +55,8 @@ internal class ModbusAsciiTransport : ModbusSerialTransport
     internal override Task<IModbusMessage> ReadResponse<T>() =>
         CreateResponse<T>(ReadRequestResponse());
 
+    /// <summary>Executes the Read Request Response operation.</summary>
+    /// <returns>The result.</returns>
     internal async Task<byte[]> ReadRequestResponse()
     {
         // read message frame, removing frame start ':'

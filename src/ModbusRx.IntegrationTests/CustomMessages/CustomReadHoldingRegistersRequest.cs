@@ -1,5 +1,6 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,8 @@ using ModbusRx.Message;
 
 namespace ModbusRx.IntegrationTests.CustomMessages;
 
-/// <summary>
-/// CustomReadHoldingRegistersRequest.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.IModbusMessage" />
+/// <summary>Custom read holding registers request.</summary>
+/// <seealso cref="IModbusMessage" />
 /// <remarks>
 /// Initializes a new instance of the <see cref="CustomReadHoldingRegistersRequest"/> class.
 /// </remarks>
@@ -21,9 +20,7 @@ namespace ModbusRx.IntegrationTests.CustomMessages;
 /// <param name="numberOfPoints">The number of points.</param>
 public class CustomReadHoldingRegistersRequest(byte functionCode, byte slaveAddress, ushort startAddress, ushort numberOfPoints) : IModbusMessage
 {
-    /// <summary>
-    /// Gets composition of the slave address and protocol data unit.
-    /// </summary>
+    /// <summary>Gets composition of the slave address and protocol data unit.</summary>
     public byte[] MessageFrame
     {
         get
@@ -38,9 +35,7 @@ public class CustomReadHoldingRegistersRequest(byte functionCode, byte slaveAddr
         }
     }
 
-    /// <summary>
-    /// Gets composition of the function code and message data.
-    /// </summary>
+    /// <summary>Gets composition of the function code and message data.</summary>
     public byte[] ProtocolDataUnit
     {
         get
@@ -56,46 +51,34 @@ public class CustomReadHoldingRegistersRequest(byte functionCode, byte slaveAddr
         }
     }
 
-    /// <summary>
-    /// Gets or sets a unique identifier assigned to a message when using the IP protocol.
-    /// </summary>
+    /// <summary>Gets or sets a unique identifier assigned to a message when using the IP protocol.</summary>
     public ushort TransactionId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the function code tells the server what kind of action to perform.
-    /// </summary>
+    /// <summary>Gets or sets the function code tells the server what kind of action to perform.</summary>
     public byte FunctionCode { get; set; } = functionCode;
 
-    /// <summary>
-    /// Gets or sets address of the slave (server).
-    /// </summary>
+    /// <summary>Gets or sets address of the slave (server).</summary>
     public byte SlaveAddress { get; set; } = slaveAddress;
 
-    /// <summary>
-    /// Gets or sets the start address.
-    /// </summary>
+    /// <summary>Gets or sets the start address.</summary>
     /// <value>
     /// The start address.
     /// </value>
     public ushort StartAddress { get; set; } = startAddress;
 
-    /// <summary>
-    /// Gets or sets the number of points.
-    /// </summary>
+    /// <summary>Gets or sets the number of points.</summary>
     /// <value>
     /// The number of points.
     /// </value>
     public ushort NumberOfPoints { get; set; } = numberOfPoints;
 
-    /// <summary>
-    /// Initializes a modbus message from the specified message frame.
-    /// </summary>
+    /// <summary>Initializes a modbus message from the specified message frame.</summary>
     /// <param name="frame">Bytes of Modbus frame.</param>
     /// <exception cref="System.ArgumentNullException">frame.</exception>
     /// <exception cref="System.ArgumentException">Invalid frame. - frame.</exception>
     public void Initialize(byte[] frame)
     {
-        if (frame == null)
+        if (frame is null)
         {
             throw new ArgumentNullException(nameof(frame));
         }

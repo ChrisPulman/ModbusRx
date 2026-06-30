@@ -1,23 +1,38 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
 using CP.IO.Ports;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.IO;
+#else
 using ModbusRx.IO;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Message;
+#else
 using ModbusRx.Message;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Device;
+#else
 namespace ModbusRx.Device;
+#endif
 
-/// <summary>
-///     Modbus serial slave device.
-/// </summary>
+/// <summary>Modbus serial slave device.</summary>
 public sealed class ModbusSerialSlave : ModbusSlave
 {
+    /// <summary>Initializes a new instance of the Modbus Serial Slave class.</summary>
+    /// <param name="unitId">The unit Id value.</param>
+    /// <param name="transport">The transport value.</param>
     private ModbusSerialSlave(byte unitId, ModbusTransport transport)
         : base(unitId, transport)
     {
     }
 
+    /// <summary>Gets the Serial Transport value.</summary>
     private ModbusSerialTransport? SerialTransport
     {
         get
@@ -31,16 +46,14 @@ public sealed class ModbusSerialSlave : ModbusSlave
         }
     }
 
-    /// <summary>
-    /// Modbus ASCII slave factory method.
-    /// </summary>
+    /// <summary>Modbus ASCII slave factory method.</summary>
     /// <param name="unitId">The unit identifier.</param>
     /// <param name="serialPort">The serial port.</param>
     /// <returns>A ModbusSerialSlave.</returns>
     /// <exception cref="System.ArgumentNullException">serialPort.</exception>
     public static ModbusSerialSlave CreateAscii(byte unitId, SerialPortRx serialPort)
     {
-        if (serialPort == null)
+        if (serialPort is null)
         {
             throw new ArgumentNullException(nameof(serialPort));
         }
@@ -48,16 +61,14 @@ public sealed class ModbusSerialSlave : ModbusSlave
         return CreateAscii(unitId, new SerialPortAdapter(serialPort));
     }
 
-    /// <summary>
-    /// Modbus ASCII slave factory method.
-    /// </summary>
+    /// <summary>Modbus ASCII slave factory method.</summary>
     /// <param name="unitId">The unit identifier.</param>
     /// <param name="streamResource">The stream resource.</param>
     /// <returns>A ModbusSerialSlave.</returns>
     /// <exception cref="System.ArgumentNullException">streamResource.</exception>
     public static ModbusSerialSlave CreateAscii(byte unitId, IStreamResource streamResource)
     {
-        if (streamResource == null)
+        if (streamResource is null)
         {
             throw new ArgumentNullException(nameof(streamResource));
         }
@@ -65,16 +76,14 @@ public sealed class ModbusSerialSlave : ModbusSlave
         return new ModbusSerialSlave(unitId, new ModbusAsciiTransport(streamResource));
     }
 
-    /// <summary>
-    /// Modbus RTU slave factory method.
-    /// </summary>
+    /// <summary>Modbus RTU slave factory method.</summary>
     /// <param name="unitId">The unit identifier.</param>
     /// <param name="serialPort">The serial port.</param>
     /// <returns>A ModbusSerialSlave.</returns>
     /// <exception cref="System.ArgumentNullException">serialPort.</exception>
     public static ModbusSerialSlave CreateRtu(byte unitId, SerialPortRx serialPort)
     {
-        if (serialPort == null)
+        if (serialPort is null)
         {
             throw new ArgumentNullException(nameof(serialPort));
         }
@@ -82,16 +91,14 @@ public sealed class ModbusSerialSlave : ModbusSlave
         return CreateRtu(unitId, new SerialPortAdapter(serialPort));
     }
 
-    /// <summary>
-    /// Modbus RTU slave factory method.
-    /// </summary>
+    /// <summary>Modbus RTU slave factory method.</summary>
     /// <param name="unitId">The unit identifier.</param>
     /// <param name="streamResource">The stream resource.</param>
     /// <returns>A ModbusSerialSlave.</returns>
     /// <exception cref="System.ArgumentNullException">streamResource.</exception>
     public static ModbusSerialSlave CreateRtu(byte unitId, IStreamResource streamResource)
     {
-        if (streamResource == null)
+        if (streamResource is null)
         {
             throw new ArgumentNullException(nameof(streamResource));
         }
@@ -99,9 +106,7 @@ public sealed class ModbusSerialSlave : ModbusSlave
         return new ModbusSerialSlave(unitId, new ModbusRtuTransport(streamResource));
     }
 
-    /// <summary>
-    /// Start slave listening for requests.
-    /// </summary>
+    /// <summary>Start slave listening for requests.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public override async Task ListenAsync()
     {

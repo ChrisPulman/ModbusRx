@@ -7,7 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="SerialPortRx" Version="5.0.20" ExcludeAssets="analyzers;build;buildTransitive" PrivateAssets="analyzers;build;buildTransitive" />
     <ProjectReference Include="..\ModbusRx\ModbusRx.csproj" />
+    <ProjectReference Include="..\ModbusRx.Reactive\ModbusRx.Reactive.csproj" />
     <ProjectReference Include="..\ModbusRx.Generators\ModbusRx.Generators.csproj" />
   </ItemGroup>
 

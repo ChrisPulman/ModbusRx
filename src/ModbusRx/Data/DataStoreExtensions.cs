@@ -1,26 +1,30 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
-/// <summary>
-/// High-performance extensions for DataStore operations using optimized techniques.
-/// </summary>
+/// <summary>High-performance extensions for DataStore operations using optimized techniques.</summary>
 public static class DataStoreExtensions
 {
-    /// <summary>
-    /// Reads holding registers with optimized performance.
-    /// </summary>
+    /// <summary>Provides optimized operations for data stores.</summary>
     /// <param name="dataStore">The data store.</param>
+    extension(DataStore dataStore)
+    {
+    /// <summary>Reads holding registers with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The count.</param>
     /// <returns>Array of register values.</returns>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static ushort[] ReadHoldingRegistersOptimized(this DataStore dataStore, ushort startAddress, ushort count)
+    public ushort[] ReadHoldingRegistersOptimized(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -41,17 +45,14 @@ public static class DataStoreExtensions
         return result;
     }
 
-    /// <summary>
-    /// Reads input registers with optimized performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Reads input registers with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The count.</param>
     /// <returns>Array of register values.</returns>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static ushort[] ReadInputRegistersOptimized(this DataStore dataStore, ushort startAddress, ushort count)
+    public ushort[] ReadInputRegistersOptimized(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -72,17 +73,14 @@ public static class DataStoreExtensions
         return result;
     }
 
-    /// <summary>
-    /// Reads coils with optimized performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Reads coils with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The count.</param>
     /// <returns>Array of coil values.</returns>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static bool[] ReadCoilsOptimized(this DataStore dataStore, ushort startAddress, ushort count)
+    public bool[] ReadCoilsOptimized(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -103,17 +101,14 @@ public static class DataStoreExtensions
         return result;
     }
 
-    /// <summary>
-    /// Reads discrete inputs with optimized performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Reads discrete inputs with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The count.</param>
     /// <returns>Array of input values.</returns>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static bool[] ReadInputsOptimized(this DataStore dataStore, ushort startAddress, ushort count)
+    public bool[] ReadInputsOptimized(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -134,21 +129,18 @@ public static class DataStoreExtensions
         return result;
     }
 
-    /// <summary>
-    /// Writes holding registers with optimized performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Writes holding registers with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="values">The values to write.</param>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static void WriteHoldingRegistersOptimized(this DataStore dataStore, ushort startAddress, ushort[] values)
+    public void WriteHoldingRegistersOptimized(ushort startAddress, ushort[] values)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
 
-        if (values == null)
+        if (values is null)
         {
             return;
         }
@@ -172,21 +164,18 @@ public static class DataStoreExtensions
         }
     }
 
-    /// <summary>
-    /// Writes coils with optimized performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Writes coils with optimized performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="values">The values to write.</param>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static void WriteCoilsOptimized(this DataStore dataStore, ushort startAddress, bool[] values)
+    public void WriteCoilsOptimized(ushort startAddress, bool[] values)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
 
-        if (values == null)
+        if (values is null)
         {
             return;
         }
@@ -210,72 +199,61 @@ public static class DataStoreExtensions
         }
     }
 
-    /// <summary>
-    /// Performs a bulk copy operation between data stores with high performance.
-    /// </summary>
-    /// <param name="sourceStore">The source data store.</param>
+    /// <summary>Performs a bulk copy operation between data stores with high performance.</summary>
     /// <param name="destinationStore">The destination data store.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The number of elements to copy.</param>
     /// <exception cref="ArgumentNullException">Thrown when sourceStore or destinationStore is null.</exception>
-    public static void BulkCopyHoldingRegisters(
-        this DataStore sourceStore,
+    public void BulkCopyHoldingRegisters(
         DataStore destinationStore,
         ushort startAddress,
         ushort count)
     {
-        if (sourceStore == null)
+        if (dataStore is null)
         {
-            throw new ArgumentNullException(nameof(sourceStore));
+            throw new ArgumentNullException(nameof(dataStore));
         }
 
-        if (destinationStore == null)
+        if (destinationStore is null)
         {
             throw new ArgumentNullException(nameof(destinationStore));
         }
 
-        var data = sourceStore.ReadHoldingRegistersOptimized(startAddress, count);
+        var data = dataStore.ReadHoldingRegistersOptimized(startAddress, count);
         destinationStore.WriteHoldingRegistersOptimized(startAddress, data);
     }
 
-    /// <summary>
-    /// Performs a bulk copy operation for coils between data stores with high performance.
-    /// </summary>
-    /// <param name="sourceStore">The source data store.</param>
+    /// <summary>Performs a bulk copy operation for coils between data stores with high performance.</summary>
     /// <param name="destinationStore">The destination data store.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The number of elements to copy.</param>
     /// <exception cref="ArgumentNullException">Thrown when sourceStore or destinationStore is null.</exception>
-    public static void BulkCopyCoils(
-        this DataStore sourceStore,
+    public void BulkCopyCoils(
         DataStore destinationStore,
         ushort startAddress,
         ushort count)
     {
-        if (sourceStore == null)
+        if (dataStore is null)
         {
-            throw new ArgumentNullException(nameof(sourceStore));
+            throw new ArgumentNullException(nameof(dataStore));
         }
 
-        if (destinationStore == null)
+        if (destinationStore is null)
         {
             throw new ArgumentNullException(nameof(destinationStore));
         }
 
-        var data = sourceStore.ReadCoilsOptimized(startAddress, count);
+        var data = dataStore.ReadCoilsOptimized(startAddress, count);
         destinationStore.WriteCoilsOptimized(startAddress, data);
     }
 
-    /// <summary>
-    /// Clears a range of holding registers with high performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Clears a range of holding registers with high performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The number of registers to clear.</param>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static void ClearHoldingRegisters(this DataStore dataStore, ushort startAddress, ushort count)
+    public void ClearHoldingRegisters(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -284,16 +262,13 @@ public static class DataStoreExtensions
         dataStore.WriteHoldingRegistersOptimized(startAddress, zeros);
     }
 
-    /// <summary>
-    /// Clears a range of coils with high performance.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
+    /// <summary>Clears a range of coils with high performance.</summary>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The number of coils to clear.</param>
     /// <exception cref="ArgumentNullException">Thrown when dataStore is null.</exception>
-    public static void ClearCoils(this DataStore dataStore, ushort startAddress, ushort count)
+    public void ClearCoils(ushort startAddress, ushort count)
     {
-        if (dataStore == null)
+        if (dataStore is null)
         {
             throw new ArgumentNullException(nameof(dataStore));
         }
@@ -302,32 +277,28 @@ public static class DataStoreExtensions
         dataStore.WriteCoilsOptimized(startAddress, falses);
     }
 
-    /// <summary>
-    /// Performs a memory-efficient comparison between two data stores.
-    /// </summary>
-    /// <param name="store1">The first data store.</param>
+    /// <summary>Performs a memory-efficient comparison between two data stores.</summary>
     /// <param name="store2">The second data store.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="count">The number of elements to compare.</param>
     /// <returns>True if the data ranges are identical.</returns>
     /// <exception cref="ArgumentNullException">Thrown when store1 or store2 is null.</exception>
-    public static bool CompareHoldingRegisters(
-        this DataStore store1,
+    public bool CompareHoldingRegisters(
         DataStore store2,
         ushort startAddress,
         ushort count)
     {
-        if (store1 == null)
+        if (dataStore is null)
         {
-            throw new ArgumentNullException(nameof(store1));
+            throw new ArgumentNullException(nameof(dataStore));
         }
 
-        if (store2 == null)
+        if (store2 is null)
         {
             throw new ArgumentNullException(nameof(store2));
         }
 
-        var data1 = store1.ReadHoldingRegistersOptimized(startAddress, count);
+        var data1 = dataStore.ReadHoldingRegistersOptimized(startAddress, count);
         var data2 = store2.ReadHoldingRegistersOptimized(startAddress, count);
 
         if (data1.Length != data2.Length)
@@ -344,5 +315,6 @@ public static class DataStoreExtensions
         }
 
         return true;
+    }
     }
 }

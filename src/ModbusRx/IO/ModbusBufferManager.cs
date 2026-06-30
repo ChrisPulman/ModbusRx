@@ -1,40 +1,47 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 #if NET8_0_OR_GREATER
 using System.Buffers;
 #endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.IO;
+#else
 namespace ModbusRx.IO;
+#endif
 
-/// <summary>
-/// High-performance buffer manager for Modbus message processing with cross-platform compatibility.
-/// </summary>
+/// <summary>High-performance buffer manager for Modbus message processing with cross-platform compatibility.</summary>
 public sealed class ModbusBufferManager : IDisposable
 {
 #if NET8_0_OR_GREATER
+    /// <summary>Stores the byte Pool value.</summary>
     private readonly ArrayPool<byte> _bytePool;
+
+    /// <summary>Stores the ushort Pool value.</summary>
     private readonly ArrayPool<ushort> _ushortPool;
+
+    /// <summary>Stores the bool Pool value.</summary>
     private readonly ArrayPool<bool> _boolPool;
 #endif
-    private readonly object _lock = new();
+    /// <summary>Stores the lock value.</summary>
+    private readonly Lock _lock = new();
+
+    /// <summary>Stores the disposed value.</summary>
     private bool _disposed;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ModbusBufferManager"/> class.
-    /// </summary>
+#if NET8_0_OR_GREATER
+    /// <summary>Initializes a new instance of the <see cref="ModbusBufferManager"/> class.</summary>
     public ModbusBufferManager()
     {
-#if NET8_0_OR_GREATER
         _bytePool = ArrayPool<byte>.Shared;
         _ushortPool = ArrayPool<ushort>.Shared;
         _boolPool = ArrayPool<bool>.Shared;
-#endif
     }
+#endif
 
-    /// <summary>
-    /// Copies data efficiently between arrays.
-    /// </summary>
+    /// <summary>Copies data efficiently between arrays.</summary>
     /// <typeparam name="T">The type of data to copy.</typeparam>
     /// <param name="source">The source array.</param>
     /// <param name="sourceIndex">The source index.</param>
@@ -44,7 +51,7 @@ public sealed class ModbusBufferManager : IDisposable
     /// <returns>The number of elements copied.</returns>
     public static int CopyData<T>(T[] source, int sourceIndex, T[] destination, int destinationIndex, int length)
     {
-        if (source == null || destination == null)
+        if (source is null || destination is null)
         {
             return 0;
         }
@@ -59,9 +66,7 @@ public sealed class ModbusBufferManager : IDisposable
         return copyCount;
     }
 
-    /// <summary>
-    /// Performs a high-performance comparison between two arrays.
-    /// </summary>
+    /// <summary>Performs a high-performance comparison between two arrays.</summary>
     /// <typeparam name="T">The type of data to compare.</typeparam>
     /// <param name="array1">The first array.</param>
     /// <param name="array2">The second array.</param>
@@ -69,12 +74,12 @@ public sealed class ModbusBufferManager : IDisposable
     public static bool CompareArrays<T>(T[] array1, T[] array2)
         where T : IEquatable<T>
     {
-        if (array1 == null && array2 == null)
+        if (array1 is null && array2 is null)
         {
             return true;
         }
 
-        if (array1 == null || array2 == null)
+        if (array1 is null || array2 is null)
         {
             return false;
         }
@@ -95,22 +100,20 @@ public sealed class ModbusBufferManager : IDisposable
         return true;
     }
 
-    /// <summary>
-    /// Clears an array with high performance.
-    /// </summary>
+    /// <summary>Clears an array with high performance.</summary>
     /// <typeparam name="T">The type of data to clear.</typeparam>
     /// <param name="array">The array to clear.</param>
     public static void ClearArray<T>(T[] array)
     {
-        if (array != null)
+        if (array is null)
         {
-            Array.Clear(array, 0, array.Length);
+            return;
         }
+
+        Array.Clear(array, 0, array.Length);
     }
 
-    /// <summary>
-    /// Rents a byte buffer from the pool or creates a new one.
-    /// </summary>
+    /// <summary>Rents a byte buffer from the pool or creates a new one.</summary>
     /// <param name="minimumLength">The minimum length required.</param>
     /// <returns>A rented buffer that should be returned when finished.</returns>
     public byte[] RentByteBuffer(int minimumLength)
@@ -130,9 +133,7 @@ public sealed class ModbusBufferManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Rents a ushort buffer from the pool or creates a new one.
-    /// </summary>
+    /// <summary>Rents a ushort buffer from the pool or creates a new one.</summary>
     /// <param name="minimumLength">The minimum length required.</param>
     /// <returns>A rented buffer that should be returned when finished.</returns>
     public ushort[] RentUshortBuffer(int minimumLength)
@@ -152,14 +153,32 @@ public sealed class ModbusBufferManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Returns a byte buffer to the pool.
-    /// </summary>
+    /// <summary>Rents a bool buffer from the pool or creates a new one.</summary>
+    /// <param name="minimumLength">The minimum length required.</param>
+    /// <returns>A rented buffer that should be returned when finished.</returns>
+    public bool[] RentBoolBuffer(int minimumLength)
+    {
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ModbusBufferManager));
+            }
+
+#if NET8_0_OR_GREATER
+            return _boolPool.Rent(minimumLength);
+#else
+            return new bool[minimumLength];
+#endif
+        }
+    }
+
+    /// <summary>Returns a byte buffer to the pool.</summary>
     /// <param name="buffer">The buffer to return.</param>
     /// <param name="clearArray">Whether to clear the array.</param>
     public void ReturnByteBuffer(byte[] buffer, bool clearArray = true)
     {
-        if (buffer == null)
+        if (buffer is null)
         {
             return;
         }
@@ -177,14 +196,12 @@ public sealed class ModbusBufferManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Returns a ushort buffer to the pool.
-    /// </summary>
+    /// <summary>Returns a ushort buffer to the pool.</summary>
     /// <param name="buffer">The buffer to return.</param>
     /// <param name="clearArray">Whether to clear the array.</param>
     public void ReturnUshortBuffer(ushort[] buffer, bool clearArray = true)
     {
-        if (buffer == null)
+        if (buffer is null)
         {
             return;
         }
@@ -202,9 +219,30 @@ public sealed class ModbusBufferManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Disposes the buffer manager and releases all resources.
-    /// </summary>
+    /// <summary>Returns a bool buffer to the pool.</summary>
+    /// <param name="buffer">The buffer to return.</param>
+    /// <param name="clearArray">Whether to clear the array.</param>
+    public void ReturnBoolBuffer(bool[] buffer, bool clearArray = true)
+    {
+        if (buffer is null)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+#if NET8_0_OR_GREATER
+            _boolPool.Return(buffer, clearArray);
+#endif
+        }
+    }
+
+    /// <summary>Disposes the buffer manager and releases all resources.</summary>
     public void Dispose()
     {
         lock (_lock)

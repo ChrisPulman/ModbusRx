@@ -1,23 +1,25 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
-/// <summary>
-/// A 1 origin collection represetative of the Modbus Data Model.
-/// </summary>
+/// <summary>A 1 origin collection represetative of the Modbus Data Model.</summary>
 /// <typeparam name="TData">The type of the data.</typeparam>
 /// <seealso cref="System.Collections.ObjectModel.Collection&lt;TData&gt;" />
 public class ModbusDataCollection<TData> : Collection<TData>
     where TData : struct
 {
+    /// <summary>Stores the allow Zero Element value.</summary>
     private bool _allowZeroElement;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.</summary>
     public ModbusDataCollection()
     {
         if (!typeof(TData).Equals(typeof(bool)) && !typeof(TData).Equals(typeof(ushort)))
@@ -26,26 +28,24 @@ public class ModbusDataCollection<TData> : Collection<TData>
         }
 
         _allowZeroElement = true;
-        AddDefault(this);
+        _ = AddDefault(this);
         _allowZeroElement = false;
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.</summary>
     /// <param name="data">The data.</param>
     public ModbusDataCollection(params TData[] data)
         : this((IList<TData>)data)
     {
-        if (!typeof(TData).Equals(typeof(bool)) && !typeof(TData).Equals(typeof(ushort)))
+        if (typeof(TData).Equals(typeof(bool)) || typeof(TData).Equals(typeof(ushort)))
         {
-            throw new NotSupportedException("Only bool and ushort supported");
+            return;
         }
+
+        throw new NotSupportedException("Only bool and ushort supported");
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ModbusDataCollection&lt;TData&gt;" /> class.</summary>
     /// <param name="data">The data.</param>
     public ModbusDataCollection(IList<TData> data)
         : base(AddDefault(data?.IsReadOnly == true ? [.. data] : data!))
@@ -58,12 +58,10 @@ public class ModbusDataCollection<TData> : Collection<TData>
         _allowZeroElement = false;
     }
 
+    /// <summary>Gets or sets the Modbus Data Type value.</summary>
     internal ModbusDataType ModbusDataType { get; set; }
 
-    /// <summary>
-    ///     Inserts an element into the <see cref="T:System.Collections.ObjectModel.Collection`1"></see> at the specified
-    ///     index.
-    /// </summary>
+    /// <summary>Inserts an element into the <see cref="T:System.Collections.ObjectModel.Collection`1"></see> at the specified index.</summary>
     /// <param name="index">The zero-based index at which item should be inserted.</param>
     /// <param name="item">The object to insert. The value can be null for reference types.</param>
     /// <exception cref="T:System.ArgumentOutOfRangeException">
@@ -82,9 +80,7 @@ public class ModbusDataCollection<TData> : Collection<TData>
         base.InsertItem(index, item);
     }
 
-    /// <summary>
-    ///     Replaces the element at the specified index.
-    /// </summary>
+    /// <summary>Replaces the element at the specified index.</summary>
     /// <param name="index">The zero-based index of the element to replace.</param>
     /// <param name="item">The new value for the element at the specified index. The value can be null for reference types.</param>
     /// <exception cref="T:System.ArgumentOutOfRangeException">
@@ -103,9 +99,7 @@ public class ModbusDataCollection<TData> : Collection<TData>
         base.SetItem(index, item);
     }
 
-    /// <summary>
-    ///     Removes the element at the specified index of the <see cref="T:System.Collections.ObjectModel.Collection`1"></see>.
-    /// </summary>
+    /// <summary>Removes the element at the specified index of the <see cref="T:System.Collections.ObjectModel.Collection`1"></see>.</summary>
     /// <param name="index">The zero-based index of the element to remove.</param>
     /// <exception cref="T:System.ArgumentOutOfRangeException">
     ///     index is less than zero.-or-index is equal to or greater than
@@ -123,21 +117,18 @@ public class ModbusDataCollection<TData> : Collection<TData>
         base.RemoveItem(index);
     }
 
-    /// <summary>
-    ///     Removes all elements from the <see cref="T:System.Collections.ObjectModel.Collection`1"></see>.
-    /// </summary>
+    /// <summary>Removes all elements from the <see cref="T:System.Collections.ObjectModel.Collection`1"></see>.</summary>
     protected override void ClearItems()
     {
         _allowZeroElement = true;
         base.ClearItems();
-        AddDefault(this);
+        _ = AddDefault(this);
         _allowZeroElement = false;
     }
 
-    /// <summary>
-    ///     Adds a default element to the collection.
-    /// </summary>
+    /// <summary>Adds a default element to the collection.</summary>
     /// <param name="data">The data.</param>
+    /// <returns>The result.</returns>
     private static IList<TData> AddDefault(IList<TData> data)
     {
         data.Insert(0, default!);

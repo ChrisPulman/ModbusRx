@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// WriteMultipleCoilsRequestFixture.
-/// </summary>
+/// <summary>Tests the WriteMultipleCoilsRequestFixture behavior.</summary>
 public class WriteMultipleCoilsRequestFixture
 {
-    /// <summary>
-    /// Creates the write multiple coils request.
-    /// </summary>
+    /// <summary>Creates the write multiple coils request.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequest()
     {
@@ -29,17 +25,13 @@ public class WriteMultipleCoilsRequestFixture
         Assert.Equal(col.NetworkBytes, request.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Creates the write multiple coils request too much data.
-    /// </summary>
+    /// <summary>Creates the write multiple coils request too much data.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new WriteMultipleCoilsRequest(1, 2, MessageUtility.CreateDefaultCollection<DiscreteCollection, bool>(true, Modbus.MaximumDiscreteRequestResponseSize + 1)));
+            _ = new WriteMultipleCoilsRequest(1, 2, MessageUtility.CreateDefaultCollection<DiscreteCollection, bool>(true, Modbus.MaximumDiscreteRequestResponseSize + 1)));
 
-    /// <summary>
-    /// Creates the maximum size of the write multiple coils request.
-    /// </summary>
+    /// <summary>Creates the maximum size of the write multiple coils request.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsRequestMaxSize()
     {
@@ -48,9 +40,7 @@ public class WriteMultipleCoilsRequestFixture
         Assert.Equal(Modbus.MaximumDiscreteRequestResponseSize, request.Data.Count);
     }
 
-    /// <summary>
-    /// Converts to string_writemultiplecoilsrequest.
-    /// </summary>
+    /// <summary>Converts to string_writemultiplecoilsrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_WriteMultipleCoilsRequest()
     {

@@ -1,39 +1,25 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Utility;
+#else
 namespace ModbusRx.Utility;
+#endif
 
-/// <summary>
-///     Possible options for DiscriminatedUnion type.
-/// </summary>
-public enum DiscriminatedUnionOption
-{
-    /// <summary>
-    ///     Option A.
-    /// </summary>
-    A,
-
-    /// <summary>
-    ///     Option B.
-    /// </summary>
-    B,
-}
-
-/// <summary>
-///     A data type that can store one of two possible strongly typed options.
-/// </summary>
+/// <summary>A data type that can store one of two possible strongly typed options.</summary>
 /// <typeparam name="TA">The type of option A.</typeparam>
 /// <typeparam name="TB">The type of option B.</typeparam>
-#pragma warning disable SA1402 // File may only contain a single type
 public class DiscriminatedUnion<TA, TB>
-#pragma warning restore SA1402 // File may only contain a single type
 {
+    /// <summary>Stores the option A value.</summary>
     private TA? _optionA;
+
+    /// <summary>Stores the option B value.</summary>
     private TB? _optionB;
 
-    /// <summary>
-    ///     Gets the value of option A.
-    /// </summary>
+    /// <summary>Gets the value of option A.</summary>
     public TA? A
     {
         get
@@ -48,9 +34,7 @@ public class DiscriminatedUnion<TA, TB>
         }
     }
 
-    /// <summary>
-    ///     Gets the value of option B.
-    /// </summary>
+    /// <summary>Gets the value of option B.</summary>
     public TB? B
     {
         get
@@ -65,30 +49,22 @@ public class DiscriminatedUnion<TA, TB>
         }
     }
 
-    /// <summary>
-    ///     Gets the discriminated value option set for this instance.
-    /// </summary>
+    /// <summary>Gets the discriminated value option set for this instance.</summary>
     public DiscriminatedUnionOption Option { get; private set; }
 
-    /// <summary>
-    /// Factory method for creating DiscriminatedUnion with option A set.
-    /// </summary>
+    /// <summary>Factory method for creating DiscriminatedUnion with option A set.</summary>
     /// <param name="a">a.</param>
     /// <returns>A DiscriminatedUnion.</returns>
     public static DiscriminatedUnion<TA, TB> CreateA(TA a) =>
         new() { Option = DiscriminatedUnionOption.A, _optionA = a };
 
-    /// <summary>
-    /// Factory method for creating DiscriminatedUnion with option B set.
-    /// </summary>
+    /// <summary>Factory method for creating DiscriminatedUnion with option B set.</summary>
     /// <param name="b">The b.</param>
     /// <returns>A DiscriminatedUnion.</returns>
     public static DiscriminatedUnion<TA, TB> CreateB(TB b) =>
         new() { Option = DiscriminatedUnionOption.B, _optionB = b };
 
-    /// <summary>
-    ///     Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
-    /// </summary>
+    /// <summary>Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.</summary>
     /// <returns>
     ///     A <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
     /// </returns>

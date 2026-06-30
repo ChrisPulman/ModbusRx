@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReadWriteMultipleRegistersRequestFixture.
-/// </summary>
+/// <summary>Tests the ReadWriteMultipleRegistersRequestFixture behavior.</summary>
 public class ReadWriteMultipleRegistersRequestFixture
 {
-    /// <summary>
-    /// Reads the write multiple registers request.
-    /// </summary>
+    /// <summary>Reads the write multiple registers request.</summary>
     [TUnit.Core.Test]
     public void ReadWriteMultipleRegistersRequest()
     {
@@ -24,21 +20,19 @@ public class ReadWriteMultipleRegistersRequestFixture
         Assert.Equal(5, request.SlaveAddress);
 
         // test read
-        Assert.NotNull(request.ReadRequest);
+        _ = Assert.NotNull(request.ReadRequest);
         Assert.Equal(request.SlaveAddress, request.ReadRequest!.SlaveAddress);
         Assert.Equal(3, request.ReadRequest.StartAddress);
         Assert.Equal(6, request.ReadRequest.NumberOfPoints);
 
         // test write
-        Assert.NotNull(request.WriteRequest);
+        _ = Assert.NotNull(request.WriteRequest);
         Assert.Equal(request.SlaveAddress, request.WriteRequest!.SlaveAddress);
         Assert.Equal(14, request.WriteRequest.StartAddress);
         Assert.Equal(writeCollection.NetworkBytes, request.WriteRequest.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Protocols the data unit.
-    /// </summary>
+    /// <summary>Protocols the data unit.</summary>
     [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
@@ -51,9 +45,7 @@ public class ReadWriteMultipleRegistersRequestFixture
         Assert.Equal(pdu, request.ProtocolDataUnit);
     }
 
-    /// <summary>
-    /// Converts to string_readwritemultipleregistersrequest.
-    /// </summary>
+    /// <summary>Converts to string_readwritemultipleregistersrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadWriteMultipleRegistersRequest()
     {

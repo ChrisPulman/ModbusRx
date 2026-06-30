@@ -1,4 +1,4 @@
-﻿# ModbusRx - A Reactive Modbus Implementation
+# ModbusRx - A Reactive Modbus Implementation
 
 ![License](https://img.shields.io/github/license/ChrisPulman/ModbusRx.svg) [![Build](https://github.com/ChrisPulman/ModbusRx/actions/workflows/BuildOnly.yml/badge.svg)](https://github.com/ChrisPulman/ModbusRx/actions/workflows/BuildOnly.yml) ![Nuget](https://img.shields.io/nuget/dt/ModbusRx?color=pink&style=plastic) [![NuGet](https://img.shields.io/nuget/v/ModbusRx.svg?style=plastic)](https://www.nuget.org/packages/ModbusRx)
 
@@ -12,13 +12,13 @@
 
 ## Overview
 
-ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET applications. Built on the foundation of NModbus4 and leveraging Reactive Extensions (Rx.NET), it provides a powerful, observable-based API for industrial communication scenarios with comprehensive support for all major Modbus variants.
+ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET applications. Built on the foundation of NModbus4 and ReactiveUI.Primitives, it provides a powerful, observable-based API for industrial communication scenarios with comprehensive support for all major Modbus variants.
 
 ### Key Features
 
 - **🔧 Full Modbus Protocol Support**: RTU, ASCII, TCP, and UDP variants
-- **⚡ Reactive Design**: Built with Rx.NET for responsive, event-driven applications  
-- **🔁 Async Observables**: `IObservableAsync<T>` bridges for ReactiveUI.Extensions on modern .NET targets
+- **⚡ Reactive Design**: Built with ReactiveUI.Primitives for responsive, event-driven applications
+- **🔁 Async Observables**: `IObservableAsync<T>` bridges through ReactiveUI.Primitives.Async and ReactiveUI.Primitives.Async.Reactive
 - **🧩 Source Generators**: Attribute-driven register maps that expose properties and matching observable streams
 - **🏭 Master/Slave Architecture**: Complete client and server implementations
 - **🚀 High Performance**: Optimized for speed with memory-efficient operations
@@ -38,11 +38,11 @@ ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET ap
 - ✅ **Modbus TCP/UDP Server** with client aggregation
 
 **Target Frameworks:**
-- `.NET Standard 2.0` (Cross-platform compatibility)
+- `.NET Framework 4.8` (Legacy support)
 - `.NET 8` (Long-term support)
 - `.NET 9`
 - `.NET 10`
-- `.NET Framework 4.8` (Legacy support)
+- `.NET 11`
 
 ## Installation
 
@@ -50,10 +50,19 @@ ModbusRx is a modern, reactive implementation of the Modbus protocol for .NET ap
 dotnet add package ModbusRx
 ```
 
+Use the reactive shim package when you want the shared API emitted under the `ModbusRx.Reactive.*` namespace tree with ReactiveUI.Primitives.Reactive and ReactiveUI.Primitives.Async.Reactive adapters:
+
+```bash
+dotnet add package ModbusRx.Reactive
+```
+
+The core package keeps its historical namespaces, including `ModbusRx.Device`, `ModbusRx.Data`, and `ModbusRx.Reactive`. The shim package mirrors those sources under `ModbusRx.Reactive.*`; for example device types are available from `ModbusRx.Reactive.Device`.
+
 Or via Package Manager Console:
 
 ```powershell
 Install-Package ModbusRx
+Install-Package ModbusRx.Reactive
 ```
 
 ## Quick Start Guide
@@ -144,7 +153,7 @@ catch (Exception ex)
 
 ```csharp
 using ModbusRx.Reactive;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
 
 // Reactive TCP master
 var tcp = Create.TcpIpMaster("192.168.1.100", 502);
@@ -176,7 +185,7 @@ var udpSub = udp
 ```csharp
 using ModbusRx.Reactive;
 using System.IO.Ports;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
 
 // Reactive Serial RTU master
 var rtu = Create.SerialRtuMaster("COM3", 19200, 8, Parity.None, StopBits.One);
@@ -491,7 +500,7 @@ var doubleSwapped = registers.ToDouble(0, swapWords: true);
 
 ```csharp
 using ModbusRx.Reactive;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
 
 // Create a server and observe data changes
 using var server = new ModbusServer();
@@ -582,18 +591,18 @@ serverSubscription.Dispose();
 
 ```csharp
 using ModbusRx.Reactive;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
 
 // Create reactive master streams
 var tcpMasterStream = Create.TcpIpMaster("192.168.1.100", 502);
 var udpMasterStream = Create.UdpIpMaster("192.168.1.101", 502);
 
 // Combine multiple data sources
-var combinedData = Observable.CombineLatest(
-    tcpMasterStream.ReadHoldingRegisters(0, 10, 1000),
-    udpMasterStream.ReadHoldingRegisters(0, 10, 1000),
-    (tcpData, udpData) => new { TCP = tcpData.data, UDP = udpData.data })
-.Subscribe(combined =>
+var combinedData = tcpMasterStream.ReadHoldingRegisters(0, 10, 1000)
+    .CombineLatest(
+        udpMasterStream.ReadHoldingRegisters(0, 10, 1000),
+        (tcpData, udpData) => new { TCP = tcpData.data, UDP = udpData.data })
+    .Subscribe(combined =>
 {
     if (combined.TCP != null && combined.UDP != null)
     {
@@ -624,13 +633,13 @@ combinedData.Dispose();
 multiDataSubscription.Dispose();
 ```
 
-### 4. Async Observables with ReactiveUI.Extensions
+### 4. Async Observables with ReactiveUI.Primitives
 
-Modern .NET targets (`net8.0` and later) include adapters for [ReactiveUI.Extensions async observables](https://github.com/reactiveui/Extensions#async-observables-iobservableasynct). These APIs let ModbusRx streams participate in `IObservableAsync<T>` pipelines while keeping the classic Rx APIs available for `netstandard2.0` consumers.
+Modern .NET targets include adapters for `IObservableAsync<T>` through ReactiveUI.Primitives.Async and ReactiveUI.Primitives.Async.Reactive. These APIs let ModbusRx streams participate in async-observable pipelines while keeping the classic `IObservable<T>` APIs available.
 
 ```csharp
 using ModbusRx.Reactive;
-using ReactiveUI.Extensions.Async;
+using ReactiveUI.Primitives.Async;
 
 var masterStream = Create.TcpIpMaster("192.168.1.100", 502);
 
@@ -661,7 +670,7 @@ Serial streams keep the slave address explicit:
 ```csharp
 using ModbusRx.Device;
 using ModbusRx.Reactive;
-using ReactiveUI.Extensions.Async;
+using ReactiveUI.Primitives.Async;
 using System.IO.Ports;
 
 var serial = Create.SerialRtuMaster("COM3", 19200, 8, Parity.None, StopBits.One);
@@ -680,7 +689,7 @@ Server-side streams and write pipelines are also available as async observables:
 ```csharp
 using ModbusRx.Device;
 using ModbusRx.Reactive;
-using ReactiveUI.Extensions.Async;
+using ReactiveUI.Primitives.Async;
 
 using var server = new ModbusServer();
 server.SimulationMode = true;
@@ -898,7 +907,8 @@ Console.WriteLine("Simulation stopped.");
 ```csharp
 using ModbusRx.Device;
 using ModbusRx.Reactive;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
+using Observable = ReactiveUI.Primitives.Signals.Signal;
 
 // Create master with comprehensive error handling
 async Task<bool> SafeModbusOperation()
@@ -970,7 +980,8 @@ resilientRead.Dispose();
 
 ```csharp
 using ModbusRx.Reactive;
-using System.Reactive.Linq;
+using ReactiveUI.Primitives.Reactive;
+using Observable = ReactiveUI.Primitives.Signals.Signal;
 
 // Monitor connection health
 var masterStream = Create.TcpIpMaster("192.168.1.100", 502);
@@ -1657,6 +1668,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ModbusRx/
 └── src/
     ├── ModbusRx/                   # Core library
+    ├── ModbusRx.Reactive/          # Shared-source reactive shim under ModbusRx.Reactive.*
     ├── ModbusRx.Generators/        # Reactive register-map source generator
     ├── ModbusRx.Generators.Tests/  # Source generator tests
     ├── ModbusRx.Testing/           # Shared TUnit compatibility helpers
@@ -1675,7 +1687,6 @@ dotnet build
 dotnet build -f net10.0
 dotnet build -f net9.0
 dotnet build -f net8.0
-dotnet build -f netstandard2.0
 dotnet build -f net48
 ```
 
@@ -1700,7 +1711,7 @@ ModbusRx is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 - **Based on NModbus4** - Solid foundation for Modbus protocol implementation
-- **Built with [Reactive Extensions](https://github.com/dotnet/reactive)** - Powerful reactive programming support
+- **Built with [ReactiveUI.Primitives](https://www.nuget.org/packages/ReactiveUI.Primitives)** - Lightweight reactive primitives and async observable support
 - **Inspired by industrial automation needs** - Real-world requirements drive development
 
 ---

@@ -1,5 +1,6 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 #if NET8_0_OR_GREATER
 using System.Numerics;
@@ -7,20 +8,97 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
-/// <summary>
-/// High-performance data conversion extensions optimized for different target frameworks.
-/// </summary>
+/// <summary>High-performance data conversion extensions optimized for different target frameworks.</summary>
 public static class ModbusDataExtensions
 {
-    /// <summary>
-    /// Converts a 32-bit integer to two 16-bit registers with optimized performance.
-    /// </summary>
+    /// <summary>Provides packing operations for boolean arrays.</summary>
+    /// <param name="values">The boolean values to pack.</param>
+    extension(bool[] values)
+    {
+    /// <summary>Packs boolean values into bytes with optimized performance.</summary>
+    /// <returns>Array of bytes containing packed boolean values.</returns>
+    public byte[] PackBooleans()
+    {
+        if (values is null)
+        {
+            return [];
+        }
+
+        var byteCount = (values.Length + 7) / 8;
+        var result = new byte[byteCount];
+
+#if NET8_0_OR_GREATER
+        // Use vectorized operations for better performance on newer frameworks
+        if (Vector.IsHardwareAccelerated && values.Length >= Vector<byte>.Count)
+        {
+            PackBooleansVectorized(values, result);
+        }
+        else
+#endif
+        {
+            PackBooleansScalar(values, result);
+        }
+
+        return result;
+    }
+    }
+
+    /// <summary>Provides unpacking and comparison operations for byte arrays.</summary>
+    /// <param name="bytes">The byte array.</param>
+    extension(byte[] bytes)
+    {
+    /// <summary>Unpacks bytes into boolean values with optimized performance.</summary>
+    /// <param name="numberOfBooleans">The number of boolean values to extract.</param>
+    /// <returns>Array of boolean values.</returns>
+    public bool[] UnpackBooleans(int numberOfBooleans)
+    {
+        if (bytes is null || numberOfBooleans <= 0)
+        {
+            return [];
+        }
+
+        var result = new bool[numberOfBooleans];
+
+#if NET8_0_OR_GREATER
+        // Use vectorized operations for better performance on newer frameworks
+        if (Vector.IsHardwareAccelerated && numberOfBooleans >= Vector<byte>.Count)
+        {
+            UnpackBooleansVectorized(bytes, result, numberOfBooleans);
+        }
+        else
+#endif
+        {
+            UnpackBooleansScalar(bytes, result, numberOfBooleans);
+        }
+
+        return result;
+    }
+
+    /// <summary>Performs a fast memory comparison between two byte arrays.</summary>
+    /// <param name="array2">The second array.</param>
+    /// <returns>True if arrays are equal.</returns>
+    public bool FastEquals(byte[] array2)
+    {
+        return bytes is null || array2 is null || bytes.Length != array2.Length
+            ? bytes is null && array2 is null
+            : FastEqualsSameLength(bytes, array2);
+    }
+    }
+
+    /// <summary>Provides register conversion operations for 32-bit signed integer values.</summary>
     /// <param name="value">The 32-bit integer value.</param>
+    extension(int value)
+    {
+    /// <summary>Converts a 32-bit integer to two 16-bit registers with optimized performance.</summary>
     /// <param name="swapWords">Whether to swap word order.</param>
     /// <returns>Array containing two 16-bit register values.</returns>
-    public static ushort[] ToRegisters(this int value, bool swapWords = true)
+    public ushort[] ToRegisters(bool swapWords = true)
     {
         var bytes = BitConverter.GetBytes(value);
         var result = new ushort[2];
@@ -38,39 +116,16 @@ public static class ModbusDataExtensions
 
         return result;
     }
-
-    /// <summary>
-    /// Converts a 32-bit unsigned integer to two 16-bit registers with optimized performance.
-    /// </summary>
-    /// <param name="value">The 32-bit unsigned integer value.</param>
-    /// <param name="swapWords">Whether to swap word order.</param>
-    /// <returns>Array containing two 16-bit register values.</returns>
-    public static ushort[] ToRegisters(this uint value, bool swapWords = true)
-    {
-        var bytes = BitConverter.GetBytes(value);
-        var result = new ushort[2];
-
-        if (swapWords)
-        {
-            result[0] = BitConverter.ToUInt16(bytes, 2);
-            result[1] = BitConverter.ToUInt16(bytes, 0);
-        }
-        else
-        {
-            result[0] = BitConverter.ToUInt16(bytes, 0);
-            result[1] = BitConverter.ToUInt16(bytes, 2);
-        }
-
-        return result;
     }
 
-    /// <summary>
-    /// Converts a 64-bit long to four 16-bit registers with optimized performance.
-    /// </summary>
+    /// <summary>Provides register conversion operations for 64-bit signed integer values.</summary>
     /// <param name="value">The 64-bit long value.</param>
+    extension(long value)
+    {
+    /// <summary>Converts a 64-bit long to four 16-bit registers with optimized performance.</summary>
     /// <param name="swapWords">Whether to swap word order.</param>
     /// <returns>Array containing four 16-bit register values.</returns>
-    public static ushort[] ToRegisters(this long value, bool swapWords = true)
+    public ushort[] ToRegisters(bool swapWords = true)
     {
         var bytes = BitConverter.GetBytes(value);
         var result = new ushort[4];
@@ -92,17 +147,46 @@ public static class ModbusDataExtensions
 
         return result;
     }
+    }
 
-    /// <summary>
-    /// Converts two 16-bit registers to a 32-bit integer with optimized performance.
-    /// </summary>
+    /// <summary>Provides register conversion operations for 32-bit unsigned integer values.</summary>
+    /// <param name="value">The 32-bit unsigned integer value.</param>
+    extension(uint value)
+    {
+    /// <summary>Converts a 32-bit unsigned integer to two 16-bit registers with optimized performance.</summary>
+    /// <param name="swapWords">Whether to swap word order.</param>
+    /// <returns>Array containing two 16-bit register values.</returns>
+    public ushort[] ToRegisters(bool swapWords = true)
+    {
+        var bytes = BitConverter.GetBytes(value);
+        var result = new ushort[2];
+
+        if (swapWords)
+        {
+            result[0] = BitConverter.ToUInt16(bytes, 2);
+            result[1] = BitConverter.ToUInt16(bytes, 0);
+        }
+        else
+        {
+            result[0] = BitConverter.ToUInt16(bytes, 0);
+            result[1] = BitConverter.ToUInt16(bytes, 2);
+        }
+
+        return result;
+    }
+    }
+
+    /// <summary>Provides numeric conversion operations for register arrays.</summary>
     /// <param name="registers">The register array.</param>
+    extension(ushort[] registers)
+    {
+    /// <summary>Converts two 16-bit registers to a 32-bit integer with optimized performance.</summary>
     /// <param name="startIndex">The start index.</param>
     /// <param name="swapWords">Whether words are swapped.</param>
     /// <returns>The 32-bit integer value.</returns>
-    public static int ToInt32(this ushort[] registers, int startIndex = 0, bool swapWords = true)
+    public int ToInt32(int startIndex = 0, bool swapWords = true)
     {
-        if (registers == null || registers.Length < startIndex + 2)
+        if (registers is null || registers.Length < startIndex + 2)
         {
             throw new ArgumentException("Insufficient registers for Int32 conversion.", nameof(registers));
         }
@@ -127,16 +211,13 @@ public static class ModbusDataExtensions
         return BitConverter.ToInt32(bytes, 0);
     }
 
-    /// <summary>
-    /// Converts two 16-bit registers to a 32-bit unsigned integer with optimized performance.
-    /// </summary>
-    /// <param name="registers">The register array.</param>
+    /// <summary>Converts two 16-bit registers to a 32-bit unsigned integer with optimized performance.</summary>
     /// <param name="startIndex">The start index.</param>
     /// <param name="swapWords">Whether words are swapped.</param>
     /// <returns>The 32-bit unsigned integer value.</returns>
-    public static uint ToUInt32(this ushort[] registers, int startIndex = 0, bool swapWords = true)
+    public uint ToUInt32(int startIndex = 0, bool swapWords = true)
     {
-        if (registers == null || registers.Length < startIndex + 2)
+        if (registers is null || registers.Length < startIndex + 2)
         {
             throw new ArgumentException("Insufficient registers for UInt32 conversion.", nameof(registers));
         }
@@ -161,16 +242,13 @@ public static class ModbusDataExtensions
         return BitConverter.ToUInt32(bytes, 0);
     }
 
-    /// <summary>
-    /// Converts four 16-bit registers to a 64-bit long with optimized performance.
-    /// </summary>
-    /// <param name="registers">The register array.</param>
+    /// <summary>Converts four 16-bit registers to a 64-bit long with optimized performance.</summary>
     /// <param name="startIndex">The start index.</param>
     /// <param name="swapWords">Whether words are swapped.</param>
     /// <returns>The 64-bit long value.</returns>
-    public static long ToInt64(this ushort[] registers, int startIndex = 0, bool swapWords = true)
+    public long ToInt64(int startIndex = 0, bool swapWords = true)
     {
-        if (registers == null || registers.Length < startIndex + 4)
+        if (registers is null || registers.Length < startIndex + 4)
         {
             throw new ArgumentException("Insufficient registers for Int64 conversion.", nameof(registers));
         }
@@ -204,96 +282,11 @@ public static class ModbusDataExtensions
 
         return BitConverter.ToInt64(bytes, 0);
     }
-
-    /// <summary>
-    /// Packs boolean values into bytes with optimized performance.
-    /// </summary>
-    /// <param name="values">The boolean values to pack.</param>
-    /// <returns>Array of bytes containing packed boolean values.</returns>
-    public static byte[] PackBooleans(this bool[] values)
-    {
-        if (values == null)
-        {
-            return [];
-        }
-
-        var byteCount = (values.Length + 7) / 8;
-        var result = new byte[byteCount];
-
-#if NET8_0_OR_GREATER
-        // Use vectorized operations for better performance on newer frameworks
-        if (Vector.IsHardwareAccelerated && values.Length >= Vector<byte>.Count)
-        {
-            PackBooleansVectorized(values, result);
-        }
-        else
-#endif
-        {
-            PackBooleansScalar(values, result);
-        }
-
-        return result;
     }
 
-    /// <summary>
-    /// Unpacks bytes into boolean values with optimized performance.
-    /// </summary>
-    /// <param name="bytes">The bytes to unpack.</param>
-    /// <param name="numberOfBooleans">The number of boolean values to extract.</param>
-    /// <returns>Array of boolean values.</returns>
-    public static bool[] UnpackBooleans(this byte[] bytes, int numberOfBooleans)
-    {
-        if (bytes == null || numberOfBooleans <= 0)
-        {
-            return [];
-        }
-
-        var result = new bool[numberOfBooleans];
-
-#if NET8_0_OR_GREATER
-        // Use vectorized operations for better performance on newer frameworks
-        if (Vector.IsHardwareAccelerated && numberOfBooleans >= Vector<byte>.Count)
-        {
-            UnpackBooleansVectorized(bytes, result, numberOfBooleans);
-        }
-        else
-#endif
-        {
-            UnpackBooleansScalar(bytes, result, numberOfBooleans);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Performs a fast memory comparison between two byte arrays.
-    /// </summary>
-    /// <param name="array1">The first array.</param>
-    /// <param name="array2">The second array.</param>
-    /// <returns>True if arrays are equal.</returns>
-    public static bool FastEquals(this byte[] array1, byte[] array2)
-    {
-        if (array1 == null && array2 == null)
-        {
-            return true;
-        }
-
-        if (array1 == null || array2 == null || array1.Length != array2.Length)
-        {
-            return false;
-        }
-
-#if NET8_0_OR_GREATER
-        // Use vectorized comparison for better performance
-        if (Vector.IsHardwareAccelerated && array1.Length >= Vector<byte>.Count)
-        {
-            return FastEqualsVectorized(array1, array2);
-        }
-#endif
-
-        return FastEqualsScalar(array1, array2);
-    }
-
+    /// <summary>Executes the Pack Booleans Scalar operation.</summary>
+    /// <param name="values">The values value.</param>
+    /// <param name="result">The result value.</param>
     private static void PackBooleansScalar(bool[] values, byte[] result)
     {
         for (var i = 0; i < values.Length; i++)
@@ -307,6 +300,10 @@ public static class ModbusDataExtensions
         }
     }
 
+    /// <summary>Executes the Unpack Booleans Scalar operation.</summary>
+    /// <param name="bytes">The bytes value.</param>
+    /// <param name="result">The result value.</param>
+    /// <param name="numberOfBooleans">The number Of Booleans value.</param>
     private static void UnpackBooleansScalar(byte[] bytes, bool[] result, int numberOfBooleans)
     {
         for (var i = 0; i < numberOfBooleans; i++)
@@ -321,6 +318,10 @@ public static class ModbusDataExtensions
         }
     }
 
+    /// <summary>Executes the Fast Equals Scalar operation.</summary>
+    /// <param name="array1">The array1 value.</param>
+    /// <param name="array2">The array2 value.</param>
+    /// <returns>The result.</returns>
     private static bool FastEqualsScalar(byte[] array1, byte[] array2)
     {
         for (var i = 0; i < array1.Length; i++)
@@ -334,7 +335,26 @@ public static class ModbusDataExtensions
         return true;
     }
 
+    /// <summary>Compares two byte arrays known to have the same length.</summary>
+    /// <param name="array1">The first array.</param>
+    /// <param name="array2">The second array.</param>
+    /// <returns>True when both arrays contain the same bytes.</returns>
+    private static bool FastEqualsSameLength(byte[] array1, byte[] array2)
+    {
 #if NET8_0_OR_GREATER
+        // Use vectorized comparison for better performance.
+        return Vector.IsHardwareAccelerated && array1.Length >= Vector<byte>.Count
+            ? FastEqualsVectorized(array1, array2)
+            : FastEqualsScalar(array1, array2);
+#else
+        return FastEqualsScalar(array1, array2);
+#endif
+    }
+
+#if NET8_0_OR_GREATER
+    /// <summary>Executes the Pack Booleans Vectorized operation.</summary>
+    /// <param name="values">The values value.</param>
+    /// <param name="result">The result value.</param>
     private static void PackBooleansVectorized(bool[] values, byte[] result)
     {
         // For now, fall back to scalar implementation
@@ -342,6 +362,10 @@ public static class ModbusDataExtensions
         PackBooleansScalar(values, result);
     }
 
+    /// <summary>Executes the Unpack Booleans Vectorized operation.</summary>
+    /// <param name="bytes">The bytes value.</param>
+    /// <param name="result">The result value.</param>
+    /// <param name="numberOfBooleans">The number Of Booleans value.</param>
     private static void UnpackBooleansVectorized(byte[] bytes, bool[] result, int numberOfBooleans)
     {
         // For now, fall back to scalar implementation
@@ -349,6 +373,10 @@ public static class ModbusDataExtensions
         UnpackBooleansScalar(bytes, result, numberOfBooleans);
     }
 
+    /// <summary>Executes the Fast Equals Vectorized operation.</summary>
+    /// <param name="array1">The array1 value.</param>
+    /// <param name="array2">The array2 value.</param>
+    /// <returns>The result.</returns>
     private static bool FastEqualsVectorized(byte[] array1, byte[] array2)
     {
         var vectorSize = Vector<byte>.Count;

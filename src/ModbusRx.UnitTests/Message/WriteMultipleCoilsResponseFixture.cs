@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// WriteMultipleCoilsResponseFixture.
-/// </summary>
+/// <summary>Tests the WriteMultipleCoilsResponseFixture behavior.</summary>
 public class WriteMultipleCoilsResponseFixture
 {
-    /// <summary>
-    /// Creates the write multiple coils response.
-    /// </summary>
+    /// <summary>Creates the write multiple coils response.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsResponse()
     {
@@ -25,15 +21,12 @@ public class WriteMultipleCoilsResponseFixture
         Assert.Equal(45, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the write multiple coils response too much data.
-    /// </summary>
+    /// <summary>Creates the write multiple coils response too much data.</summary>
     [TUnit.Core.Test]
-    public void CreateWriteMultipleCoilsResponseTooMuchData() => Assert.Throws<ArgumentOutOfRangeException>(() => new WriteMultipleCoilsResponse(1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
+    public void CreateWriteMultipleCoilsResponseTooMuchData() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = new WriteMultipleCoilsResponse(1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
 
-    /// <summary>
-    /// Creates the maximum size of the write multiple coils response.
-    /// </summary>
+    /// <summary>Creates the maximum size of the write multiple coils response.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleCoilsResponseMaxSize()
     {
@@ -41,9 +34,7 @@ public class WriteMultipleCoilsResponseFixture
         Assert.Equal(Modbus.MaximumDiscreteRequestResponseSize, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Converts to string_test.
-    /// </summary>
+    /// <summary>Converts to string_test.</summary>
     [TUnit.Core.Test]
     public void ToString_Test()
     {

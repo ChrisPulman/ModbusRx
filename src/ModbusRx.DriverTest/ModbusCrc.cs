@@ -1,19 +1,13 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.Reactive.Linq;
-using ModbusRx.Reactive;
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 namespace ModbusRx.DriverTest;
 
-/// <summary>
-/// ModbusCrc.
-/// </summary>
+/// <summary>Computes Modbus CRC values.</summary>
 public static class ModbusCrc
 {
-    /// <summary>
-    /// Computes the specified data.
-    /// </summary>
+    /// <summary>Computes the specified data.</summary>
     /// <param name="data">The data.</param>
     /// <param name="length">The length.</param>
     /// <returns>A ushort.</returns>
@@ -21,7 +15,7 @@ public static class ModbusCrc
     public static ushort Compute(byte[] data, int length)
     {
         ushort crc = 0xFFFF;
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }

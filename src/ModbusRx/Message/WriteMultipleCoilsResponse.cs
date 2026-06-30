@@ -1,27 +1,26 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Net;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// WriteMultipleCoilsResponse.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.AbstractModbusMessage" />
-/// <seealso cref="ModbusRx.Message.IModbusMessage" />
+/// <summary>Provides WriteMultipleCoilsResponse functionality.</summary>
+/// <seealso cref="AbstractModbusMessage" />
+/// <seealso cref="IModbusMessage" />
 public class WriteMultipleCoilsResponse : AbstractModbusMessage, IModbusMessage
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleCoilsResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleCoilsResponse"/> class.</summary>
     public WriteMultipleCoilsResponse()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleCoilsResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleCoilsResponse"/> class.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="numberOfPoints">The number of points.</param>
@@ -32,13 +31,9 @@ public class WriteMultipleCoilsResponse : AbstractModbusMessage, IModbusMessage
         NumberOfPoints = numberOfPoints;
     }
 
-    /// <summary>
-    /// Gets or sets the number of points.
-    /// </summary>
-    /// <value>
-    /// The number of points.
-    /// </value>
+    /// <summary>Gets or sets the number of points.</summary>
     /// <exception cref="System.ArgumentOutOfRangeException">NumberOfPoints.</exception>
+    /// The number of points.
     public ushort NumberOfPoints
     {
         get => MessageImpl.NumberOfPoints!.Value;
@@ -55,12 +50,8 @@ public class WriteMultipleCoilsResponse : AbstractModbusMessage, IModbusMessage
         }
     }
 
-    /// <summary>
-    /// Gets or sets the start address.
-    /// </summary>
-    /// <value>
-    /// The start address.
-    /// </value>
+    /// <summary>Gets or sets the start address.</summary>
+/// <value>The start address.</value>
     public ushort StartAddress
     {
         get => MessageImpl.StartAddress!.Value;

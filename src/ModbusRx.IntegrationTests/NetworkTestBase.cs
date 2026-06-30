@@ -1,89 +1,83 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// Base class for network-related integration tests with proper resource management.
-/// </summary>
+/// <summary>Base class for network-related integration tests with proper resource management.</summary>
 public abstract class NetworkTestBase : IDisposable
 {
-    private readonly List<IDisposable> _disposables = [];
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    /// <summary>Coordinates port probing across network tests.</summary>
     private static readonly SemaphoreSlim PortSemaphore = new(1, 1);
-    private static int _currentPortBase = 15000; // Start high to avoid conflicts
+
+    /// <summary>The resources registered for cleanup.</summary>
+    private readonly List<IDisposable> _disposables = [];
+
+    /// <summary>The cancellation source for test operations.</summary>
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+    /// <summary>A value indicating whether the base has been disposed.</summary>
     private bool _disposed;
 
-    /// <summary>
-    /// Gets a value indicating whether the tests are running in GitHub Actions CI environment.
-    /// </summary>
-    protected static bool IsRunningInGitHubActions => 
+    /// <summary>Gets a value indicating whether the tests are running in GitHub Actions CI environment.</summary>
+    protected static bool IsRunningInGitHubActions =>
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
-    /// <summary>
-    /// Gets a value indicating whether the tests are running in any CI environment.
-    /// </summary>
-    protected static bool IsRunningInCI => 
+    /// <summary>Gets a value indicating whether the tests are running in any CI environment.</summary>
+    protected static bool IsRunningInCI =>
         IsRunningInGitHubActions ||
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")) || // Azure DevOps
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JENKINS_URL")) || // Jenkins
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEAMCITY_VERSION")); // TeamCity
 
-    /// <summary>
-    /// Gets a cancellation token for test operations.
-    /// </summary>
+    /// <summary>Gets a cancellation token for test operations.</summary>
     protected CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
-    /// <summary>
-    /// Registers a disposable resource for cleanup.
-    /// </summary>
-    /// <param name="disposable">The disposable resource.</param>
-    protected void RegisterDisposable(IDisposable disposable)
+    /// <summary>Disposes the test base.</summary>
+    public void Dispose()
     {
-        _disposables.Add(disposable);
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Gets an available port with proper isolation.
-    /// </summary>
+    /// <summary>Gets an available port with proper isolation.</summary>
     /// <returns>An available port number.</returns>
     protected static async Task<int> GetAvailablePortAsync()
     {
         await PortSemaphore.WaitAsync();
         try
         {
-            var port = Interlocked.Increment(ref _currentPortBase);
-
-            // Ensure port is available
-            using var tempListener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, port);
-            try
+            while (true)
             {
+                using var tempListener = new TcpListener(IPAddress.Any, 0);
                 tempListener.Start();
+                var port = ((IPEndPoint)tempListener.LocalEndpoint).Port;
+
+                if (!IsUdpPortAvailable(port))
+                {
+                    continue;
+                }
+
                 tempListener.Stop();
                 return port;
-            }
-            catch
-            {
-                // If port is busy, try the next one
-                return await GetAvailablePortAsync();
             }
         }
         finally
         {
-            PortSemaphore.Release();
+            _ = PortSemaphore.Release();
         }
     }
 
-    /// <summary>
-    /// Waits for a condition with timeout.
-    /// </summary>
+    /// <summary>Waits for a condition with timeout.</summary>
     /// <param name="condition">The condition to wait for.</param>
     /// <param name="timeout">The timeout period.</param>
     /// <param name="pollInterval">The polling interval.</param>
@@ -93,7 +87,7 @@ public abstract class NetworkTestBase : IDisposable
         TimeSpan timeout,
         TimeSpan? pollInterval = null)
     {
-        if (condition == null)
+        if (condition is null)
         {
             throw new ArgumentNullException(nameof(condition));
         }
@@ -114,25 +108,16 @@ public abstract class NetworkTestBase : IDisposable
         return false;
     }
 
-    /// <summary>
-    /// Gets a shorter timeout for CI environments to prevent test timeouts.
-    /// </summary>
+    /// <summary>Gets a shorter timeout for CI environments to prevent test timeouts.</summary>
     /// <param name="normalTimeout">The normal timeout for local testing.</param>
-    /// <param name="ciTimeout">The reduced timeout for CI environments.</param>
+    /// <param name="reducedTimeout">The reduced timeout for CI environments.</param>
     /// <returns>The appropriate timeout based on the environment.</returns>
-    protected static TimeSpan GetEnvironmentAppropriateTimeout(TimeSpan normalTimeout, TimeSpan? ciTimeout = null)
+    protected static TimeSpan GetEnvironmentAppropriateTimeout(TimeSpan normalTimeout, TimeSpan? reducedTimeout = null)
     {
-        if (IsRunningInCI)
-        {
-            return ciTimeout ?? TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5);
-        }
-
-        return normalTimeout;
+        return IsRunningInCI ? reducedTimeout ?? TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5) : normalTimeout;
     }
 
-    /// <summary>
-    /// Attempts to connect to a network resource with appropriate timeout for the environment.
-    /// </summary>
+    /// <summary>Attempts to connect to a network resource with appropriate timeout for the environment.</summary>
     /// <param name="host">The host to connect to.</param>
     /// <param name="port">The port to connect to.</param>
     /// <param name="timeout">The connection timeout.</param>
@@ -143,62 +128,96 @@ public abstract class NetworkTestBase : IDisposable
 
         try
         {
-            using var client = new System.Net.Sockets.TcpClient();
+            using var client = new TcpClient();
             var connectTask = client.ConnectAsync(host, port);
             var completedTask = await Task.WhenAny(connectTask, Task.Delay(timeout.Value));
-            
+
             return completedTask == connectTask && client.Connected;
         }
-        catch
+        catch (SocketException)
+        {
+            return false;
+        }
+        catch (ObjectDisposedException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
         {
             return false;
         }
     }
 
-    /// <summary>
-    /// Disposes the test base.
-    /// </summary>
-    public void Dispose()
+    /// <summary>Registers a disposable resource for cleanup.</summary>
+    /// <param name="disposable">The disposable resource.</param>
+    protected void RegisterDisposable(IDisposable disposable)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        _disposables.Add(disposable);
     }
 
-    /// <summary>
-    /// Disposes the test base.
-    /// </summary>
+    /// <summary>Disposes the test base.</summary>
     /// <param name="disposing">Whether to dispose managed resources.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed && disposing)
+        if (_disposed || !disposing)
         {
-            _cancellationTokenSource.Cancel();
+            return;
+        }
 
-            // Dispose all registered resources
-            foreach (var disposable in _disposables)
-            {
-                try
-                {
-                    disposable?.Dispose();
-                }
-                catch
-                {
-                    // Ignore disposal exceptions in tests
-                }
-            }
+        _cancellationTokenSource.Cancel();
 
-            _disposables.Clear();
-
+        // Dispose all registered resources
+        foreach (var disposable in _disposables)
+        {
             try
             {
-                _cancellationTokenSource.Dispose();
+                disposable?.Dispose();
             }
-            catch
+            catch (ObjectDisposedException)
             {
-                // Ignore disposal exceptions
+                // Expected during test cleanup.
             }
+            catch (IOException)
+            {
+                // Expected during test cleanup.
+            }
+            catch (SocketException)
+            {
+                // Expected during test cleanup.
+            }
+            catch (InvalidOperationException)
+            {
+                // Expected during test cleanup.
+            }
+        }
 
-            _disposed = true;
+        _disposables.Clear();
+
+        try
+        {
+            _cancellationTokenSource.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Expected during test cleanup.
+        }
+
+        _disposed = true;
+    }
+
+    /// <summary>Determines whether a UDP port is available.</summary>
+    /// <param name="port">The UDP port to probe.</param>
+    /// <returns>A value indicating whether the UDP port is available.</returns>
+    private static bool IsUdpPortAvailable(int port)
+    {
+        try
+        {
+            using var udpClient = new UdpClient(port);
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
         }
     }
 }

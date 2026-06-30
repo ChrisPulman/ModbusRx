@@ -1,46 +1,37 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ModbusRx.Data;
-using Xunit;
 
 namespace ModbusRx.UnitTests;
 
-/// <summary>
-/// Unit tests for SimulationDataProvider.
-/// </summary>
+/// <summary>Unit tests for SimulationDataProvider.</summary>
 public class SimulationDataProviderTests
 {
-    /// <summary>
-    /// Gets a value indicating whether the tests are running in CI environment.
-    /// </summary>
+    /// <summary>Gets a value indicating whether the tests are running in CI environment.</summary>
     private static bool IsRunningInCI =>
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
-    /// <summary>
-    /// Tests that SimulationDataProvider can be created and disposed.
-    /// </summary>
+    /// <summary>Tests that SimulationDataProvider can be created and disposed.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task SimulationDataProvider_CreateAndDispose_ShouldNotThrow()
     {
         // Arrange & Act & Assert
         using var provider = new SimulationDataProvider();
-        Assert.NotNull(provider);
+        _ = Assert.NotNull(provider);
         var isRunning = await provider.IsRunning.FirstAsync().ToTask();
         Assert.False(isRunning);
     }
 
-    /// <summary>
-    /// Tests that simulation can be started and stopped.
-    /// </summary>
+    /// <summary>Tests that simulation can be started and stopped.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task SimulationDataProvider_StartAndStop_ShouldUpdateRunningState()
@@ -64,36 +55,32 @@ public class SimulationDataProviderTests
         Assert.False(isRunning);
     }
 
-    /// <summary>
-    /// Tests sine wave generation.
-    /// </summary>
+    /// <summary>Tests sine wave generation.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSineWave_ShouldCreateValidData()
     {
         // Arrange
         const int length = 100;
-        const double amplitude = 32767;
+        const double amplitude = 32_767;
 
         // Act
         var data = SimulationDataProvider.GenerateSineWave(length, amplitude);
 
         // Assert
         Assert.Equal(length, data.Length);
-        Assert.All(data, value => Assert.InRange(value, 0, 65535));
+        Assert.All(data, value => Assert.InRange(value, 0, 65_535));
 
         // Should have some variation
-        Assert.True(data.Distinct().Count() > 1);
+        Assert.True(HasVariation(data));
     }
 
-    /// <summary>
-    /// Tests square wave generation.
-    /// </summary>
+    /// <summary>Tests square wave generation.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSquareWave_ShouldCreateValidData()
     {
         // Arrange
         const int length = 100;
-        const ushort highValue = 65535;
+        const ushort highValue = 65_535;
         const ushort lowValue = 0;
 
         // Act
@@ -108,9 +95,7 @@ public class SimulationDataProviderTests
         Assert.Contains(lowValue, data);
     }
 
-    /// <summary>
-    /// Tests sawtooth wave generation.
-    /// </summary>
+    /// <summary>Tests sawtooth wave generation.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateSawtoothWave_ShouldCreateValidData()
     {
@@ -134,9 +119,7 @@ public class SimulationDataProviderTests
         }
     }
 
-    /// <summary>
-    /// Tests random data generation.
-    /// </summary>
+    /// <summary>Tests random data generation.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_GenerateRandomData_ShouldCreateValidData()
     {
@@ -154,12 +137,10 @@ public class SimulationDataProviderTests
         Assert.All(data, value => Assert.InRange(value, minValue, maxValue));
 
         // Should have variation
-        Assert.True(data.Distinct().Count() > 1);
+        Assert.True(HasVariation(data));
     }
 
-    /// <summary>
-    /// Tests test pattern loading.
-    /// </summary>
+    /// <summary>Tests test pattern loading.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_LoadTestPattern_ShouldUpdateDataStore()
     {
@@ -176,9 +157,7 @@ public class SimulationDataProviderTests
         Assert.Equal(2, dataStore.HoldingRegisters[3]); // Third real value
     }
 
-    /// <summary>
-    /// Tests continuous simulation updates data store.
-    /// </summary>
+    /// <summary>Tests continuous simulation updates data store.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_ContinuousSimulation_ShouldUpdateDataStore()
     {
@@ -219,9 +198,7 @@ public class SimulationDataProviderTests
         Assert.True(dataChanged, errorMessage);
     }
 
-    /// <summary>
-    /// Tests that different simulation types produce different patterns.
-    /// </summary>
+    /// <summary>Tests that different simulation types produce different patterns.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_DifferentSimulationTypes_ShouldProduceDifferentPatterns()
     {
@@ -241,10 +218,10 @@ public class SimulationDataProviderTests
         for (var retry = 0; retry < maxRetries && !simulation1Succeeded; retry++)
         {
             Thread.Sleep(baseWaitTime);
-            var currentData = dataStore1.HoldingRegisters.Take(5).ToArray();
+            var currentData = CopyFirst(dataStore1.HoldingRegisters, 5);
 
             // CountingUp should produce sequential values starting from 0
-            simulation1Succeeded = currentData.Any(x => x > 0) || currentData.Distinct().Count() > 1;
+            simulation1Succeeded = ContainsPositiveValue(currentData) || HasVariation(currentData);
         }
 
         provider.Stop();
@@ -256,35 +233,122 @@ public class SimulationDataProviderTests
         for (var retry = 0; retry < maxRetries && !simulation2Succeeded; retry++)
         {
             Thread.Sleep(baseWaitTime);
-            var currentData = dataStore2.HoldingRegisters.Take(5).ToArray();
+            var currentData = CopyFirst(dataStore2.HoldingRegisters, 5);
 
             // Random should produce varied values
-            simulation2Succeeded = currentData.Any(x => x > 0) || currentData.Distinct().Count() > 1;
+            simulation2Succeeded = ContainsPositiveValue(currentData) || HasVariation(currentData);
         }
 
         provider.Stop();
 
         // Assert - Get final values for comparison
-        var values1 = dataStore1.HoldingRegisters.Take(10).ToArray();
-        var values2 = dataStore2.HoldingRegisters.Take(10).ToArray();
+        var values1 = CopyFirst(dataStore1.HoldingRegisters, 10);
+        var values2 = CopyFirst(dataStore2.HoldingRegisters, 10);
 
         // More flexible assertion - different simulation types should produce different results
-        var patternsAreDifferent = !values1.SequenceEqual(values2) ||
-                                  values1.Distinct().Count() != values2.Distinct().Count();
+        var patternsAreDifferent = !SequenceEqual(values1, values2) ||
+                                  CountDistinct(values1) != CountDistinct(values2);
 
         var errorMessage = "Different simulation types should produce different patterns. " +
-                          $"CountingUp: [{string.Join(", ", values1)}], Random: [{string.Join(", ", values2)}], " +
+                          $"CountingUp: [{FormatValues(values1)}], Random: [{FormatValues(values2)}], " +
                           $"Sim1 Success: {simulation1Succeeded}, Sim2 Success: {simulation2Succeeded}, CI: {IsRunningInCI}";
 
         Assert.True(patternsAreDifferent, errorMessage);
     }
 
-    /// <summary>
-    /// Gets an appropriate timeout based on the environment.
-    /// </summary>
-    /// <param name="normalTimeout">Normal timeout for local testing.</param>
-    /// <returns>Appropriate timeout for the environment.</returns>
-    private static TimeSpan GetEnvironmentTimeout(TimeSpan normalTimeout) => IsRunningInCI ?
-            TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.8) : // Less aggressive reduction than before for better .NET Framework 4.8 support
-            normalTimeout;
+    /// <summary>Copies the first values from a sequence.</summary>
+    /// <param name="values">The source values.</param>
+    /// <param name="count">The maximum number of values to copy.</param>
+    /// <returns>The copied values.</returns>
+    private static ushort[] CopyFirst(IEnumerable<ushort> values, int count)
+    {
+        var result = new List<ushort>(count);
+        foreach (var value in values)
+        {
+            if (result.Count == count)
+            {
+                break;
+            }
+
+            result.Add(value);
+        }
+
+        return result.ToArray();
+    }
+
+    /// <summary>Determines whether values contain more than one distinct value.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <returns>A value indicating whether variation exists.</returns>
+    private static bool HasVariation(IReadOnlyList<ushort> values) => CountDistinct(values) > 1;
+
+    /// <summary>Determines whether values contain a positive value.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <returns>A value indicating whether any value is positive.</returns>
+    private static bool ContainsPositiveValue(IEnumerable<ushort> values)
+    {
+        foreach (var value in values)
+        {
+            if (value > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Counts distinct values with explicit iteration.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <returns>The number of distinct values.</returns>
+    private static int CountDistinct(IEnumerable<ushort> values)
+    {
+        var distinct = new HashSet<ushort>();
+        foreach (var value in values)
+        {
+            _ = distinct.Add(value);
+        }
+
+        return distinct.Count;
+    }
+
+    /// <summary>Compares two value arrays.</summary>
+    /// <param name="left">The left values.</param>
+    /// <param name="right">The right values.</param>
+    /// <returns>A value indicating whether both arrays contain the same values.</returns>
+    private static bool SequenceEqual(ushort[] left, ushort[] right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Length; i++)
+        {
+            if (left[i] != right[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Formats values for assertion output.</summary>
+    /// <param name="values">The values to format.</param>
+    /// <returns>The formatted values.</returns>
+    private static string FormatValues(ushort[] values)
+    {
+        var builder = new StringBuilder();
+        for (var i = 0; i < values.Length; i++)
+        {
+            if (i > 0)
+            {
+                _ = builder.Append(", ");
+            }
+
+            _ = builder.Append(values[i]);
+        }
+
+        return builder.ToString();
+    }
 }

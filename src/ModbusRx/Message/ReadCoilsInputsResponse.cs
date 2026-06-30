@@ -1,27 +1,34 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Unme.Common;
+#else
 using ModbusRx.Unme.Common;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// ReadCoilsInputsResponse.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.IModbusMessage" />
+/// <summary>Provides ReadCoilsInputsResponse functionality.</summary>
+/// <seealso cref="IModbusMessage" />
 public class ReadCoilsInputsResponse : AbstractModbusMessageWithData<DiscreteCollection>, IModbusMessage
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadCoilsInputsResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadCoilsInputsResponse"/> class.</summary>
     public ReadCoilsInputsResponse()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadCoilsInputsResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadCoilsInputsResponse"/> class.</summary>
     /// <param name="functionCode">The function code.</param>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="byteCount">The byte count.</param>
@@ -33,12 +40,8 @@ public class ReadCoilsInputsResponse : AbstractModbusMessageWithData<DiscreteCol
         Data = data;
     }
 
-    /// <summary>
-    /// Gets or sets the byte count.
-    /// </summary>
-    /// <value>
-    /// The byte count.
-    /// </value>
+    /// <summary>Gets or sets the byte count.</summary>
+/// <value>The byte count.</value>
     public byte ByteCount
     {
         get => MessageImpl.ByteCount!.Value;
@@ -61,6 +64,8 @@ public class ReadCoilsInputsResponse : AbstractModbusMessageWithData<DiscreteCol
         }
 
         ByteCount = frame[2];
-        Data = new DiscreteCollection(frame.Slice(3, ByteCount).ToArray());
+        var data = new byte[ByteCount];
+        Array.Copy(frame, 3, data, 0, data.Length);
+        Data = new(data);
     }
 }

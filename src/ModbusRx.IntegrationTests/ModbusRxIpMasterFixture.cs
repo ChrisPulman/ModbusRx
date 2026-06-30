@@ -1,5 +1,6 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Net.Sockets;
@@ -7,19 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// ModbusIpMasterFixture.
-/// </summary>
-[Collection("NetworkTests")]
+/// <summary>Tests the ModbusIpMasterFixture behavior.</summary>
 public class ModbusRxIpMasterFixture : NetworkTestBase
 {
-    /// <summary>
-    /// Overrides the timeout on TCP client.
-    /// </summary>
+    /// <summary>Overrides the timeout on TCP client.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task OverrideTimeoutOnTcpClient()
@@ -66,9 +61,7 @@ public class ModbusRxIpMasterFixture : NetworkTestBase
         Assert.Equal(3000, client.WriteTimeout);
     }
 
-    /// <summary>
-    /// Overrides the timeout on network stream.
-    /// </summary>
+    /// <summary>Overrides the timeout on network stream.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task OverrideTimeoutOnNetworkStream()
@@ -95,12 +88,12 @@ public class ModbusRxIpMasterFixture : NetworkTestBase
             {
                 // Expected when listener is disposed
             }
-            catch (System.Net.Sockets.SocketException ex) when (ex.ErrorCode == 995)
+            catch (SocketException ex) when (ex.ErrorCode == 995)
             {
                 // Expected when I/O operation is aborted due to thread exit or application request
                 // This is normal during test cleanup in CI environments
             }
-            catch (System.Net.Sockets.SocketException)
+            catch (SocketException)
             {
                 // Other socket exceptions during cleanup are also expected
             }

@@ -1,11 +1,8 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using ModbusRx.Data;
 using ModbusRx.Device;
 using ModbusRx.Reactive;
@@ -16,52 +13,66 @@ using ReactiveUI.SourceGenerators;
 
 namespace ModbusRx.Server.UI.Visualization;
 
-/// <summary>
-/// ViewModel for Modbus server visualization using ReactiveUI.
-/// </summary>
+/// <summary>ViewModel for Modbus server visualization using ReactiveUI.</summary>
 public partial class ModbusServerViewModel : ReactiveObject, IDisposable
 {
+    /// <summary>The disposable resources owned by the view model.</summary>
     private readonly CompositeDisposable _disposables = [];
+
+    /// <summary>The configuration persistence service.</summary>
     private readonly ConfigurationService _configurationService;
+
+    /// <summary>The hosted Modbus server.</summary>
     private ModbusServer? _server;
 
+    /// <summary>A value indicating whether the server is running.</summary>
     [Reactive]
     private bool _isServerRunning;
 
+    /// <summary>A value indicating whether simulation mode is active.</summary>
     [Reactive]
     private bool _simulationMode;
 
+    /// <summary>The selected test pattern.</summary>
     [Reactive]
     private TestPattern _selectedTestPattern = TestPattern.Random;
 
+    /// <summary>The selected simulation data generator.</summary>
     [Reactive]
     private SimulationType _selectedSimulationType = SimulationType.Random;
 
+    /// <summary>The active server configuration.</summary>
     [Reactive]
     private ServerConfiguration? _serverConfiguration;
 
+    /// <summary>The selected client configuration.</summary>
     [Reactive]
     private ModbusClientConfiguration? _selectedClientConfiguration;
 
+    /// <summary>The name for a new client configuration.</summary>
     [Reactive]
     private string _newClientName = string.Empty;
 
+    /// <summary>The address for a new client configuration.</summary>
     [Reactive]
     private string _newClientAddress = "127.0.0.1";
 
+    /// <summary>The port for a new client configuration.</summary>
     [Reactive]
     private int _newClientPort = 502;
 
+    /// <summary>The connection type for a new client configuration.</summary>
     [Reactive]
     private string _newClientConnectionType = "TCP";
 
+    /// <summary>The current UI status message.</summary>
     [Reactive]
     private string _statusMessage = "Ready";
+
+    /// <summary>A value indicating whether this instance has been disposed.</summary>
     private bool _disposedValue;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ModbusServerViewModel"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ModbusServerViewModel"/> class.</summary>
     /// <param name="configurationService">The configuration service.</param>
     public ModbusServerViewModel(ConfigurationService configurationService)
     {
@@ -77,79 +88,49 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         InitializeAsync();
     }
 
-    /// <summary>
-    /// Gets the available test patterns.
-    /// </summary>
+    /// <summary>Gets the available test patterns.</summary>
     public static Array TestPatterns => Enum.GetValues<TestPattern>();
 
-    /// <summary>
-    /// Gets the available simulation types.
-    /// </summary>
+    /// <summary>Gets the available simulation types.</summary>
     public static Array SimulationTypes => Enum.GetValues<SimulationType>();
 
-    /// <summary>
-    /// Gets the available connection types.
-    /// </summary>
+    /// <summary>Gets the available connection types.</summary>
     public static string[] ConnectionTypes => ["TCP", "UDP", "RTU", "ASCII"];
 
-    /// <summary>
-    /// Gets the holding registers collection.
-    /// </summary>
+    /// <summary>Gets the holding registers collection.</summary>
     public ObservableCollection<RegisterData> HoldingRegisters { get; }
 
-    /// <summary>
-    /// Gets the input registers collection.
-    /// </summary>
+    /// <summary>Gets the input registers collection.</summary>
     public ObservableCollection<RegisterData> InputRegisters { get; }
 
-    /// <summary>
-    /// Gets the coils collection.
-    /// </summary>
+    /// <summary>Gets the coils collection.</summary>
     public ObservableCollection<CoilData> Coils { get; }
 
-    /// <summary>
-    /// Gets the inputs collection.
-    /// </summary>
+    /// <summary>Gets the inputs collection.</summary>
     public ObservableCollection<CoilData> Inputs { get; }
 
-    /// <summary>
-    /// Gets the client configurations collection.
-    /// </summary>
+    /// <summary>Gets the client configurations collection.</summary>
     public ObservableCollection<ModbusClientConfiguration> ClientConfigurations { get; }
 
-    /// <summary>
-    /// Gets the start server command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> StartServerCommand { get; private set; } = null!;
+    /// <summary>Gets the start server command.</summary>
+    public ReactiveCommand<object?, object?> StartServerCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the stop server command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> StopServerCommand { get; private set; } = null!;
+    /// <summary>Gets the stop server command.</summary>
+    public ReactiveCommand<object?, object?> StopServerCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the load test pattern command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> LoadTestPatternCommand { get; private set; } = null!;
+    /// <summary>Gets the load test pattern command.</summary>
+    public ReactiveCommand<object?, object?> LoadTestPatternCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the clear data command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> ClearDataCommand { get; private set; } = null!;
+    /// <summary>Gets the clear data command.</summary>
+    public ReactiveCommand<object?, object?> ClearDataCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the add client command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> AddClientCommand { get; private set; } = null!;
+    /// <summary>Gets the add client command.</summary>
+    public ReactiveCommand<object?, object?> AddClientCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the remove client command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> RemoveClientCommand { get; private set; } = null!;
+    /// <summary>Gets the remove client command.</summary>
+    public ReactiveCommand<object?, object?> RemoveClientCommand { get; private set; } = null!;
 
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
+    /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -157,24 +138,27 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Releases unmanaged and - optionally - managed resources.
-    /// </summary>
+    /// <summary>Releases unmanaged and - optionally - managed resources.</summary>
     /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposedValue)
+        if (_disposedValue)
         {
-            if (disposing)
-            {
-                _disposables.Dispose();
-                _server?.Dispose();
-            }
-
-            _disposedValue = true;
+            return;
         }
+
+        if (disposing)
+        {
+            _disposables.Dispose();
+            _server?.Dispose();
+        }
+
+        _disposedValue = true;
     }
 
+    /// <summary>Updates a register collection from a value buffer.</summary>
+    /// <param name="collection">The UI collection to update.</param>
+    /// <param name="values">The register values.</param>
     private static void UpdateRegisterCollection(ObservableCollection<RegisterData> collection, ushort[] values)
     {
         // Ensure collection has enough items
@@ -190,6 +174,9 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Updates a coil collection from a value buffer.</summary>
+    /// <param name="collection">The UI collection to update.</param>
+    /// <param name="values">The coil values.</param>
     private static void UpdateCoilCollection(ObservableCollection<CoilData> collection, bool[] values)
     {
         // Ensure collection has enough items
@@ -205,32 +192,80 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Copies the first register values from a source buffer.</summary>
+    /// <param name="values">The source values.</param>
+    /// <param name="count">The maximum number of values to copy.</param>
+    /// <returns>The copied values.</returns>
+    private static ushort[] CopyFirst(ushort[] values, int count)
+    {
+        var length = Math.Min(values.Length, count);
+        var result = new ushort[length];
+        Array.Copy(values, result, length);
+        return result;
+    }
+
+    /// <summary>Copies the first coil values from a source buffer.</summary>
+    /// <param name="values">The source values.</param>
+    /// <param name="count">The maximum number of values to copy.</param>
+    /// <returns>The copied values.</returns>
+    private static bool[] CopyFirst(bool[] values, int count)
+    {
+        var length = Math.Min(values.Length, count);
+        var result = new bool[length];
+        Array.Copy(values, result, length);
+        return result;
+    }
+
+    /// <summary>Creates a command for a synchronous action without exposing a unit result type in source.</summary>
+    /// <param name="execute">The action to execute.</param>
+    /// <returns>The configured command.</returns>
+    private static ReactiveCommand<object?, object?> CreateCommand(Action execute) =>
+        ReactiveCommand.Create<object?, object?>(_ =>
+        {
+            execute();
+            return null;
+        });
+
+    /// <summary>Creates a command for an asynchronous action without exposing a unit result type in source.</summary>
+    /// <param name="execute">The action to execute.</param>
+    /// <param name="canExecute">The command availability stream.</param>
+    /// <returns>The configured command.</returns>
+    private static ReactiveCommand<object?, object?> CreateCommand(Func<Task> execute, IObservable<bool> canExecute) =>
+        ReactiveCommand.CreateFromTask<object?, object?>(
+            async _ =>
+            {
+                await execute();
+                return null;
+            },
+            canExecute);
+
+    /// <summary>Creates and wires the reactive commands.</summary>
     private void SetupCommands()
     {
         var canStart = this.WhenAnyValue(x => x.IsServerRunning).Select(running => !running);
         var canStop = this.WhenAnyValue(x => x.IsServerRunning);
-        var hasSelectedClient = this.WhenAnyValue(x => x.SelectedClientConfiguration).Select(c => c != null);
+        var hasSelectedClient = this.WhenAnyValue(x => x.SelectedClientConfiguration).Select(c => c is not null);
         var canAddClient = this.WhenAnyValue(x => x.NewClientName, x => x.NewClientAddress)
             .Select(x => !string.IsNullOrWhiteSpace(x.Item1) && !string.IsNullOrWhiteSpace(x.Item2));
 
-        StartServerCommand = ReactiveCommand.CreateFromTask(StartServerAsync, canStart);
-        StopServerCommand = ReactiveCommand.CreateFromTask(StopServerAsync, canStop);
-        LoadTestPatternCommand = ReactiveCommand.Create(LoadTestPattern);
-        ClearDataCommand = ReactiveCommand.Create(ClearData);
-        AddClientCommand = ReactiveCommand.CreateFromTask(AddClientAsync, canAddClient);
-        RemoveClientCommand = ReactiveCommand.CreateFromTask(RemoveClientAsync, hasSelectedClient);
+        StartServerCommand = CreateCommand(StartServerAsync, canStart);
+        StopServerCommand = CreateCommand(StopServerAsync, canStop);
+        LoadTestPatternCommand = CreateCommand(LoadTestPattern);
+        ClearDataCommand = CreateCommand(ClearData);
+        AddClientCommand = CreateCommand(AddClientAsync, canAddClient);
+        RemoveClientCommand = CreateCommand(RemoveClientAsync, hasSelectedClient);
 
         // Subscribe to command results
-        StartServerCommand.Subscribe(_ => StatusMessage = "Server started successfully");
-        StopServerCommand.Subscribe(_ => StatusMessage = "Server stopped");
-        LoadTestPatternCommand.Subscribe(_ => StatusMessage = $"Loaded {SelectedTestPattern} pattern");
-        ClearDataCommand.Subscribe(_ => StatusMessage = "Data cleared");
+        _ = StartServerCommand.Subscribe(_ => StatusMessage = "Server started successfully");
+        _ = StopServerCommand.Subscribe(_ => StatusMessage = "Server stopped");
+        _ = LoadTestPatternCommand.Subscribe(_ => StatusMessage = $"Loaded {SelectedTestPattern} pattern");
+        _ = ClearDataCommand.Subscribe(_ => StatusMessage = "Data cleared");
 
         // Handle errors
-        StartServerCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error starting server: {ex.Message}");
-        StopServerCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error stopping server: {ex.Message}");
-        AddClientCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error adding client: {ex.Message}");
-        RemoveClientCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error removing client: {ex.Message}");
+        _ = StartServerCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error starting server: {ex.Message}");
+        _ = StopServerCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error stopping server: {ex.Message}");
+        _ = AddClientCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error adding client: {ex.Message}");
+        _ = RemoveClientCommand.ThrownExceptions.Subscribe(ex => StatusMessage = $"Error removing client: {ex.Message}");
 
         _disposables.Add(StartServerCommand);
         _disposables.Add(StopServerCommand);
@@ -240,6 +275,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         _disposables.Add(RemoveClientCommand);
     }
 
+    /// <summary>Initializes configuration and server state asynchronously.</summary>
     private async void InitializeAsync()
     {
         try
@@ -253,9 +289,10 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Creates the server and starts observing data changes.</summary>
     private void InitializeServer()
     {
-        _server = new ModbusServer();
+        _server = new();
 
         // Start data observation
         var subscription = _server.ObserveDataChanges(100)
@@ -264,22 +301,25 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         _disposables.Add(subscription);
 
         // Monitor simulation mode changes
-        this.WhenAnyValue(x => x.SimulationMode)
+        _ = this.WhenAnyValue(x => x.SimulationMode)
             .Skip(1) // Skip initial value
             .Subscribe(enabled =>
             {
-                if (_server != null)
+                if (_server is null)
                 {
-                    _server.SimulationMode = enabled;
-                    StatusMessage = enabled ? "Simulation enabled" : "Simulation disabled";
+                    return;
                 }
-            })
-            .DisposeWith(_disposables);
+
+                _server.SimulationMode = enabled;
+                StatusMessage = enabled ? "Simulation enabled" : "Simulation disabled";
+            });
     }
 
+    /// <summary>Starts the configured Modbus server endpoints.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task StartServerAsync()
     {
-        if (_server == null || ServerConfiguration == null)
+        if (_server is null || ServerConfiguration is null)
         {
             return;
         }
@@ -329,9 +369,11 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Stops the Modbus server.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task StopServerAsync()
     {
-        if (_server == null)
+        if (_server is null)
         {
             return;
         }
@@ -350,9 +392,10 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Loads the selected test pattern into the server data store.</summary>
     private void LoadTestPattern()
     {
-        if (_server?.DataStore == null)
+        if (_server?.DataStore is null)
         {
             return;
         }
@@ -361,9 +404,10 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         provider.LoadTestPattern(_server.DataStore, SelectedTestPattern);
     }
 
+    /// <summary>Clears all displayed server data.</summary>
     private void ClearData()
     {
-        if (_server?.DataStore == null)
+        if (_server?.DataStore is null)
         {
             return;
         }
@@ -375,6 +419,8 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
             new bool[100]);
     }
 
+    /// <summary>Adds a client configuration.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task AddClientAsync()
     {
         try
@@ -407,9 +453,11 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Removes the selected client configuration.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task RemoveClientAsync()
     {
-        if (SelectedClientConfiguration == null)
+        if (SelectedClientConfiguration is null)
         {
             return;
         }
@@ -417,7 +465,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         try
         {
             await _configurationService.DeleteClientConfigurationAsync(SelectedClientConfiguration.Id);
-            ClientConfigurations.Remove(SelectedClientConfiguration);
+            _ = ClientConfigurations.Remove(SelectedClientConfiguration);
             StatusMessage = $"Client '{SelectedClientConfiguration.Name}' removed successfully";
             SelectedClientConfiguration = null;
         }
@@ -428,10 +476,12 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Saves the current server configuration.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [ReactiveCommand]
     private async Task SaveConfigurationAsync()
     {
-        if (ServerConfiguration == null)
+        if (ServerConfiguration is null)
         {
             return;
         }
@@ -449,6 +499,8 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Loads server and client configuration.</summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [ReactiveCommand]
     private async Task LoadConfigurationAsync()
     {
@@ -473,6 +525,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Exits the application after stopping the server when needed.</summary>
     [ReactiveCommand]
     private void ExitApplication()
     {
@@ -498,10 +551,10 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
             }
 
             // Save configuration before exiting
-            if (ServerConfiguration != null)
+            if (ServerConfiguration is not null)
             {
                 ServerConfiguration.SimulationEnabled = SimulationMode;
-                Task.Run(async () => await _configurationService.SaveServerConfigurationAsync(ServerConfiguration));
+                _ = Task.Run(() => _configurationService.SaveServerConfigurationAsync(ServerConfiguration));
             }
 
             // Request application shutdown
@@ -512,7 +565,7 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
             StatusMessage = $"Error during application exit: {ex.Message}";
 
             // Show error message to user
-            System.Windows.MessageBox.Show(
+            _ = System.Windows.MessageBox.Show(
                 $"An error occurred while closing the application: {ex.Message}\n\nThe application will still close.",
                 "Exit Error",
                 System.Windows.MessageBoxButton.OK,
@@ -523,18 +576,20 @@ public partial class ModbusServerViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>Updates the displayed data collections.</summary>
+    /// <param name="data">The latest server data snapshot.</param>
     private void UpdateData((ushort[] holdingRegisters, ushort[] inputRegisters, bool[] coils, bool[] inputs) data)
     {
         // Update holding registers
-        UpdateRegisterCollection(HoldingRegisters, [.. data.holdingRegisters.Take(50)]);
+        UpdateRegisterCollection(HoldingRegisters, CopyFirst(data.holdingRegisters, 50));
 
         // Update input registers
-        UpdateRegisterCollection(InputRegisters, [.. data.inputRegisters.Take(50)]);
+        UpdateRegisterCollection(InputRegisters, CopyFirst(data.inputRegisters, 50));
 
         // Update coils
-        UpdateCoilCollection(Coils, [.. data.coils.Take(50)]);
+        UpdateCoilCollection(Coils, CopyFirst(data.coils, 50));
 
         // Update inputs
-        UpdateCoilCollection(Inputs, [.. data.inputs.Take(50)]);
+        UpdateCoilCollection(Inputs, CopyFirst(data.inputs, 50));
     }
 }

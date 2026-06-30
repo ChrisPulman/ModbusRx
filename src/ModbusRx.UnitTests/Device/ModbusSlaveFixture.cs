@@ -1,35 +1,30 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 #if SERIAL
 using System.IO.Ports;
 #endif
 
-using System.Linq;
+using System.Collections.Generic;
 using ModbusRx.Data;
 using ModbusRx.Device;
 using ModbusRx.Message;
 using ModbusRx.UnitTests.Message;
 using ModbusRx.Unme.Common;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Device;
 
-/// <summary>
-/// ModbusSlaveFixture.
-/// </summary>
+/// <summary>Tests the ModbusSlaveFixture behavior.</summary>
 public class ModbusSlaveFixture
 {
+    /// <summary>The test data store used by slave operation tests.</summary>
     private readonly DataStore _testDataStore;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ModbusSlaveFixture"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ModbusSlaveFixture"/> class.</summary>
     public ModbusSlaveFixture() => _testDataStore = DataStoreFactory.CreateTestDataStore();
 
-    /// <summary>
-    /// Reads the discretes coils.
-    /// </summary>
+    /// <summary>Reads the discretes coils.</summary>
     [TUnit.Core.Test]
     public void ReadDiscretesCoils()
     {
@@ -40,9 +35,7 @@ public class ModbusSlaveFixture
         Assert.Equal(expectedResponse.ByteCount, response.ByteCount);
     }
 
-    /// <summary>
-    /// Reads the discretes inputs.
-    /// </summary>
+    /// <summary>Reads the discretes inputs.</summary>
     [TUnit.Core.Test]
     public void ReadDiscretesInputs()
     {
@@ -52,9 +45,7 @@ public class ModbusSlaveFixture
         Assert.Equal(expectedResponse.ByteCount, response.ByteCount);
     }
 
-    /// <summary>
-    /// Reads the registers holding registers.
-    /// </summary>
+    /// <summary>Reads the registers holding registers.</summary>
     [TUnit.Core.Test]
     public void ReadRegistersHoldingRegisters()
     {
@@ -64,9 +55,7 @@ public class ModbusSlaveFixture
         Assert.Equal(expectedResponse.ByteCount, response.ByteCount);
     }
 
-    /// <summary>
-    /// Reads the registers input registers.
-    /// </summary>
+    /// <summary>Reads the registers input registers.</summary>
     [TUnit.Core.Test]
     public void ReadRegistersInputRegisters()
     {
@@ -76,9 +65,7 @@ public class ModbusSlaveFixture
         Assert.Equal(expectedResponse.ByteCount, response.ByteCount);
     }
 
-    /// <summary>
-    /// Writes the single coil.
-    /// </summary>
+    /// <summary>Writes the single coil.</summary>
     [TUnit.Core.Test]
     public void WriteSingleCoil()
     {
@@ -90,9 +77,7 @@ public class ModbusSlaveFixture
         Assert.Equal(valueToWrite, _testDataStore.CoilDiscretes[addressToWrite + 1]);
     }
 
-    /// <summary>
-    /// Writes the multiple coils.
-    /// </summary>
+    /// <summary>Writes the multiple coils.</summary>
     [TUnit.Core.Test]
     public void WriteMultipleCoils()
     {
@@ -103,12 +88,10 @@ public class ModbusSlaveFixture
         var response =
             ModbusSlave.WriteMultipleCoils(new WriteMultipleCoilsRequest(1, startAddress, new DiscreteCollection(val, val, val, val, val, val, val, val, val, val)), _testDataStore, _testDataStore.CoilDiscretes);
         ModbusMessageFixture.AssertModbusMessagePropertiesAreEqual(expectedResponse, response);
-        Assert.Equal(new bool[] { val, val, val, val, val, val, val, val, val, val }, _testDataStore.CoilDiscretes.Slice(startAddress + 1, numberOfPoints).ToArray());
+        Assert.Equal<IEnumerable<bool>>([val, val, val, val, val, val, val, val, val, val], _testDataStore.CoilDiscretes.Slice(startAddress + 1, numberOfPoints));
     }
 
-    /// <summary>
-    /// Writes the single register.
-    /// </summary>
+    /// <summary>Writes the single register.</summary>
     [TUnit.Core.Test]
     public void WriteSingleRegister()
     {
@@ -120,15 +103,13 @@ public class ModbusSlaveFixture
         ModbusMessageFixture.AssertModbusMessagePropertiesAreEqual(expectedResponse, response);
     }
 
-    /// <summary>
-    /// Writes the multiple registers.
-    /// </summary>
+    /// <summary>Writes the multiple registers.</summary>
     [TUnit.Core.Test]
     public void WriteMultipleRegisters()
     {
         const ushort startAddress = 35;
-        var valuesToWrite = new ushort[] { 1, 2, 3, 4, 5 };
-        Assert.NotEqual(valuesToWrite, _testDataStore.HoldingRegisters.Slice(startAddress - 1, valuesToWrite.Length).ToArray());
+        ushort[] valuesToWrite = [1, 2, 3, 4, 5];
+        Assert.NotEqual<IEnumerable<ushort>>(valuesToWrite, _testDataStore.HoldingRegisters.Slice(startAddress - 1, valuesToWrite.Length));
         var expectedResponse = new WriteMultipleRegistersResponse(1, startAddress, (ushort)valuesToWrite.Length);
         var response = ModbusSlave.WriteMultipleRegisters(new WriteMultipleRegistersRequest(1, startAddress, new RegisterCollection(valuesToWrite)), _testDataStore, _testDataStore.HoldingRegisters);
         ModbusMessageFixture.AssertModbusMessagePropertiesAreEqual(expectedResponse, response);
@@ -155,19 +136,32 @@ public class ModbusSlaveFixture
     }
 #endif
 
-    /// <summary>
-    /// Writes the multip coils make sure we do not write remainder.
-    /// </summary>
+    /// <summary>Writes the multip coils make sure we do not write remainder.</summary>
     [TUnit.Core.Test]
     public void WriteMultipCoils_MakeSureWeDoNotWriteRemainder()
     {
         // 0, false initialized data store
         var dataStore = DataStoreFactory.CreateDefaultDataStore();
 
-        var request = new WriteMultipleCoilsRequest(1, 0, new DiscreteCollection(Enumerable.Repeat(true, 8).ToArray()))
+        var request = new WriteMultipleCoilsRequest(1, 0, new DiscreteCollection(CreateCoils(8, true)))
         { NumberOfPoints = 2 };
-        ModbusSlave.WriteMultipleCoils(request, dataStore, dataStore.CoilDiscretes);
+        _ = ModbusSlave.WriteMultipleCoils(request, dataStore, dataStore.CoilDiscretes);
 
-        Assert.Equal(dataStore.CoilDiscretes.Slice(1, 8).ToArray(), new[] { true, true, false, false, false, false, false, false });
+        Assert.Equal<IEnumerable<bool>>([true, true, false, false, false, false, false, false], dataStore.CoilDiscretes.Slice(1, 8));
+    }
+
+    /// <summary>Creates a coil buffer filled with one value.</summary>
+    /// <param name="count">The number of coils to create.</param>
+    /// <param name="value">The coil value.</param>
+    /// <returns>The populated coil buffer.</returns>
+    private static bool[] CreateCoils(int count, bool value)
+    {
+        var result = new bool[count];
+        for (var i = 0; i < result.Length; i++)
+        {
+            result[i] = value;
+        }
+
+        return result;
     }
 }

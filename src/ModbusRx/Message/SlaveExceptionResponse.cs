@@ -1,29 +1,29 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Globalization;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// SlaveExceptionResponse.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.AbstractModbusMessage" />
-/// <seealso cref="ModbusRx.Message.IModbusMessage" />
+/// <summary>Provides SlaveExceptionResponse functionality.</summary>
+/// <seealso cref="AbstractModbusMessage" />
+/// <seealso cref="IModbusMessage" />
 public class SlaveExceptionResponse : AbstractModbusMessage, IModbusMessage
 {
+    /// <summary>Stores the exception Messages value.</summary>
     private static readonly Dictionary<byte, string> _exceptionMessages = CreateExceptionMessages();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SlaveExceptionResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="SlaveExceptionResponse"/> class.</summary>
     public SlaveExceptionResponse()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SlaveExceptionResponse"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="SlaveExceptionResponse"/> class.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="functionCode">The function code.</param>
     /// <param name="exceptionCode">The exception code.</param>
@@ -33,33 +33,29 @@ public class SlaveExceptionResponse : AbstractModbusMessage, IModbusMessage
     /// <inheritdoc/>
     public override int MinimumFrameSize => 3;
 
-    /// <summary>
-    /// Gets or sets the slave exception code.
-    /// </summary>
-    /// <value>
-    /// The slave exception code.
-    /// </value>
+    /// <summary>Gets or sets the slave exception code.</summary>
+/// <value>The slave exception code.</value>
     public byte SlaveExceptionCode
     {
         get => MessageImpl.ExceptionCode!.Value;
         set => MessageImpl.ExceptionCode = value;
     }
 
-    /// <summary>
-    /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-    /// </summary>
+    /// <summary>Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.</summary>
     /// <returns>
     /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
     /// </returns>
     public override string ToString()
     {
-        var msg = _exceptionMessages.ContainsKey(SlaveExceptionCode)
-            ? _exceptionMessages[SlaveExceptionCode]
+        var msg = _exceptionMessages.TryGetValue(SlaveExceptionCode, out var value)
+            ? value
             : Resources.Unknown;
 
         return $"Function Code: {FunctionCode}{Environment.NewLine}Exception Code: {SlaveExceptionCode} - {msg}";
     }
 
+    /// <summary>Executes the Create Exception Messages operation.</summary>
+    /// <returns>The result.</returns>
     internal static Dictionary<byte, string> CreateExceptionMessages() =>
         new(9)
         {
@@ -77,7 +73,7 @@ public class SlaveExceptionResponse : AbstractModbusMessage, IModbusMessage
     /// <inheritdoc/>
     protected override void InitializeUnique(byte[] frame)
     {
-        if (frame == null)
+        if (frame is null)
         {
             throw new ArgumentNullException(nameof(frame));
         }

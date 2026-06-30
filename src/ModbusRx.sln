@@ -16,10 +16,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectConfiguration", "Pro
 		..\.github\workflows\BuildOnly.yml = ..\.github\workflows\BuildOnly.yml
 		..\.github\dependabot.yml = ..\.github\dependabot.yml
 		..\Directory.Build.props = ..\Directory.Build.props
+		..\Directory.Build.targets = ..\Directory.Build.targets
 		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
-		..\stylecop.json = ..\stylecop.json
 		..\Version.json = ..\Version.json
 	EndProjectSection
 EndProject
@@ -30,6 +30,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusRx.Generators", "ModbusRx.Generators\ModbusRx.Generators.csproj", "{20EB3518-402F-4C7F-B9A8-BE312085D22C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusRx.Generators.Tests", "ModbusRx.Generators.Tests\ModbusRx.Generators.Tests.csproj", "{82032F69-873D-4FAE-8049-DA2C0E7B7AFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusRx.Reactive", "ModbusRx.Reactive\ModbusRx.Reactive.csproj", "{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -170,6 +172,24 @@ Global
 		{82032F69-873D-4FAE-8049-DA2C0E7B7AFB}.Release|x64.Build.0 = Release|Any CPU
 		{82032F69-873D-4FAE-8049-DA2C0E7B7AFB}.Release|x86.ActiveCfg = Release|Any CPU
 		{82032F69-873D-4FAE-8049-DA2C0E7B7AFB}.Release|x86.Build.0 = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|x64.Build.0 = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Debug|x86.Build.0 = Debug|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|Any CPU.ActiveCfg = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|Any CPU.Build.0 = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|x64.ActiveCfg = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|x64.Build.0 = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|x86.ActiveCfg = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.PreRelease|x86.Build.0 = PreRelease|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|x64.ActiveCfg = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|x64.Build.0 = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|x86.ActiveCfg = Release|Any CPU
+		{4CFC6DD4-BF61-4AA7-9FFF-5AD651FF612A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

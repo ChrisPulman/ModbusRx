@@ -1,18 +1,36 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.IO;
+#else
 using ModbusRx.IO;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Message;
+#else
 using ModbusRx.Message;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Device;
+#else
 namespace ModbusRx.Device;
+#endif
 
-/// <summary>
-///     Modbus slave device.
-/// </summary>
+/// <summary>Modbus slave device.</summary>
 public abstract class ModbusSlave : ModbusDevice
 {
+    /// <summary>Initializes a new instance of the Modbus Slave class.</summary>
+    /// <param name="unitId">The unit Id value.</param>
+    /// <param name="transport">The transport value.</param>
     internal ModbusSlave(byte unitId, ModbusTransport transport)
         : base(transport)
     {
@@ -20,34 +38,29 @@ public abstract class ModbusSlave : ModbusDevice
         UnitId = unitId;
     }
 
-    /// <summary>
-    ///     Raised when a Modbus slave receives a request, before processing request function.
-    /// </summary>
+    /// <summary>Raised when a Modbus slave receives a request, before processing request function.</summary>
     /// <exception cref="InvalidModbusRequestException">The Modbus request was invalid, and an error response the specified exception should be sent.</exception>
     public event EventHandler<ModbusSlaveRequestEventArgs>? ModbusSlaveRequestReceived;
 
-    /// <summary>
-    ///     Raised when a Modbus slave receives a write request, after processing the write portion of the function.
-    /// </summary>
+    /// <summary>Raised when a Modbus slave receives a write request, after processing the write portion of the function.</summary>
     /// <remarks>For Read/Write Multiple registers (function code 23), this method is raised after writing and before reading.</remarks>
     public event EventHandler<ModbusSlaveRequestEventArgs>? WriteComplete;
 
-    /// <summary>
-    ///     Gets or sets the data store.
-    /// </summary>
+    /// <summary>Gets or sets the data store.</summary>
     public DataStore DataStore { get; set; }
 
-    /// <summary>
-    ///     Gets or sets the unit ID.
-    /// </summary>
+    /// <summary>Gets or sets the unit ID.</summary>
     public byte UnitId { get; set; }
 
-    /// <summary>
-    /// Start slave listening for requests.
-    /// </summary>
+    /// <summary>Start slave listening for requests.</summary>
     /// <returns>A Task.</returns>
     public abstract Task ListenAsync();
 
+    /// <summary>Defines the Read Discretes value.</summary>
+    /// <param name="request">The read request.</param>
+    /// <param name="dataStore">The data store to read from.</param>
+    /// <param name="dataSource">The source collection.</param>
+    /// <returns>The result.</returns>
     internal static ReadCoilsInputsResponse ReadDiscretes(
         ReadCoilsInputsRequest request,
         DataStore dataStore,
@@ -67,6 +80,11 @@ public abstract class ModbusSlave : ModbusDevice
             data);
     }
 
+    /// <summary>Defines the Read Registers value.</summary>
+    /// <param name="request">The read request.</param>
+    /// <param name="dataStore">The data store to read from.</param>
+    /// <param name="dataSource">The source collection.</param>
+    /// <returns>The result.</returns>
     internal static ReadHoldingInputRegistersResponse ReadRegisters(
         ReadHoldingInputRegistersRequest? request,
         DataStore dataStore,
@@ -85,6 +103,11 @@ public abstract class ModbusSlave : ModbusDevice
             data);
     }
 
+    /// <summary>Defines the Write Single Coil value.</summary>
+    /// <param name="request">The write request.</param>
+    /// <param name="dataStore">The data store to write to.</param>
+    /// <param name="dataSource">The destination collection.</param>
+    /// <returns>The result.</returns>
     internal static WriteSingleCoilRequestResponse WriteSingleCoil(
         WriteSingleCoilRequestResponse request,
         DataStore dataStore,
@@ -100,14 +123,25 @@ public abstract class ModbusSlave : ModbusDevice
         return request;
     }
 
+    /// <summary>Defines the Write Multiple Coils value.</summary>
+    /// <param name="request">The write request.</param>
+    /// <param name="dataStore">The data store to write to.</param>
+    /// <param name="dataSource">The destination collection.</param>
+    /// <returns>The result.</returns>
     internal static WriteMultipleCoilsResponse WriteMultipleCoils(
         WriteMultipleCoilsRequest request,
         DataStore dataStore,
         ModbusDataCollection<bool> dataSource)
     {
+        var coils = new bool[request.NumberOfPoints];
+        for (var i = 0; i < coils.Length; i++)
+        {
+            coils[i] = request.Data[i];
+        }
+
         DataStore.WriteData(
             dataStore,
-            request.Data.Take(request.NumberOfPoints),
+            coils,
             dataSource,
             request.StartAddress,
             dataStore.SyncRoot);
@@ -118,6 +152,11 @@ public abstract class ModbusSlave : ModbusDevice
             request.NumberOfPoints);
     }
 
+    /// <summary>Defines the Write Single Register value.</summary>
+    /// <param name="request">The write request.</param>
+    /// <param name="dataStore">The data store to write to.</param>
+    /// <param name="dataSource">The destination collection.</param>
+    /// <returns>The result.</returns>
     internal static WriteSingleRegisterRequestResponse WriteSingleRegister(
         WriteSingleRegisterRequestResponse request,
         DataStore dataStore,
@@ -133,6 +172,11 @@ public abstract class ModbusSlave : ModbusDevice
         return request;
     }
 
+    /// <summary>Defines the Write Multiple Registers value.</summary>
+    /// <param name="request">The write request.</param>
+    /// <param name="dataStore">The data store to write to.</param>
+    /// <param name="dataSource">The destination collection.</param>
+    /// <returns>The result.</returns>
     internal static WriteMultipleRegistersResponse WriteMultipleRegisters(
         WriteMultipleRegistersRequest? request,
         DataStore dataStore,
@@ -151,6 +195,9 @@ public abstract class ModbusSlave : ModbusDevice
             request.NumberOfPoints);
     }
 
+    /// <summary>Executes the Apply Request operation.</summary>
+    /// <param name="request">The request value.</param>
+    /// <returns>The result.</returns>
     internal IModbusMessage ApplyRequest(IModbusMessage request)
     {
         IModbusMessage response;
@@ -164,86 +211,108 @@ public abstract class ModbusSlave : ModbusDevice
             switch (request.FunctionCode)
             {
                 case Modbus.ReadCoils:
-                    response = ReadDiscretes(
-                        (ReadCoilsInputsRequest)request,
-                        DataStore,
-                        DataStore.CoilDiscretes);
-                    break;
+                    {
+                        response = ReadDiscretes(
+                                            (ReadCoilsInputsRequest)request,
+                                            DataStore,
+                                            DataStore.CoilDiscretes);
+                        break;
+                    }
 
                 case Modbus.ReadInputs:
-                    response = ReadDiscretes(
-                        (ReadCoilsInputsRequest)request,
-                        DataStore,
-                        DataStore.InputDiscretes);
-                    break;
+                    {
+                        response = ReadDiscretes(
+                                            (ReadCoilsInputsRequest)request,
+                                            DataStore,
+                                            DataStore.InputDiscretes);
+                        break;
+                    }
 
                 case Modbus.ReadHoldingRegisters:
-                    response = ReadRegisters(
-                        (ReadHoldingInputRegistersRequest)request,
-                        DataStore,
-                        DataStore.HoldingRegisters);
-                    break;
+                    {
+                        response = ReadRegisters(
+                                            (ReadHoldingInputRegistersRequest)request,
+                                            DataStore,
+                                            DataStore.HoldingRegisters);
+                        break;
+                    }
 
                 case Modbus.ReadInputRegisters:
-                    response = ReadRegisters(
-                        (ReadHoldingInputRegistersRequest)request,
-                        DataStore,
-                        DataStore.InputRegisters);
-                    break;
+                    {
+                        response = ReadRegisters(
+                                            (ReadHoldingInputRegistersRequest)request,
+                                            DataStore,
+                                            DataStore.InputRegisters);
+                        break;
+                    }
 
                 case Modbus.Diagnostics:
-                    response = request;
-                    break;
+                    {
+                        response = request;
+                        break;
+                    }
 
                 case Modbus.WriteSingleCoil:
-                    response = WriteSingleCoil(
-                        (WriteSingleCoilRequestResponse)request,
-                        DataStore,
-                        DataStore.CoilDiscretes);
-                    WriteComplete?.Invoke(this, eventArgs);
-                    break;
+                    {
+                        response = WriteSingleCoil(
+                                            (WriteSingleCoilRequestResponse)request,
+                                            DataStore,
+                                            DataStore.CoilDiscretes);
+                        WriteComplete?.Invoke(this, eventArgs);
+                        break;
+                    }
 
                 case Modbus.WriteSingleRegister:
-                    response = WriteSingleRegister(
-                        (WriteSingleRegisterRequestResponse)request,
-                        DataStore,
-                        DataStore.HoldingRegisters);
-                    WriteComplete?.Invoke(this, eventArgs);
-                    break;
+                    {
+                        response = WriteSingleRegister(
+                                            (WriteSingleRegisterRequestResponse)request,
+                                            DataStore,
+                                            DataStore.HoldingRegisters);
+                        WriteComplete?.Invoke(this, eventArgs);
+                        break;
+                    }
 
                 case Modbus.WriteMultipleCoils:
-                    response = WriteMultipleCoils(
-                        (WriteMultipleCoilsRequest)request,
-                        DataStore,
-                        DataStore.CoilDiscretes);
-                    WriteComplete?.Invoke(this, eventArgs);
-                    break;
+                    {
+                        response = WriteMultipleCoils(
+                                            (WriteMultipleCoilsRequest)request,
+                                            DataStore,
+                                            DataStore.CoilDiscretes);
+                        WriteComplete?.Invoke(this, eventArgs);
+                        break;
+                    }
 
                 case Modbus.WriteMultipleRegisters:
-                    response = WriteMultipleRegisters(
-                        (WriteMultipleRegistersRequest)request,
-                        DataStore,
-                        DataStore.HoldingRegisters);
-                    WriteComplete?.Invoke(this, eventArgs);
-                    break;
+                    {
+                        response = WriteMultipleRegisters(
+                                            (WriteMultipleRegistersRequest)request,
+                                            DataStore,
+                                            DataStore.HoldingRegisters);
+                        WriteComplete?.Invoke(this, eventArgs);
+                        break;
+                    }
 
                 case Modbus.ReadWriteMultipleRegisters:
-                    var readWriteRequest = (ReadWriteMultipleRegistersRequest)request;
-                    WriteMultipleRegisters(
-                        readWriteRequest.WriteRequest,
-                        DataStore,
-                        DataStore.HoldingRegisters);
-                    WriteComplete?.Invoke(this, eventArgs);
-                    response = ReadRegisters(
-                        readWriteRequest.ReadRequest,
-                        DataStore,
-                        DataStore.HoldingRegisters);
-                    break;
+                    {
+                        var readWriteRequest = (ReadWriteMultipleRegistersRequest)request;
+                        _ = WriteMultipleRegisters(
+                            readWriteRequest.WriteRequest,
+                            DataStore,
+                            DataStore.HoldingRegisters);
+                        WriteComplete?.Invoke(this, eventArgs);
+                        response = ReadRegisters(
+                            readWriteRequest.ReadRequest,
+                            DataStore,
+                            DataStore.HoldingRegisters);
+                        break;
+                    }
 
                 default:
-                    var msg = $"Unsupported function code {request.FunctionCode}.";
-                    Debug.WriteLine(msg);
-                    throw new InvalidModbusRequestException(Modbus.IllegalFunction);
+                    {
+                        var msg = $"Unsupported function code {request.FunctionCode}.";
+                        Debug.WriteLine(msg);
+                        throw new InvalidModbusRequestException(Modbus.IllegalFunction);
+                    }
             }
         }
         catch (InvalidModbusRequestException ex)

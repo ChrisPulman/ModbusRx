@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReadCoilsInputsResponseFixture.
-/// </summary>
+/// <summary>Tests the ReadCoilsInputsResponseFixture behavior.</summary>
 public class ReadCoilsInputsResponseFixture
 {
-    /// <summary>
-    /// Creates the read coils response.
-    /// </summary>
+    /// <summary>Creates the read coils response.</summary>
     [TUnit.Core.Test]
     public void CreateReadCoilsResponse()
     {
@@ -22,13 +18,11 @@ public class ReadCoilsInputsResponseFixture
         Assert.Equal(Modbus.ReadCoils, response.FunctionCode);
         Assert.Equal(5, response.SlaveAddress);
         Assert.Equal(2, response.ByteCount);
-        var col = new DiscreteCollection(true, true, true, true, true, true, false, false, true, true,            false);
+        var col = new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false);
         Assert.Equal(col.NetworkBytes, response.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Creates the read inputs response.
-    /// </summary>
+    /// <summary>Creates the read inputs response.</summary>
     [TUnit.Core.Test]
     public void CreateReadInputsResponse()
     {
@@ -36,13 +30,11 @@ public class ReadCoilsInputsResponseFixture
         Assert.Equal(Modbus.ReadInputs, response.FunctionCode);
         Assert.Equal(5, response.SlaveAddress);
         Assert.Equal(2, response.ByteCount);
-        var col = new DiscreteCollection(true, true, true, true, true, true, false, false, true, true,            false);
+        var col = new DiscreteCollection(true, true, true, true, true, true, false, false, true, true, false);
         Assert.Equal(col.NetworkBytes, response.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Converts to string_coils.
-    /// </summary>
+    /// <summary>Converts to string_coils.</summary>
     [TUnit.Core.Test]
     public void ToString_Coils()
     {
@@ -51,9 +43,7 @@ public class ReadCoilsInputsResponseFixture
         Assert.Equal("Read 11 coils - {1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0}.", response.ToString());
     }
 
-    /// <summary>
-    /// Converts to string_inputs.
-    /// </summary>
+    /// <summary>Converts to string_inputs.</summary>
     [TUnit.Core.Test]
     public void ToString_Inputs()
     {
