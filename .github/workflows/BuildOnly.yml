@@ -22,6 +22,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
         dotnet-quality: 'preview'
         cache: true
         cache-dependency-path: |
@@ -44,11 +45,11 @@ jobs:
     - run: echo 'SemVer2=${{ steps.nbgv.outputs.SemVer2 }}'
 
     - name: NuGet Restore
-      run: dotnet restore ModbusRx.sln
+      run: dotnet restore ModbusRx.slnx
       working-directory: src
 
     - name: Build
-      run: msbuild /t:build,pack /nowarn:MSB4011 /maxcpucount /p:NoPackageAnalysis=true /verbosity:minimal /p:Configuration=Release ModbusRx.sln
+      run: msbuild /t:build,pack /nowarn:MSB4011 /maxcpucount /p:NoPackageAnalysis=true /verbosity:minimal /p:Configuration=Release ModbusRx.slnx
       working-directory: src
 
     - name: Run Unit Tests and Generate Coverage
