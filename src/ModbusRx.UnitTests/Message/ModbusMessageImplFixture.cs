@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ModbusMessageImplFixture.
-/// </summary>
+/// <summary>Tests the ModbusMessageImplFixture behavior.</summary>
 public class ModbusMessageImplFixture
 {
-    /// <summary>
-    /// Modbuses the message ctor initializes properties.
-    /// </summary>
+    /// <summary>Modbuses the message ctor initializes properties.</summary>
     [TUnit.Core.Test]
     public void ModbusMessageCtorInitializesProperties()
     {
@@ -23,41 +19,33 @@ public class ModbusMessageImplFixture
         Assert.Equal(Modbus.ReadCoils, messageImpl.FunctionCode);
     }
 
-    /// <summary>
-    /// Initializes this instance.
-    /// </summary>
+    /// <summary>Initializes this instance.</summary>
     [TUnit.Core.Test]
     public void Initialize()
     {
         var messageImpl = new ModbusMessageImpl();
-        messageImpl.Initialize(new byte[] { 1, 2, 9, 9, 9, 9 });
+        messageImpl.Initialize([ 1, 2, 9, 9, 9, 9]);
         Assert.Equal(1, messageImpl.SlaveAddress);
         Assert.Equal(2, messageImpl.FunctionCode);
     }
 
-    /// <summary>
-    /// Checcks the initialize frame null.
-    /// </summary>
+    /// <summary>Checcks the initialize frame null.</summary>
     [TUnit.Core.Test]
     public void ChecckInitializeFrameNull()
     {
         var messageImpl = new ModbusMessageImpl();
-        Assert.Throws<ArgumentNullException>(() => messageImpl.Initialize(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => messageImpl.Initialize(null!));
     }
 
-    /// <summary>
-    /// Initializes the invalid frame.
-    /// </summary>
+    /// <summary>Initializes the invalid frame.</summary>
     [TUnit.Core.Test]
     public void InitializeInvalidFrame()
     {
         var messageImpl = new ModbusMessageImpl();
-        Assert.Throws<FormatException>(() => messageImpl.Initialize(new byte[] { 1 }));
+        _ = Assert.Throws<FormatException>(() => messageImpl.Initialize([ 1]));
     }
 
-    /// <summary>
-    /// Protocols the data unit.
-    /// </summary>
+    /// <summary>Protocols the data unit.</summary>
     [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
@@ -66,9 +54,7 @@ public class ModbusMessageImplFixture
         Assert.Equal(expectedResult, messageImpl.ProtocolDataUnit);
     }
 
-    /// <summary>
-    /// Messages the frame.
-    /// </summary>
+    /// <summary>Messages the frame.</summary>
     [TUnit.Core.Test]
     public void MessageFrame()
     {

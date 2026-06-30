@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReadHoldingInputRegistersRequestFixture.
-/// </summary>
+/// <summary>Tests the ReadHoldingInputRegistersRequestFixture behavior.</summary>
 public class ReadHoldingInputRegistersRequestFixture
 {
-    /// <summary>
-    /// Creates the read holding registers request.
-    /// </summary>
+    /// <summary>Creates the read holding registers request.</summary>
     [TUnit.Core.Test]
     public void CreateReadHoldingRegistersRequest()
     {
@@ -26,9 +22,7 @@ public class ReadHoldingInputRegistersRequestFixture
         Assert.Equal(10, request.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the read input registers request.
-    /// </summary>
+    /// <summary>Creates the read input registers request.</summary>
     [TUnit.Core.Test]
     public void CreateReadInputRegistersRequest()
     {
@@ -40,17 +34,13 @@ public class ReadHoldingInputRegistersRequestFixture
         Assert.Equal(10, request.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the read holding input registers request too much data.
-    /// </summary>
+    /// <summary>Creates the read holding input registers request too much data.</summary>
     [TUnit.Core.Test]
     public void CreateReadHoldingInputRegistersRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
+            _ = new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, 1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
 
-    /// <summary>
-    /// Creates the maximum size of the read holding input registers request.
-    /// </summary>
+    /// <summary>Creates the maximum size of the read holding input registers request.</summary>
     [TUnit.Core.Test]
     public void CreateReadHoldingInputRegistersRequestMaxSize()
     {
@@ -59,9 +49,7 @@ public class ReadHoldingInputRegistersRequestFixture
         Assert.Equal(Modbus.MaximumRegisterRequestResponseSize, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Converts to string_readholdingregistersrequest.
-    /// </summary>
+    /// <summary>Converts to string_readholdingregistersrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadHoldingRegistersRequest()
     {
@@ -70,9 +58,7 @@ public class ReadHoldingInputRegistersRequestFixture
         Assert.Equal("Read 10 holding registers starting at address 1.", request.ToString());
     }
 
-    /// <summary>
-    /// Converts to string_readinputregistersrequest.
-    /// </summary>
+    /// <summary>Converts to string_readinputregistersrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadInputRegistersRequest()
     {

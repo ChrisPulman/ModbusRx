@@ -1,22 +1,18 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.IO;
-using Xunit;
 
 namespace ModbusRx.UnitTests.IO;
 
-/// <summary>
-/// UdpClientAdapterFixture.
-/// </summary>
+/// <summary>Tests the UdpClientAdapterFixture behavior.</summary>
 public class UdpClientAdapterFixture
 {
-    /// <summary>
-    /// Reads the argument validation.
-    /// </summary>
+    /// <summary>Reads the argument validation.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task Read_ArgumentValidationAsync()
@@ -34,19 +30,17 @@ public class UdpClientAdapterFixture
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => adapter.ReadAsync(new byte[2], 1, 2));
     }
 
-    /// <summary>
-    /// Writes the argument validation.
-    /// </summary>
+    /// <summary>Writes the argument validation.</summary>
     [TUnit.Core.Test]
     public void Write_ArgumentValidation()
     {
         var adapter = new UdpClientAdapter(new UdpClientRx());
 
         // buffer
-        Assert.Throws<ArgumentNullException>(() => adapter.Write(null!, 1, 1));
+        _ = Assert.Throws<ArgumentNullException>(() => adapter.Write(null!, 1, 1));
 
         // offset
-        Assert.Throws<ArgumentOutOfRangeException>(() => adapter.Write(new byte[2], -1, 2));
-        Assert.Throws<ArgumentOutOfRangeException>(() => adapter.Write(new byte[2], 3, 3));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => adapter.Write(new byte[2], -1, 2));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => adapter.Write(new byte[2], 3, 3));
     }
 }

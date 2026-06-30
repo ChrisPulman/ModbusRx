@@ -67,7 +67,7 @@ public class ModbusServerTests
 
         // Capture initial state to verify change
         var initialData = server.GetCurrentData();
-        var initialSum = initialData.holdingRegisters.Take(10).Sum(x => (long)x);
+        var initialSum = SumFirst(initialData.holdingRegisters, 10);
 
         // Act
         server.SimulationMode = true;
@@ -84,8 +84,8 @@ public class ModbusServerTests
             var currentData = server.GetCurrentData();
 
             // Check if any holding registers have non-zero values OR if data has changed from initial state
-            var currentSum = currentData.holdingRegisters.Take(10).Sum(x => (long)x);
-            var hasNonZeroValues = currentData.holdingRegisters.Any(x => x > 0);
+            var currentSum = SumFirst(currentData.holdingRegisters, 10);
+            var hasNonZeroValues = ContainsPositiveValue(currentData.holdingRegisters);
             var sumChanged = currentSum != initialSum;
 
             dataHasChanged = hasNonZeroValues || sumChanged;
@@ -211,16 +211,17 @@ public class ModbusServerTests
         var timeout = GetEnvironmentTimeout(TimeSpan.FromSeconds(2));
 
         // Act
-        var data = await server.ObserveDataChanges(50)
-            .FirstAsync()
-            .Timeout(timeout)
-            .ToTask();
+        var dataReceived = new TaskCompletionSource<(ushort[] holdingRegisters, ushort[] inputRegisters, bool[] coils, bool[] inputs)>();
+        using var subscription = server.ObserveDataChanges(50)
+            .Subscribe(value => dataReceived.TrySetResult(value));
+
+        var data = await dataReceived.Task.WaitAsync(timeout);
 
         // Assert
-        Assert.NotNull(data.holdingRegisters);
-        Assert.NotNull(data.inputRegisters);
-        Assert.NotNull(data.coils);
-        Assert.NotNull(data.inputs);
+        _ = Assert.NotNull(data.holdingRegisters);
+        _ = Assert.NotNull(data.inputRegisters);
+        _ = Assert.NotNull(data.coils);
+        _ = Assert.NotNull(data.inputs);
     }
 
     /// <summary>Tests holding register observation.</summary>
@@ -341,6 +342,8 @@ public class ModbusServerTests
         ? TimeSpan.FromMilliseconds(normalTimeout.TotalMilliseconds * 0.5)
         : normalTimeout;
 
+    /// <summary>Gets an available TCP port from the loopback interface.</summary>
+    /// <returns>The available TCP port.</returns>
     private static int GetAvailablePort()
     {
         var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
@@ -350,9 +353,43 @@ public class ModbusServerTests
         return port;
     }
 
+    /// <summary>Gets an available UDP port from the loopback interface.</summary>
+    /// <returns>The available UDP port.</returns>
     private static int GetAvailableUdpPort()
     {
         using var udpClient = new CP.IO.Ports.UdpClientRx(0);
         return ((IPEndPoint)udpClient.Client.LocalEndPoint!).Port;
+    }
+
+    /// <summary>Sums the first values in an array.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <param name="count">The maximum number of values to sum.</param>
+    /// <returns>The sum of the requested values.</returns>
+    private static long SumFirst(ushort[] values, int count)
+    {
+        var total = 0L;
+        var length = Math.Min(values.Length, count);
+        for (var i = 0; i < length; i++)
+        {
+            total += values[i];
+        }
+
+        return total;
+    }
+
+    /// <summary>Determines whether any value is positive.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <returns>A value indicating whether any value is positive.</returns>
+    private static bool ContainsPositiveValue(ushort[] values)
+    {
+        foreach (var value in values)
+        {
+            if (value > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

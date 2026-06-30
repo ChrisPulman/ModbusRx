@@ -1,23 +1,22 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
-/// <summary>
-///     Data story factory.
-/// </summary>
+/// <summary>Data story factory.</summary>
 public static class DataStoreFactory
 {
-    /// <summary>
-    /// Factory method for default data store - register values set to 0 and discrete values set to false.
-    /// </summary>
+    /// <summary>Factory method for default data store - register values set to 0 and discrete values set to false.</summary>
     /// <returns>A DataStore.</returns>
     public static DataStore CreateDefaultDataStore() =>
         CreateDefaultDataStore(ushort.MaxValue, ushort.MaxValue, ushort.MaxValue, ushort.MaxValue);
 
-    /// <summary>
-    ///     Factory method for default data store - register values set to 0 and discrete values set to false.
-    /// </summary>
+    /// <summary>Factory method for default data store - register values set to 0 and discrete values set to false.</summary>
     /// <param name="coilsCount">Number of discrete coils.</param>
     /// <param name="inputsCount">Number of discrete inputs.</param>
     /// <param name="holdingRegistersCount">Number of holding registers.</param>
@@ -33,9 +32,8 @@ public static class DataStoreFactory
         return new DataStore(coils, inputs, holdingRegs, inputRegs);
     }
 
-    /// <summary>
-    ///     Factory method for test data store.
-    /// </summary>
+    /// <summary>Factory method for test data store.</summary>
+    /// <returns>The result.</returns>
     internal static DataStore CreateTestDataStore()
     {
         var dataStore = new DataStore();

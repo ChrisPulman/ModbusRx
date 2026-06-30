@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Linq;
 using System.Reflection;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ModbusMessageFixture.
-/// </summary>
+/// <summary>Tests the ModbusMessageFixture behavior.</summary>
 public class ModbusMessageFixture
 {
-    /// <summary>
-    /// Protocols the data unit read coils request.
-    /// </summary>
+    /// <summary>Protocols the data unit read coils request.</summary>
     [TUnit.Core.Test]
     public void ProtocolDataUnitReadCoilsRequest()
     {
@@ -24,9 +20,7 @@ public class ModbusMessageFixture
         Assert.Equal(expectedResult, message.ProtocolDataUnit);
     }
 
-    /// <summary>
-    /// Messages the frame read coils request.
-    /// </summary>
+    /// <summary>Messages the frame read coils request.</summary>
     [TUnit.Core.Test]
     public void MessageFrameReadCoilsRequest()
     {
@@ -35,9 +29,7 @@ public class ModbusMessageFixture
         Assert.Equal(expectedMessageFrame, message.MessageFrame);
     }
 
-    /// <summary>
-    /// Modbuses the message to string overriden.
-    /// </summary>
+    /// <summary>Modbuses the message to string overriden.</summary>
     [TUnit.Core.Test]
     public void ModbusMessageToStringOverriden()
     {
@@ -48,14 +40,12 @@ public class ModbusMessageFixture
 
         foreach (var messageType in messageTypes)
         {
-            Assert.NotNull(
+            _ = Assert.NotNull(
                 messageType.GetMethod("ToString", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly));
         }
     }
 
-    /// <summary>
-    /// Asserts the modbus message properties are equal.
-    /// </summary>
+    /// <summary>Asserts the modbus message properties are equal.</summary>
     /// <param name="obj1">The obj1.</param>
     /// <param name="obj2">The obj2.</param>
     internal static void AssertModbusMessagePropertiesAreEqual(IModbusMessage obj1, IModbusMessage obj2)

@@ -1,26 +1,22 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Data;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// NModbusUdpSlaveFixture.
-/// </summary>
-[Collection("NetworkTests")]
-public class ModbusRxUdpSlaveFixture : NetworkTestBase
+/// <summary>Tests the NModbusUdpSlaveFixture behavior.</summary>
+public sealed class ModbusRxUdpSlaveFixture : NetworkTestBase
 {
-    /// <summary>
-    /// Modbuses the UDP slave ensure the slave shuts down cleanly.
-    /// </summary>
+    /// <summary>Modbuses the UDP slave ensure the slave shuts down cleanly.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusUdpSlave_EnsureTheSlaveShutsDownCleanly()
@@ -35,7 +31,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         var slaveStarted = false;
 
         // Act
-        var backgroundTask = Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {
@@ -69,9 +65,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         Assert.True(slaveStarted);
     }
 
-    /// <summary>
-    /// Modbuses the UDP slave not bound.
-    /// </summary>
+    /// <summary>Modbuses the UDP slave not bound.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusUdpSlave_NotBound()
@@ -86,16 +80,13 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await slave.ListenAsync());
     }
 
-    /// <summary>
-    /// Modbuses the UDP slave multiple masters.
-    /// </summary>
+    /// <summary>Modbuses the UDP slave multiple masters.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusUdpSlave_MultipleMasters()
     {
         // Arrange
         var port = await GetAvailablePortAsync();
-        var randomNumberGenerator = new Random();
         var master1Complete = false;
         var master2Complete = false;
 
@@ -120,10 +111,10 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         {
             for (var i = 0; i < 5; i++)
             {
-                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(randomNumberGenerator.Next(1000)));
+                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(1_000)));
                 await Task.Delay(delay, CancellationToken);
                 Debug.WriteLine("Read from master 1");
-                Assert.Equal(new ushort[] { 2, 3, 4, 5, 6 }, await master1.ReadHoldingRegistersAsync(1, 5));
+                Assert.Equal([ 2, 3, 4, 5, 6], await master1.ReadHoldingRegistersAsync(1, 5));
             }
 
             master1Complete = true;
@@ -133,10 +124,10 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         {
             for (var i = 0; i < 5; i++)
             {
-                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(randomNumberGenerator.Next(1000)));
+                var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(1_000)));
                 await Task.Delay(delay, CancellationToken);
                 Debug.WriteLine("Read from master 2");
-                Assert.Equal(new ushort[] { 3, 4, 5, 6, 7 }, await master2.ReadHoldingRegistersAsync(2, 5));
+                Assert.Equal([ 3, 4, 5, 6, 7], await master2.ReadHoldingRegistersAsync(2, 5));
             }
 
             master2Complete = true;
@@ -149,9 +140,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         Assert.True(master2Complete);
     }
 
-    /// <summary>
-    /// Modbuses the UDP slave multi threaded.
-    /// </summary>
+    /// <summary>Modbuses the UDP slave multi threaded.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusUdpSlave_MultiThreaded()
@@ -171,9 +160,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         await Task.WhenAll(workerTask1, workerTask2);
     }
 
-    /// <summary>
-    /// Reads from the specified port asynchronously.
-    /// </summary>
+    /// <summary>Reads from the specified port asynchronously.</summary>
     /// <param name="port">The port to connect to.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task ReadThreadAsync(int port)
@@ -184,21 +171,18 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         using var master = ModbusIpMaster.CreateIp(masterClient);
         master.Transport!.Retries = 0;
 
-        var random = new Random();
         for (var i = 0; i < 5; i++)
         {
             var coils = await master.ReadCoilsAsync(1, 1);
-            Assert.Single(coils);
+            _ = Assert.Single(coils);
             Debug.WriteLine($"{Environment.CurrentManagedThreadId}: Reading coil value");
-            
-            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(random.Next(100)));
+
+            var delay = GetEnvironmentAppropriateTimeout(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(100)));
             await Task.Delay(delay, CancellationToken);
         }
     }
 
-    /// <summary>
-    /// Creates and starts a UDP slave asynchronously.
-    /// </summary>
+    /// <summary>Creates and starts a UDP slave asynchronously.</summary>
     /// <param name="port">The port to listen on.</param>
     /// <param name="dataStore">The data store to use.</param>
     /// <returns>The UDP client used by the slave.</returns>
@@ -209,7 +193,7 @@ public class ModbusRxUdpSlaveFixture : NetworkTestBase
         slave.DataStore = dataStore;
         RegisterDisposable(slave);
 
-        var slaveTask = Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {

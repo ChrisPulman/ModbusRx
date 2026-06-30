@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReturnQueryDataRequestResponseFixture.
-/// </summary>
+/// <summary>Tests the ReturnQueryDataRequestResponseFixture behavior.</summary>
 public class ReturnQueryDataRequestResponseFixture
 {
-    /// <summary>
-    /// Returns the query data request response.
-    /// </summary>
+    /// <summary>Returns the query data request response.</summary>
     [TUnit.Core.Test]
     public void ReturnQueryDataRequestResponse()
     {
@@ -26,14 +22,12 @@ public class ReturnQueryDataRequestResponseFixture
         Assert.Equal(data.NetworkBytes, request.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Protocols the data unit.
-    /// </summary>
+    /// <summary>Protocols the data unit.</summary>
     [TUnit.Core.Test]
     public void ProtocolDataUnit()
     {
         var data = new RegisterCollection(1, 2, 3, 4);
         var request = new DiagnosticsRequestResponse(Modbus.DiagnosticsReturnQueryData, 5, data);
-        Assert.Equal(new byte[] { 8, 0, 0, 0, 1, 0, 2, 0, 3, 0, 4 }, request.ProtocolDataUnit);
+        Assert.Equal([ 8, 0, 0, 0, 1, 0, 2, 0, 3, 0, 4], request.ProtocolDataUnit);
     }
 }

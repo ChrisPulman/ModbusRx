@@ -29,358 +29,24 @@ namespace ModbusRx.Reactive
 namespace ModbusRx
 #endif
 {
-    /// <summary>ModbusRx.</summary>
+    /// <summary>Provides ModbusRx functionality.</summary>
     public static class Create
     {
         /// <summary>Gets or sets the ping interval.</summary>
-        /// <value>
-        /// The ping interval.
-        /// </value>
+        /// <value>The ping interval.</value>
         public static TimeSpan PingInterval { get; set; } = TimeSpan.FromSeconds(10);
 
         /// <summary>Gets or sets the check connection interval.</summary>
-        /// <value>
-        /// The check connection interval.
-        /// </value>
+        /// <value>The check connection interval.</value>
         public static TimeSpan CheckConnectionInterval { get; set; } = TimeSpan.FromSeconds(5);
 
-        /// <summary>Convert ushort span to float with high-performance operations.</summary>
-        /// <param name="inputs">The inputs span.</param>
-        /// <param name="start">The start index.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <returns>A float value or null if insufficient data.</returns>
-        public static float? ToFloat(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
-        {
-            return inputs.Length < start + 2 ? null : ModbusUtility.ReadSingle(inputs[start..], swapWords);
-        }
-
-        /// <summary>Convert ushort array to float.</summary>
-        /// <param name="inputs">The inputs.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <returns>
-        /// A float.
-        /// </returns>
-        public static float? ToFloat(this ushort[]? inputs, int start, bool swapWords = true)
-        {
-            return inputs is null || inputs.Length < start + 2 ? null : inputs.AsSpan().ToFloat(start, swapWords);
-        }
-
-        /// <summary>Convert ushort span to double with high-performance operations.</summary>
-        /// <param name="inputs">The inputs span.</param>
-        /// <param name="start">The start index.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <returns>A double value or null if insufficient data.</returns>
-        public static double? ToDouble(this ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
-        {
-            return inputs.Length < start + 4 ? null : ModbusUtility.ReadDouble(inputs[start..], swapWords);
-        }
-
-        /// <summary>Converts to double.</summary>
-        /// <param name="inputs">The inputs.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <returns>A double.</returns>
-        public static double? ToDouble(this ushort[]? inputs, int start, bool swapWords = true)
-        {
-            return inputs is null || inputs.Length < start + 4 ? null : inputs.AsSpan().ToDouble(start, swapWords);
-        }
-
-        /// <summary>Write float to ushort span with high-performance operations.</summary>
-        /// <param name="input">The input value.</param>
-        /// <param name="output">The output span.</param>
-        /// <param name="start">The start index.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
-        public static void FromFloat(this float input, Span<ushort> output, int start, bool swapWords = true)
-        {
-            if (output.Length < start + 2)
-            {
-                throw new ArgumentException("Output span is too small.", nameof(output));
-            }
-
-            ModbusUtility.WriteSingle(input, output[start..], swapWords);
-        }
-
-        /// <summary>Froms the float.</summary>
-        /// <param name="input">The input.</param>
-        /// <param name="output">The output.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        public static void FromFloat(this float input, ushort[] output, int start, bool swapWords = true)
-        {
-            if (output is null || output.Length < start + 2)
-            {
-                return;
-            }
-
-            input.FromFloat(output.AsSpan(), start, swapWords);
-        }
-
-        /// <summary>Write double to ushort span with high-performance operations.</summary>
-        /// <param name="input">The input value.</param>
-        /// <param name="output">The output span.</param>
-        /// <param name="start">The start index.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
-        public static void FromDouble(this double input, Span<ushort> output, int start, bool swapWords = true)
-        {
-            if (output.Length < start + 4)
-            {
-                throw new ArgumentException("Output span is too small.", nameof(output));
-            }
-
-            ModbusUtility.WriteDouble(input, output[start..], swapWords);
-        }
-
-        /// <summary>Froms the double.</summary>
-        /// <param name="input">The input.</param>
-        /// <param name="output">The output.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
-        public static void FromDouble(this double input, ushort[] output, int start, bool swapWords = true)
-        {
-            if (output is null || output.Length < start + 4)
-            {
-                return;
-            }
-
-            input.FromDouble(output.AsSpan(), start, swapWords);
-        }
-
-        /// <summary>Observes the data store written to.</summary>
-        /// <param name="slave">The slave.</param>
-        /// <returns>An Observable of DataStoreEventArgs.</returns>
-        public static IObservable<DataStoreEventArgs> ObserveDataStoreReadFrom(this ModbusSlave slave) =>
-            Observable.FromEventPattern<DataStoreEventArgs>(
-                handler => slave.DataStore.DataStoreReadFrom += handler,
-                handler => slave.DataStore.DataStoreReadFrom -= handler)
-                .Select(pattern => pattern.EventArgs);
-
-        /// <summary>Observes the data store written to.</summary>
-        /// <param name="slave">The slave.</param>
-        /// <returns>An Observable of DataStoreEventArgs.</returns>
-        public static IObservable<DataStoreEventArgs> ObserveDataStoreWrittenTo(this ModbusSlave slave) =>
-            Observable.FromEventPattern<DataStoreEventArgs>(
-                handler => slave.DataStore.DataStoreWrittenTo += handler,
-                handler => slave.DataStore.DataStoreWrittenTo -= handler)
-                .Select(pattern => pattern.EventArgs);
-
-        /// <summary>Observes the request.</summary>
-        /// <param name="slave">The slave.</param>
-        /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
-        public static IObservable<ModbusSlaveRequestEventArgs> ObserveRequest(this ModbusSlave slave) =>
-            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
-                handler => slave.ModbusSlaveRequestReceived += handler,
-                handler => slave.ModbusSlaveRequestReceived -= handler)
-                .Select(pattern => pattern.EventArgs);
-
-        /// <summary>Observes the write complete.</summary>
-        /// <param name="slave">The slave.</param>
-        /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
-        public static IObservable<ModbusSlaveRequestEventArgs> ObserveWriteComplete(this ModbusSlave slave) =>
-            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
-                handler => slave.WriteComplete += handler,
-                handler => slave.WriteComplete -= handler)
-                .Select(pattern => pattern.EventArgs);
-
-        /// <summary>Reads the input registers.</summary>
-        /// <param name="source">The source.</param>
-        /// <param name="startAddress">The start address.</param>
-        /// <param name="numberOfPoints">The number of points.</param>
-        /// <param name="interval">The interval.</param>
-        /// <returns>
-        /// A Observable of ushort.
-        /// </returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
-            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
-                {
-                    var isConnected = false;
-                    var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry(int.MaxValue)
-                    .Subscribe(
-                        async modbus =>
-                        {
-                            try
-                            {
-                                isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error is null)
-                                {
-                                    var result = await modbus.master!.ReadInputRegistersAsync(startAddress, numberOfPoints);
-                                    if (result is not null)
-                                    {
-                                        observer.OnNext((result, modbus.error));
-                                    }
-                                }
-                                else
-                                {
-                                    observer.OnNext((null, modbus.error));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Asume the connection is broken.
-                                modbus.master?.Dispose();
-                                modbus.master = null;
-                                isConnected = false;
-                                observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
-                            }
-                        },
-                        (exception) => observer.OnError(exception));
-                    return Disposable.Create(() => subscription.Dispose());
-                }).Retry(int.MaxValue);
-
-        /// <summary>Reads the holding registers.</summary>
-        /// <param name="source">The source.</param>
-        /// <param name="startAddress">The start address.</param>
-        /// <param name="numberOfPoints">The number of points.</param>
-        /// <param name="interval">The interval.</param>
-        /// <returns>
-        /// A Observable of ushort.
-        /// </returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
-            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
-                {
-                    var isConnected = false;
-                    var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry(int.MaxValue)
-                    .Subscribe(
-                        async modbus =>
-                        {
-                            Console.WriteLine($"ReadHoldingRegisters polling: connected={modbus.connected}, error={modbus.error?.Message}");
-                            try
-                            {
-                                isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error is null)
-                                {
-                                    var result = await modbus.master!.ReadHoldingRegistersAsync(startAddress, numberOfPoints);
-                                    if (result is not null)
-                                    {
-                                        observer.OnNext((result, modbus.error));
-                                    }
-                                }
-                                else
-                                {
-                                    observer.OnNext((null, modbus.error));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Asume the connection is broken.
-                                modbus.master?.Dispose();
-                                modbus.master = null;
-                                isConnected = false;
-                                Console.WriteLine($"ReadHoldingRegisters error: {ex.Message}");
-                                observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
-                            }
-                        },
-                        (exception) => observer.OnError(exception));
-                    return Disposable.Create(() => subscription.Dispose());
-                }).Retry(int.MaxValue);
-
-        /// <summary>Reads the coils.</summary>
-        /// <param name="source">The source.</param>
-        /// <param name="startAddress">The start address.</param>
-        /// <param name="numberOfPoints">The number of points.</param>
-        /// <param name="interval">The interval.</param>
-        /// <returns>
-        /// A Observable of bool.
-        /// </returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
-            Observable.Create<(bool[]? data, Exception? error)>(observer =>
-                {
-                    var isConnected = false;
-                    var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry(int.MaxValue)
-                    .Subscribe(
-                        async modbus =>
-                        {
-                            try
-                            {
-                                isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error is null)
-                                {
-                                    var result = await modbus.master!.ReadCoilsAsync(startAddress, numberOfPoints);
-                                    if (result is not null)
-                                    {
-                                        observer.OnNext((result, modbus.error));
-                                    }
-                                }
-                                else
-                                {
-                                    observer.OnNext((null, modbus.error));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Asume the connection is broken.
-                                modbus.master?.Dispose();
-                                modbus.master = null;
-                                isConnected = false;
-                                observer.OnError(new ModbusCommunicationException("Read Coils Error", ex));
-                            }
-                        },
-                        (exception) => observer.OnError(exception));
-                    return Disposable.Create(() => subscription.Dispose());
-                }).Retry(int.MaxValue);
-
-        /// <summary>Reads the coils.</summary>
-        /// <param name="source">The source.</param>
-        /// <param name="startAddress">The start address.</param>
-        /// <param name="numberOfPoints">The number of points.</param>
-        /// <param name="interval">The interval.</param>
-        /// <returns>
-        /// A Observable of bool.
-        /// </returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
-            Observable.Create<(bool[]? data, Exception? error)>(observer =>
-                {
-                    var isConnected = false;
-                    var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry(int.MaxValue)
-                    .Subscribe(
-                        async modbus =>
-                        {
-                            try
-                            {
-                                isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error is null)
-                                {
-                                    var result = await modbus.master!.ReadInputsAsync(startAddress, numberOfPoints);
-                                    if (result is not null)
-                                    {
-                                        observer.OnNext((result, modbus.error));
-                                    }
-                                }
-                                else
-                                {
-                                    observer.OnNext((null, modbus.error));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Asume the connection is broken.
-                                modbus.master?.Dispose();
-                                modbus.master = null;
-                                isConnected = false;
-                                observer.OnError(new ModbusCommunicationException("Read Inputs Error", ex));
-                            }
-                        },
-                        (exception) => observer.OnError(exception));
-                    return Disposable.Create(() => subscription.Dispose());
-                }).Retry(int.MaxValue);
-
-        /// <summary>Create a TcpIpMaster with the specified ip address.</summary>
-        /// <param name="ipAddress">The ip address.</param>
+        /// <summary>Create a TcpIpMaster with the specified host address.</summary>
+        /// <param name="hostAddress">The host address.</param>
         /// <param name="port">The port.</param>
         /// <returns>
         /// The master and connection status.
         /// </returns>
-        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> TcpIpMaster(string ipAddress, int port = 502) =>
+        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> TcpIpMaster(string hostAddress, int port = 502) =>
             Observable.Create<(bool connected, Exception? error, ModbusIpMaster? master)>(observer =>
             {
                 var dis = new CompositeDisposable();
@@ -409,7 +75,7 @@ namespace ModbusRx
 
                 dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
-                    .Select(_ => pingSender.SendPingAsync(ipAddress, 1000))
+                    .Select(_ => pingSender.SendPingAsync(hostAddress, 1000))
                     .Select(x =>
                     {
                         var res = default(PingReply);
@@ -425,7 +91,7 @@ namespace ModbusRx
                                 if (master is null && res?.Status == IPStatus.Success)
                                 {
                                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                                    master = ModbusIpMaster.CreateIp(new TcpClientRx(ipAddress, port));
+                                    master = ModbusIpMaster.CreateIp(new TcpClientRx(hostAddress, port));
                                     dis.Add(master);
                                     connected = true;
                                     connectionMessageSent = false;
@@ -447,24 +113,24 @@ namespace ModbusRx
             }).Publish().RefCount();
 
         /// <summary>TCPs the ip slave.</summary>
-        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="hostAddress">The host address.</param>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
         /// <returns>An Observable of.</returns>
-        /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
+        /// <exception cref="ArgumentNullException">nameof(hostAddress).</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// nameof(port)
         /// or
         /// nameof(unitId).
         /// </exception>
-        public static IObservable<ModbusTcpSlave> TcpIpSlave(string ipAddress, int port = 502, byte unitId = 1)
+        public static IObservable<ModbusTcpSlave> TcpIpSlave(string hostAddress, int port = 502, byte unitId = 1)
         {
-            if (string.IsNullOrWhiteSpace(ipAddress))
+            if (string.IsNullOrWhiteSpace(hostAddress))
             {
-                throw new ArgumentOutOfRangeException(nameof(ipAddress));
+                throw new ArgumentOutOfRangeException(nameof(hostAddress));
             }
 
-            if (port < 0 || port > 65535)
+            if (port < 0 || port > 65_535)
             {
                 throw new ArgumentOutOfRangeException(nameof(port));
             }
@@ -477,7 +143,7 @@ namespace ModbusRx
             return Observable.Create<ModbusTcpSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
-                 var address = IPAddress.Parse(ipAddress);
+                 var address = IPAddress.Parse(hostAddress);
                  var slaveListener = new TcpListener(address, 502);
                  using var slave = ModbusTcpSlave.CreateTcp(1, slaveListener);
                  dis.Add(slave);
@@ -492,13 +158,13 @@ namespace ModbusRx
              }).Retry(int.MaxValue).Publish().RefCount();
         }
 
-        /// <summary>Create a UdpIpMaster with the specified ip address.</summary>
-        /// <param name="ipAddress">The ip address.</param>
+        /// <summary>Create a UdpIpMaster with the specified host address.</summary>
+        /// <param name="hostAddress">The host address.</param>
         /// <param name="port">The port.</param>
         /// <returns>
         /// The master and connection status.
         /// </returns>
-        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> UdpIpMaster(string ipAddress, int port = 502) =>
+        public static IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> UdpIpMaster(string hostAddress, int port = 502) =>
             Observable.Create<(bool connected, Exception? error, ModbusIpMaster? master)>(observer =>
             {
                 var dis = new CompositeDisposable();
@@ -527,7 +193,7 @@ namespace ModbusRx
 
                 dis.Add(Observable.Timer(CheckConnectionInterval, PingInterval)
                     .Where(_ => !connected)
-                    .Select(_ => pingSender.SendPingAsync(ipAddress, 1000))
+                    .Select(_ => pingSender.SendPingAsync(hostAddress, 1000))
                     .Select(x =>
                     {
                         var res = default(PingReply);
@@ -543,7 +209,7 @@ namespace ModbusRx
                                 if (master is null && res?.Status == IPStatus.Success)
                                 {
                                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
-                                    master = ModbusIpMaster.CreateIp(new UdpClientRx(ipAddress, port));
+                                    master = ModbusIpMaster.CreateIp(new UdpClientRx(hostAddress, port));
                                     dis.Add(master);
                                     connected = true;
                                     connectionMessageSent = false;
@@ -566,24 +232,24 @@ namespace ModbusRx
             }).Publish().RefCount();
 
         /// <summary>Creates an UdpIp slave.</summary>
-        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="hostAddress">The host address.</param>
         /// <param name="port">The port.</param>
         /// <param name="unitId">The unit identifier.</param>
         /// <returns>An Observable of.</returns>
-        /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
+        /// <exception cref="ArgumentNullException">nameof(hostAddress).</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// nameof(port)
         /// or
         /// nameof(unitId).
         /// </exception>
-        public static IObservable<ModbusUdpSlave> UdpIpSlave(string ipAddress, int port = 502, byte unitId = 1)
+        public static IObservable<ModbusUdpSlave> UdpIpSlave(string hostAddress, int port = 502, byte unitId = 1)
         {
-            if (string.IsNullOrWhiteSpace(ipAddress))
+            if (string.IsNullOrWhiteSpace(hostAddress))
             {
-                throw new ArgumentOutOfRangeException(nameof(ipAddress));
+                throw new ArgumentOutOfRangeException(nameof(hostAddress));
             }
 
-            if (port < 0 || port > 65535)
+            if (port < 0 || port > 65_535)
             {
                 throw new ArgumentOutOfRangeException(nameof(port));
             }
@@ -596,7 +262,7 @@ namespace ModbusRx
             return Observable.Create<ModbusUdpSlave>(async observer =>
              {
                  var dis = new CompositeDisposable();
-                 using var slave = ModbusUdpSlave.CreateUdp(unitId, new UdpClientRx(ipAddress, port));
+                 using var slave = ModbusUdpSlave.CreateUdp(unitId, new UdpClientRx(hostAddress, port));
                  await slave.ListenAsync();
                  dis.Add(slave);
                  observer.OnNext(slave);
@@ -642,7 +308,7 @@ namespace ModbusRx
                 {
                     try
                     {
-                        if (comdis?.Count == 0 && x.Contains(port))
+                        if (comdis?.Count == 0 && ContainsPortName(x, port))
                         {
                             observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                             var serialport = new SerialPortRx(port, baudRate);
@@ -687,13 +353,8 @@ namespace ModbusRx
         /// <param name="parity">The parity.</param>
         /// <param name="stopBits">The stop bits.</param>
         /// <param name="handshake">The handshake.</param>
-        /// <returns>
-        /// An Observable of.
-        /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">nameof(port)
-        /// or
-        /// nameof(unitId).</exception>
-        /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
+        /// <returns>An observable of serial RTU slave instances.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> or <paramref name="unitId"/> is invalid.</exception>
         public static IObservable<ModbusSerialSlave> SerialRtuSlave(string port, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
         {
             if (string.IsNullOrWhiteSpace(port))
@@ -715,7 +376,7 @@ namespace ModbusRx
                 {
                     try
                     {
-                        if (comdis?.Count == 0 && x.Contains(port))
+                        if (comdis?.Count == 0 && ContainsPortName(x, port))
                         {
                             var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateRtu(unitId, serialport);
@@ -761,13 +422,8 @@ namespace ModbusRx
         /// <param name="parity">The parity.</param>
         /// <param name="stopBits">The stop bits.</param>
         /// <param name="handshake">The handshake.</param>
-        /// <returns>
-        /// An Observable of.
-        /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">nameof(port)
-        /// or
-        /// nameof(unitId).</exception>
-        /// <exception cref="ArgumentNullException">nameof(ipAddress).</exception>
+        /// <returns>An observable of serial ASCII slave instances.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> or <paramref name="unitId"/> is invalid.</exception>
         public static IObservable<ModbusSerialSlave> SerialAsciiSlave(string port, byte unitId = 1, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None, StopBits stopBits = StopBits.One, Handshake handshake = Handshake.None)
         {
             if (string.IsNullOrWhiteSpace(port))
@@ -789,7 +445,7 @@ namespace ModbusRx
                 {
                     try
                     {
-                        if (comdis?.Count == 0 && x.Contains(port))
+                        if (comdis?.Count == 0 && ContainsPortName(x, port))
                         {
                             var serialport = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                             var slave = ModbusSerialSlave.CreateAscii(unitId, serialport);
@@ -880,7 +536,7 @@ namespace ModbusRx
                     observer.OnNext((false, new ModbusCommunicationException("Create Master"), null));
                     var serial = CreateSerialPort(port, baudRate, dataBits, parity, stopBits, handshake);
                     await serial.Open();
-                    serial.ReadTimeout = 10000; // Set timeout to 10 seconds
+                    serial.ReadTimeout = 10_000; // Set timeout to 10 seconds
                     master = ModbusSerialMaster.CreateRtu(serial);
                     connected = true;
                     connectionMessageSent = false;
@@ -965,6 +621,118 @@ namespace ModbusRx
                 return dis;
             }).Publish().RefCount();
 
+        /// <summary>Reads holding registers from a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="slaveAddress">The Modbus slave address.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadHoldingRegistersCore(source, slaveAddress, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads input registers from a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="slaveAddress">The Modbus slave address.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputRegistersCore(source, slaveAddress, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads coils from a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="slaveAddress">The Modbus slave address.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadCoilsCore(source, slaveAddress, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads discrete inputs from a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="slaveAddress">The Modbus slave address.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputsCore(source, slaveAddress, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads holding registers from slave address 1 on a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadHoldingRegistersCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads input registers from slave address 1 on a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputRegistersCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads coils from slave address 1 on a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadCoilsCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads discrete inputs from slave address 1 on a serial master stream.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputsCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads holding registers from an IP master stream.</summary>
+        /// <param name="source">The source IP master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadHoldingRegistersCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads input registers from an IP master stream.</summary>
+        /// <param name="source">The source IP master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputRegistersCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads coils from an IP master stream.</summary>
+        /// <param name="source">The source IP master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadCoilsCore(source, startAddress, numberOfPoints, interval);
+
+        /// <summary>Reads discrete inputs from an IP master stream.</summary>
+        /// <param name="source">The source IP master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            ReadInputsCore(source, startAddress, numberOfPoints, interval);
+
         /// <summary>Reads the holding registers using a reactive serial master stream.</summary>
         /// <param name="source">The source serial master stream.</param>
         /// <param name="slaveAddress">The Modbus slave address.</param>
@@ -972,7 +740,7 @@ namespace ModbusRx
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegistersCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1021,7 +789,7 @@ namespace ModbusRx
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadInputRegistersCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1070,7 +838,7 @@ namespace ModbusRx
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadCoilsCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1119,7 +887,7 @@ namespace ModbusRx
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadInputsCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, byte slaveAddress, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
@@ -1167,11 +935,386 @@ namespace ModbusRx
         /// <param name="numberOfPoints">The number of points to read.</param>
         /// <param name="interval">The polling interval in milliseconds.</param>
         /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegistersCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(ushort[]? data, Exception? error)>(observer =>
             {
                 var isConnected = false;
                 var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry(int.MaxValue)
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            IModbusSerialMaster? master = null;
+                            Console.WriteLine($"ReadHoldingRegisters polling: connected={modbus.connected}, error={modbus.error?.Message}");
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                master = modbus.master;
+                                if (modbus.connected && modbus.error is null && master is not null)
+                                {
+                                    var result = await master.ReadHoldingRegistersAsync(1, startAddress, numberOfPoints);
+                                    if (result is not null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Asume the connection is broken.
+                                master?.Dispose();
+                                isConnected = false;
+                                Console.WriteLine($"ReadHoldingRegisters error: {ex.Message}");
+                                observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
+                            }
+                        },
+                        exception => observer.OnError(exception));
+                return Disposable.Create(() => subscription.Dispose());
+            }).Retry(int.MaxValue);
+
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputRegisters.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadInputRegistersCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
+            {
+                var isConnected = false;
+                var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry(int.MaxValue)
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            IModbusSerialMaster? master = null;
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                master = modbus.master;
+                                if (modbus.connected && modbus.error is null && master is not null)
+                                {
+                                    var result = await master.ReadInputRegistersAsync(1, startAddress, numberOfPoints);
+                                    if (result is not null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Asume the connection is broken.
+                                master?.Dispose();
+                                isConnected = false;
+                                observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
+                            }
+                        },
+                        exception => observer.OnError(exception));
+                return Disposable.Create(() => subscription.Dispose());
+            }).Retry(int.MaxValue);
+
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadCoils.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadCoilsCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(bool[]? data, Exception? error)>(observer =>
+            {
+                var isConnected = false;
+                var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry(int.MaxValue)
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            IModbusSerialMaster? master = null;
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                master = modbus.master;
+                                if (modbus.connected && modbus.error is null && master is not null)
+                                {
+                                    var result = await master.ReadCoilsAsync(1, startAddress, numberOfPoints);
+                                    if (result is not null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Asume the connection is broken.
+                                master?.Dispose();
+                                isConnected = false;
+                                observer.OnError(new ModbusCommunicationException("Read Coils Error", ex));
+                            }
+                        },
+                        exception => observer.OnError(exception));
+                return Disposable.Create(() => subscription.Dispose());
+            }).Retry(int.MaxValue);
+
+        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputs.</summary>
+        /// <param name="source">The source serial master stream.</param>
+        /// <param name="startAddress">The starting address.</param>
+        /// <param name="numberOfPoints">The number of points to read.</param>
+        /// <param name="interval">The polling interval in milliseconds.</param>
+        /// <returns>An observable sequence producing the result data or error.</returns>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadInputsCore(IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(bool[]? data, Exception? error)>(observer =>
+            {
+                var isConnected = false;
+                var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry(int.MaxValue)
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            IModbusSerialMaster? master = null;
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                master = modbus.master;
+                                if (modbus.connected && modbus.error is null && master is not null)
+                                {
+                                    var result = await master.ReadInputsAsync(1, startAddress, numberOfPoints);
+                                    if (result is not null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Asume the connection is broken.
+                                master?.Dispose();
+                                isConnected = false;
+                                observer.OnError(new ModbusCommunicationException("Read Inputs Error", ex));
+                            }
+                        },
+                        exception => observer.OnError(exception));
+                return Disposable.Create(() => subscription.Dispose());
+            }).Retry(int.MaxValue);
+
+        /// <summary>Convert ushort span to float with high-performance operations.</summary>
+        /// <param name="inputs">The inputs span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A float value or null if insufficient data.</returns>
+        internal static float? ToFloatCore(ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
+        {
+            return inputs.Length < start + 2 ? null : ModbusUtility.ReadSingle(inputs[start..], swapWords);
+        }
+
+        /// <summary>Convert ushort array to float.</summary>
+        /// <param name="inputs">The inputs.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>
+        /// A float.
+        /// </returns>
+        internal static float? ToFloatCore(ushort[]? inputs, int start, bool swapWords = true)
+        {
+            return inputs is null || inputs.Length < start + 2 ? null : inputs.AsSpan().ToFloat(start, swapWords);
+        }
+
+        /// <summary>Convert ushort span to double with high-performance operations.</summary>
+        /// <param name="inputs">The inputs span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A double value or null if insufficient data.</returns>
+        internal static double? ToDoubleCore(ReadOnlySpan<ushort> inputs, int start, bool swapWords = true)
+        {
+            return inputs.Length < start + 4 ? null : ModbusUtility.ReadDouble(inputs[start..], swapWords);
+        }
+
+        /// <summary>Converts to double.</summary>
+        /// <param name="inputs">The inputs.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <returns>A double.</returns>
+        internal static double? ToDoubleCore(ushort[]? inputs, int start, bool swapWords = true)
+        {
+            return inputs is null || inputs.Length < start + 4 ? null : inputs.AsSpan().ToDouble(start, swapWords);
+        }
+
+        /// <summary>Write float to ushort span with high-performance operations.</summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="output">The output span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
+        internal static void FromFloatCore(float input, Span<ushort> output, int start, bool swapWords = true)
+        {
+            if (output.Length < start + 2)
+            {
+                throw new ArgumentException("Output span is too small.", nameof(output));
+            }
+
+            ModbusUtility.WriteSingle(input, output[start..], swapWords);
+        }
+
+        /// <summary>Froms the float.</summary>
+        /// <param name="input">The input.</param>
+        /// <param name="output">The output.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        internal static void FromFloatCore(float input, ushort[] output, int start, bool swapWords = true)
+        {
+            if (output is null || output.Length < start + 2)
+            {
+                return;
+            }
+
+            input.FromFloat(output.AsSpan(), start, swapWords);
+        }
+
+        /// <summary>Write double to ushort span with high-performance operations.</summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="output">The output span.</param>
+        /// <param name="start">The start index.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        /// <exception cref="ArgumentException">Thrown when output span is too small.</exception>
+        internal static void FromDoubleCore(double input, Span<ushort> output, int start, bool swapWords = true)
+        {
+            if (output.Length < start + 4)
+            {
+                throw new ArgumentException("Output span is too small.", nameof(output));
+            }
+
+            ModbusUtility.WriteDouble(input, output[start..], swapWords);
+        }
+
+        /// <summary>Froms the double.</summary>
+        /// <param name="input">The input.</param>
+        /// <param name="output">The output.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="swapWords">if set to <c>true</c> [swap words].</param>
+        internal static void FromDoubleCore(double input, ushort[] output, int start, bool swapWords = true)
+        {
+            if (output is null || output.Length < start + 4)
+            {
+                return;
+            }
+
+            input.FromDouble(output.AsSpan(), start, swapWords);
+        }
+
+        /// <summary>Observes the data store written to.</summary>
+        /// <param name="slave">The slave.</param>
+        /// <returns>An Observable of DataStoreEventArgs.</returns>
+        internal static IObservable<DataStoreEventArgs> ObserveDataStoreReadFromCore(ModbusSlave slave) =>
+            Observable.FromEventPattern<DataStoreEventArgs>(
+                handler => slave.DataStore.DataStoreReadFrom += handler,
+                handler => slave.DataStore.DataStoreReadFrom -= handler)
+                .Select(pattern => pattern.EventArgs);
+
+        /// <summary>Observes the data store written to.</summary>
+        /// <param name="slave">The slave.</param>
+        /// <returns>An Observable of DataStoreEventArgs.</returns>
+        internal static IObservable<DataStoreEventArgs> ObserveDataStoreWrittenToCore(ModbusSlave slave) =>
+            Observable.FromEventPattern<DataStoreEventArgs>(
+                handler => slave.DataStore.DataStoreWrittenTo += handler,
+                handler => slave.DataStore.DataStoreWrittenTo -= handler)
+                .Select(pattern => pattern.EventArgs);
+
+        /// <summary>Observes the request.</summary>
+        /// <param name="slave">The slave.</param>
+        /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
+        internal static IObservable<ModbusSlaveRequestEventArgs> ObserveRequestCore(ModbusSlave slave) =>
+            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
+                handler => slave.ModbusSlaveRequestReceived += handler,
+                handler => slave.ModbusSlaveRequestReceived -= handler)
+                .Select(pattern => pattern.EventArgs);
+
+        /// <summary>Observes the write complete.</summary>
+        /// <param name="slave">The slave.</param>
+        /// <returns>An Observable of ModbusSlaveRequestEventArgs.</returns>
+        internal static IObservable<ModbusSlaveRequestEventArgs> ObserveWriteCompleteCore(ModbusSlave slave) =>
+            Observable.FromEventPattern<ModbusSlaveRequestEventArgs>(
+                handler => slave.WriteComplete += handler,
+                handler => slave.WriteComplete -= handler)
+                .Select(pattern => pattern.EventArgs);
+
+        /// <summary>Reads the input registers.</summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of ushort.
+        /// </returns>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadInputRegistersCore(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
+                {
+                    var isConnected = false;
+                    var subscription = source
+                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
+                    .Retry(int.MaxValue)
+                    .Subscribe(
+                        async modbus =>
+                        {
+                            try
+                            {
+                                isConnected = modbus.connected;
+                                if (modbus.connected && modbus.error is null)
+                                {
+                                    var result = await modbus.master!.ReadInputRegistersAsync(startAddress, numberOfPoints);
+                                    if (result is not null)
+                                    {
+                                        observer.OnNext((result, modbus.error));
+                                    }
+                                }
+                                else
+                                {
+                                    observer.OnNext((null, modbus.error));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Asume the connection is broken.
+                                modbus.master?.Dispose();
+                                modbus.master = null;
+                                isConnected = false;
+                                observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
+                            }
+                        },
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry(int.MaxValue);
+
+        /// <summary>Reads the holding registers.</summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of ushort.
+        /// </returns>
+        internal static IObservable<(ushort[]? data, Exception? error)> ReadHoldingRegistersCore(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
+                {
+                    var isConnected = false;
+                    var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry(int.MaxValue)
                     .Subscribe(
@@ -1183,7 +1326,7 @@ namespace ModbusRx
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error is null)
                                 {
-                                    var result = await modbus.master.ReadHoldingRegistersAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master!.ReadHoldingRegistersAsync(startAddress, numberOfPoints);
                                     if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1204,66 +1347,23 @@ namespace ModbusRx
                                 observer.OnError(new ModbusCommunicationException("Read Holding Registers Error", ex));
                             }
                         },
-                        exception => observer.OnError(exception));
-                return Disposable.Create(() => subscription.Dispose());
-            }).Retry(int.MaxValue);
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry(int.MaxValue);
 
-        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputRegisters.</summary>
-        /// <param name="source">The source serial master stream.</param>
-        /// <param name="startAddress">The starting address.</param>
-        /// <param name="numberOfPoints">The number of points to read.</param>
-        /// <param name="interval">The polling interval in milliseconds.</param>
-        /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(ushort[]? data, Exception? error)> ReadInputRegisters(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
-            Observable.Create<(ushort[]? data, Exception? error)>(observer =>
-            {
-                var isConnected = false;
-                var subscription = source
-                    .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
-                    .Retry(int.MaxValue)
-                    .Subscribe(
-                        async modbus =>
-                        {
-                            try
-                            {
-                                isConnected = modbus.connected;
-                                if (modbus.connected && modbus.error is null)
-                                {
-                                    var result = await modbus.master.ReadInputRegistersAsync(1, startAddress, numberOfPoints);
-                                    if (result is not null)
-                                    {
-                                        observer.OnNext((result, modbus.error));
-                                    }
-                                }
-                                else
-                                {
-                                    observer.OnNext((null, modbus.error));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Asume the connection is broken.
-                                modbus.master?.Dispose();
-                                modbus.master = null;
-                                isConnected = false;
-                                observer.OnError(new ModbusCommunicationException("Read Input Registers Error", ex));
-                            }
-                        },
-                        exception => observer.OnError(exception));
-                return Disposable.Create(() => subscription.Dispose());
-            }).Retry(int.MaxValue);
-
-        /// <summary>Convenience overload that defaults the slave address to 1 for ReadCoils.</summary>
-        /// <param name="source">The source serial master stream.</param>
-        /// <param name="startAddress">The starting address.</param>
-        /// <param name="numberOfPoints">The number of points to read.</param>
-        /// <param name="interval">The polling interval in milliseconds.</param>
-        /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadCoils(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        /// <summary>Reads the coils.</summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of bool.
+        /// </returns>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadCoilsCore(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
-            {
-                var isConnected = false;
-                var subscription = source
+                {
+                    var isConnected = false;
+                    var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry(int.MaxValue)
                     .Subscribe(
@@ -1274,7 +1374,7 @@ namespace ModbusRx
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error is null)
                                 {
-                                    var result = await modbus.master.ReadCoilsAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master!.ReadCoilsAsync(startAddress, numberOfPoints);
                                     if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1294,21 +1394,23 @@ namespace ModbusRx
                                 observer.OnError(new ModbusCommunicationException("Read Coils Error", ex));
                             }
                         },
-                        exception => observer.OnError(exception));
-                return Disposable.Create(() => subscription.Dispose());
-            }).Retry(int.MaxValue);
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry(int.MaxValue);
 
-        /// <summary>Convenience overload that defaults the slave address to 1 for ReadInputs.</summary>
-        /// <param name="source">The source serial master stream.</param>
-        /// <param name="startAddress">The starting address.</param>
-        /// <param name="numberOfPoints">The number of points to read.</param>
-        /// <param name="interval">The polling interval in milliseconds.</param>
-        /// <returns>An observable sequence producing the result data or error.</returns>
-        public static IObservable<(bool[]? data, Exception? error)> ReadInputs(this IObservable<(bool connected, Exception? error, IModbusSerialMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
+        /// <summary>Reads the coils.</summary>
+        /// <param name="source">The source.</param>
+        /// <param name="startAddress">The start address.</param>
+        /// <param name="numberOfPoints">The number of points.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns>
+        /// A Observable of bool.
+        /// </returns>
+        internal static IObservable<(bool[]? data, Exception? error)> ReadInputsCore(IObservable<(bool connected, Exception? error, ModbusIpMaster? master)> source, ushort startAddress, ushort numberOfPoints, double interval = 1000.0) =>
             Observable.Create<(bool[]? data, Exception? error)>(observer =>
-            {
-                var isConnected = false;
-                var subscription = source
+                {
+                    var isConnected = false;
+                    var subscription = source
                     .CombineLatest(Observable.Interval(TimeSpan.FromMilliseconds(interval)).Where(_ => isConnected).StartWith(long.MinValue), (modbus, _) => modbus)
                     .Retry(int.MaxValue)
                     .Subscribe(
@@ -1319,7 +1421,7 @@ namespace ModbusRx
                                 isConnected = modbus.connected;
                                 if (modbus.connected && modbus.error is null)
                                 {
-                                    var result = await modbus.master.ReadInputsAsync(1, startAddress, numberOfPoints);
+                                    var result = await modbus.master!.ReadInputsAsync(startAddress, numberOfPoints);
                                     if (result is not null)
                                     {
                                         observer.OnNext((result, modbus.error));
@@ -1339,8 +1441,48 @@ namespace ModbusRx
                                 observer.OnError(new ModbusCommunicationException("Read Inputs Error", ex));
                             }
                         },
-                        exception => observer.OnError(exception));
-                return Disposable.Create(() => subscription.Dispose());
-            }).Retry(int.MaxValue);
+                        (exception) => observer.OnError(exception));
+                    return Disposable.Create(() => subscription.Dispose());
+                }).Retry(int.MaxValue);
+
+        /// <summary>Creates a serial port resource configured with the requested serial settings.</summary>
+        /// <param name="port">The COM port name.</param>
+        /// <param name="baudRate">The baud rate.</param>
+        /// <param name="dataBits">The data bits.</param>
+        /// <param name="parity">The parity.</param>
+        /// <param name="stopBits">The stop bits.</param>
+        /// <param name="handshake">The handshake.</param>
+        /// <returns>The configured serial port resource.</returns>
+        private static SerialPortRx CreateSerialPort(
+            string port,
+            int baudRate,
+            int dataBits,
+            Parity parity,
+            StopBits stopBits,
+            Handshake handshake) =>
+            new(port, baudRate)
+            {
+                DataBits = dataBits,
+                Parity = parity,
+                StopBits = stopBits,
+                Handshake = handshake
+            };
+
+        /// <summary>Determines whether any available port name contains the requested port token.</summary>
+        /// <param name="portNames">The available port names.</param>
+        /// <param name="port">The requested port token.</param>
+        /// <returns>True when a matching port name is present.</returns>
+        private static bool ContainsPortName(IEnumerable<string> portNames, string port)
+        {
+            foreach (var portName in portNames)
+            {
+                if (portName.Contains(port))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

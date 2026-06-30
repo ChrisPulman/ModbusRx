@@ -1,20 +1,15 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// ModbusRxSerialRtuMasterFixture.
-/// </summary>
-[Collection("NetworkTests")]
+/// <summary>Tests the ModbusRxSerialRtuMasterFixture behavior.</summary>
 public class ModbusRxSerialRtuMasterFixture : NetworkTestBase
 {
-    /// <summary>
-    /// Tests the modbus RTU master read timeout.
-    /// </summary>
+    /// <summary>Tests the modbus RTU master read timeout.</summary>
     [TUnit.Core.Test]
     public void ModbusRxRtuMaster_ReadTimeout()
     {

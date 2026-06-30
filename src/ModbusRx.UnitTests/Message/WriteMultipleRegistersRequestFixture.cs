@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// WriteMultipleRegistersRequestFixture.
-/// </summary>
+/// <summary>Tests the WriteMultipleRegistersRequestFixture behavior.</summary>
 public class WriteMultipleRegistersRequestFixture
 {
-    /// <summary>
-    /// Creates the write multiple registers request fixture.
-    /// </summary>
+    /// <summary>Creates the write multiple registers request fixture.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestFixture()
     {
@@ -29,17 +25,13 @@ public class WriteMultipleRegistersRequestFixture
         Assert.Equal(col.NetworkBytes, request.Data.NetworkBytes);
     }
 
-    /// <summary>
-    /// Creates the write multiple registers request too much data.
-    /// </summary>
+    /// <summary>Creates the write multiple registers request too much data.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestTooMuchData() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new WriteMultipleRegistersRequest(1, 2, MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(3, Modbus.MaximumRegisterRequestResponseSize + 1)));
+            _ = new WriteMultipleRegistersRequest(1, 2, MessageUtility.CreateDefaultCollection<RegisterCollection, ushort>(3, Modbus.MaximumRegisterRequestResponseSize + 1)));
 
-    /// <summary>
-    /// Creates the maximum size of the write multiple registers request.
-    /// </summary>
+    /// <summary>Creates the maximum size of the write multiple registers request.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersRequestMaxSize()
     {
@@ -48,9 +40,7 @@ public class WriteMultipleRegistersRequestFixture
         Assert.Equal(Modbus.MaximumRegisterRequestResponseSize, request.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Converts to string_writemultipleregistersrequest.
-    /// </summary>
+    /// <summary>Converts to string_writemultipleregistersrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_WriteMultipleRegistersRequest()
     {

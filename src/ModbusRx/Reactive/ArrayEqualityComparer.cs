@@ -1,19 +1,18 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
-using System.Reactive.Linq;
-
+#if REACTIVE_SHIM
 namespace ModbusRx.Reactive;
+#else
+namespace ModbusRx;
+#endif
 
-/// <summary>
-/// Array equality comparer for observing distinct changes.
-/// </summary>
+/// <summary>Array equality comparer for observing distinct changes.</summary>
 /// <typeparam name="T">The array element type.</typeparam>
-internal class ArrayEqualityComparer<T> : IEqualityComparer<T[]>
+internal sealed class ArrayEqualityComparer<T> : IEqualityComparer<T[]>
 {
-    /// <summary>
-    /// Determines whether the specified arrays are equal.
-    /// </summary>
+    /// <summary>Determines whether the specified arrays are equal.</summary>
     /// <param name="x">The first array to compare.</param>
     /// <param name="y">The second array to compare.</param>
     /// <returns>True if the arrays are equal; otherwise, false.</returns>
@@ -29,17 +28,10 @@ internal class ArrayEqualityComparer<T> : IEqualityComparer<T[]>
             return false;
         }
 
-        if (x.Length != y.Length)
-        {
-            return false;
-        }
-
-        return x.SequenceEqual(y);
+        return x.Length != y.Length ? false : x.SequenceEqual(y);
     }
 
-    /// <summary>
-    /// Returns a hash code for the specified array.
-    /// </summary>
+    /// <summary>Returns a hash code for the specified array.</summary>
     /// <param name="obj">The array for which a hash code is to be returned.</param>
     /// <returns>A hash code for the specified array.</returns>
     public int GetHashCode(T[] obj)

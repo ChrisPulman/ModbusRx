@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ReadCoilsInputsRequestFixture.
-/// </summary>
+/// <summary>Tests the ReadCoilsInputsRequestFixture behavior.</summary>
 public class ReadCoilsInputsRequestFixture
 {
-    /// <summary>
-    /// Creates the read coils request.
-    /// </summary>
+    /// <summary>Creates the read coils request.</summary>
     [TUnit.Core.Test]
     public void CreateReadCoilsRequest()
     {
@@ -25,9 +21,7 @@ public class ReadCoilsInputsRequestFixture
         Assert.Equal(10, request.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the read inputs request.
-    /// </summary>
+    /// <summary>Creates the read inputs request.</summary>
     [TUnit.Core.Test]
     public void CreateReadInputsRequest()
     {
@@ -38,16 +32,12 @@ public class ReadCoilsInputsRequestFixture
         Assert.Equal(10, request.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the read coils inputs request too much data.
-    /// </summary>
+    /// <summary>Creates the read coils inputs request too much data.</summary>
     [TUnit.Core.Test]
     public void CreateReadCoilsInputsRequestTooMuchData() =>
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = new ReadCoilsInputsRequest(Modbus.ReadCoils, 1, 2, Modbus.MaximumDiscreteRequestResponseSize + 1));
 
-    /// <summary>
-    /// Creates the maximum size of the read coils inputs request.
-    /// </summary>
+    /// <summary>Creates the maximum size of the read coils inputs request.</summary>
     [TUnit.Core.Test]
     public void CreateReadCoilsInputsRequestMaxSize()
     {
@@ -55,9 +45,7 @@ public class ReadCoilsInputsRequestFixture
         Assert.Equal(Modbus.MaximumDiscreteRequestResponseSize, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Converts to string_readcoilsrequest.
-    /// </summary>
+    /// <summary>Converts to string_readcoilsrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadCoilsRequest()
     {
@@ -66,9 +54,7 @@ public class ReadCoilsInputsRequestFixture
         Assert.Equal("Read 10 coils starting at address 1.", request.ToString());
     }
 
-    /// <summary>
-    /// Converts to string_readinputsrequest.
-    /// </summary>
+    /// <summary>Converts to string_readinputsrequest.</summary>
     [TUnit.Core.Test]
     public void ToString_ReadInputsRequest()
     {

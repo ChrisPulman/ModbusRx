@@ -1,11 +1,10 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 namespace ModbusRx.DriverTest;
 
-/// <summary>
-/// ModbusRtuHandler.
-/// </summary>
+/// <summary>Handles Modbus RTU request frames for the test emulator.</summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="ModbusRtuHandler"/> class.
 /// </remarks>
@@ -13,11 +12,10 @@ namespace ModbusRx.DriverTest;
 /// <param name="slaveId">The slave identifier.</param>
 public class ModbusRtuHandler(DummyTemperatureController controller, byte slaveId = 1)
 {
+    /// <summary>The slave identifier handled by this instance.</summary>
     private readonly byte _slaveId = slaveId;
 
-    /// <summary>
-    /// Handles the request.
-    /// </summary>
+    /// <summary>Handles the request.</summary>
     /// <param name="frame">The frame.</param>
     /// <param name="length">The length.</param>
     /// <returns>A byte array.</returns>
@@ -28,7 +26,7 @@ public class ModbusRtuHandler(DummyTemperatureController controller, byte slaveI
             return null;
         }
 
-        if (frame == null)
+        if (frame is null)
         {
             return null;
         }
@@ -44,12 +42,7 @@ public class ModbusRtuHandler(DummyTemperatureController controller, byte slaveI
         var crcReceived = (ushort)(frame[length - 2] | (frame[length - 1] << 8));
         var crcCalc = ModbusCrc.Compute(frame, length - 2);
 
-        if (crcReceived != crcCalc)
-        {
-            return null;
-        }
-
-        return function switch
+        return crcReceived != crcCalc ? null : function switch
         {
             0x03 => HandleReadHoldingRegisters(frame),
             0x06 => HandleWriteSingleRegister(frame),
@@ -57,6 +50,9 @@ public class ModbusRtuHandler(DummyTemperatureController controller, byte slaveI
         };
     }
 
+    /// <summary>Handles a read holding registers request.</summary>
+    /// <param name="frame">The request frame.</param>
+    /// <returns>The response frame.</returns>
     private byte[] HandleReadHoldingRegisters(byte[] frame)
     {
         var start = (ushort)((frame[2] << 8) | frame[3]);
@@ -81,6 +77,9 @@ public class ModbusRtuHandler(DummyTemperatureController controller, byte slaveI
         return response;
     }
 
+    /// <summary>Handles a write single register request.</summary>
+    /// <param name="frame">The request frame.</param>
+    /// <returns>The response frame.</returns>
     private byte[] HandleWriteSingleRegister(byte[] frame)
     {
         var address = (ushort)((frame[2] << 8) | frame[3]);

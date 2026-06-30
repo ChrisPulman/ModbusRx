@@ -1,0 +1,10 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="RemoveDuplicateSourceGenerators" AfterTargets="ResolveLockFileAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'ReactiveUI.Primitives.R3Bridge.Generator'" />
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'SerialPortRx.SourceGenerators'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

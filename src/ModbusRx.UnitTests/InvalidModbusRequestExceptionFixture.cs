@@ -1,19 +1,15 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.IO;
-using Xunit;
 
 namespace ModbusRx.UnitTests;
 
-/// <summary>
-/// InvalidModbusRequestExceptionFixture.
-/// </summary>
+/// <summary>Tests the InvalidModbusRequestExceptionFixture behavior.</summary>
 public class InvalidModbusRequestExceptionFixture
 {
-    /// <summary>
-    /// Constructors the with exception code.
-    /// </summary>
+    /// <summary>Constructors the with exception code.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithExceptionCode()
     {
@@ -23,9 +19,7 @@ public class InvalidModbusRequestExceptionFixture
         Assert.Null(e.InnerException);
     }
 
-    /// <summary>
-    /// Constructors the with exception code and inner exception.
-    /// </summary>
+    /// <summary>Constructors the with exception code and inner exception.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithExceptionCodeAndInnerException()
     {
@@ -36,9 +30,7 @@ public class InvalidModbusRequestExceptionFixture
         Assert.Same(inner, e.InnerException);
     }
 
-    /// <summary>
-    /// Constructors the with message and exception code.
-    /// </summary>
+    /// <summary>Constructors the with message and exception code.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithMessageAndExceptionCode()
     {
@@ -48,9 +40,7 @@ public class InvalidModbusRequestExceptionFixture
         Assert.Null(e.InnerException);
     }
 
-    /// <summary>
-    /// Constructors the with custom message and slave exception response.
-    /// </summary>
+    /// <summary>Constructors the with custom message and slave exception response.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithCustomMessageAndSlaveExceptionResponse()
     {

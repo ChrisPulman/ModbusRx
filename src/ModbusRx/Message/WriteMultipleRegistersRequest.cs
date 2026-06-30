@@ -1,28 +1,35 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Net;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Unme.Common;
+#else
 using ModbusRx.Unme.Common;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// WriteMultipleRegistersRequest.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.IModbusRequest" />
+/// <summary>Provides WriteMultipleRegistersRequest functionality.</summary>
+/// <seealso cref="IModbusRequest" />
 public class WriteMultipleRegistersRequest : AbstractModbusMessageWithData<RegisterCollection>, IModbusRequest
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleRegistersRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleRegistersRequest"/> class.</summary>
     public WriteMultipleRegistersRequest()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleRegistersRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleRegistersRequest"/> class.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="data">The data.</param>
@@ -35,25 +42,17 @@ public class WriteMultipleRegistersRequest : AbstractModbusMessageWithData<Regis
         Data = data;
     }
 
-    /// <summary>
-    /// Gets or sets the byte count.
-    /// </summary>
-    /// <value>
-    /// The byte count.
-    /// </value>
+    /// <summary>Gets or sets the byte count.</summary>
+/// <value>The byte count.</value>
     public byte ByteCount
     {
         get => MessageImpl.ByteCount!.Value;
         set => MessageImpl.ByteCount = value;
     }
 
-    /// <summary>
-    /// Gets or sets the number of points.
-    /// </summary>
-    /// <value>
-    /// The number of points.
-    /// </value>
+    /// <summary>Gets or sets the number of points.</summary>
     /// <exception cref="System.ArgumentOutOfRangeException">NumberOfPoints.</exception>
+    /// The number of points.
     public ushort NumberOfPoints
     {
         get => MessageImpl.NumberOfPoints!.Value;
@@ -70,12 +69,8 @@ public class WriteMultipleRegistersRequest : AbstractModbusMessageWithData<Regis
         }
     }
 
-    /// <summary>
-    /// Gets or sets the start address.
-    /// </summary>
-    /// <value>
-    /// The start address.
-    /// </value>
+    /// <summary>Gets or sets the start address.</summary>
+/// <value>The start address.</value>
     public ushort StartAddress
     {
         get => MessageImpl.StartAddress!.Value;
@@ -88,8 +83,7 @@ public class WriteMultipleRegistersRequest : AbstractModbusMessageWithData<Regis
     /// <inheritdoc/>
     public override string ToString()
     {
-        var msg = $"Write {NumberOfPoints} holding registers starting at address {StartAddress}.";
-        return msg;
+        return $"Write {NumberOfPoints} holding registers starting at address {StartAddress}.";
     }
 
     /// <inheritdoc/>
@@ -121,6 +115,8 @@ public class WriteMultipleRegistersRequest : AbstractModbusMessageWithData<Regis
         StartAddress = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(frame, 2));
         NumberOfPoints = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(frame, 4));
         ByteCount = frame[6];
-        Data = new RegisterCollection(frame.Slice(7, ByteCount).ToArray());
+        var data = new byte[ByteCount];
+        Array.Copy(frame, 7, data, 0, data.Length);
+        Data = new(data);
     }
 }

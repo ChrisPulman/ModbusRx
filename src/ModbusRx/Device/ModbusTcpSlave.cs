@@ -1,5 +1,6 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -9,30 +10,41 @@ using CP.IO.Ports;
 #if TIMER
     using System.Timers;
 #endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.IO;
+#else
 using ModbusRx.IO;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Device;
+#else
 namespace ModbusRx.Device;
+#endif
 
-/// <summary>
-///     Modbus TCP slave device.
-/// </summary>
-public class ModbusTcpSlave : ModbusSlave
+/// <summary>Modbus TCP slave device.</summary>
+public sealed class ModbusTcpSlave : ModbusSlave
 {
-    private const int TimeWaitResponse = 1000;
-    private readonly object _serverLock = new();
+    /// <summary>Stores the server Lock value.</summary>
+    private readonly Lock _serverLock = new();
 
+    /// <summary>Stores the masters value.</summary>
     private readonly ConcurrentDictionary<string, ModbusMasterTcpConnection> _masters =
         new();
 
-    private TcpListener _server;
+    /// <summary>Stores the server value.</summary>
+    private TcpListener? _server;
 
 #if TIMER
         private Timer _timer;
 #endif
+    /// <summary>Initializes a new instance of the Modbus Tcp Slave class.</summary>
+    /// <param name="unitId">The unit Id value.</param>
+    /// <param name="tcpListener">The tcp Listener value.</param>
     private ModbusTcpSlave(byte unitId, TcpListener tcpListener)
         : base(unitId, new EmptyTransport())
     {
-        if (tcpListener == null)
+        if (tcpListener is null)
         {
             throw new ArgumentNullException(nameof(tcpListener));
         }
@@ -53,35 +65,28 @@ public class ModbusTcpSlave : ModbusSlave
         }
 #endif
 
-    /// <summary>
-    ///     Gets the Modbus TCP Masters connected to this Modbus TCP Slave.
-    /// </summary>
-    public ReadOnlyCollection<TcpClientRx> Masters =>
-        new(_masters.Values.Select(mc => mc.TcpClient).ToList());
-
-    /// <summary>
-    ///     Gets the server.
-    /// </summary>
-    /// <value>The server.</value>
-    /// <remarks>
-    ///     This property is not thread safe, it should only be consumed within a lock.
-    /// </remarks>
-    private TcpListener Server
+    /// <summary>Gets the Modbus TCP Masters connected to this Modbus TCP Slave.</summary>
+    public ReadOnlyCollection<TcpClientRx> Masters
     {
         get
         {
-            if (_server is null)
+            var masters = new List<TcpClientRx>(_masters.Count);
+            foreach (var masterConnection in _masters.Values)
             {
-                throw new ObjectDisposedException("Server");
+                masters.Add(masterConnection.TcpClient);
             }
 
-            return _server;
+            return new(masters);
         }
     }
 
-    /// <summary>
-    /// Modbus TCP slave factory method.
-    /// </summary>
+    /// <summary>Gets the server.</summary>
+    /// <value>The server.</value>
+    /// <remarks>This property is not thread safe, it should only be consumed within a lock.</remarks>
+    private TcpListener Server =>
+        _server ?? throw new ObjectDisposedException(nameof(ModbusTcpSlave));
+
+    /// <summary>Modbus TCP slave factory method.</summary>
     /// <param name="unitId">The unit identifier.</param>
     /// <param name="tcpListener">The TCP listener.</param>
     /// <returns>A ModbusTcpSlave.</returns>
@@ -89,19 +94,17 @@ public class ModbusTcpSlave : ModbusSlave
         new(unitId, tcpListener);
 
 #if TIMER
-        /// <summary>
-        ///     Creates ModbusTcpSlave with timer which polls connected clients every
-        ///     <paramref name="pollInterval"/> milliseconds on that they are connected.
-        /// </summary>
+/// <summary>
+/// Creates ModbusTcpSlave with timer which polls connected clients every
+/// <paramref name="pollInterval"/> milliseconds on that they are connected.
+/// </summary>
         public static ModbusTcpSlave CreateTcp(byte unitId, TcpListener tcpListener, double pollInterval)
         {
             return new ModbusTcpSlave(unitId, tcpListener, pollInterval);
         }
 #endif
 
-    /// <summary>
-    ///     Start slave listening for requests.
-    /// </summary>
+    /// <summary>Start slave listening for requests.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public override async Task ListenAsync()
     {
@@ -115,57 +118,54 @@ public class ModbusTcpSlave : ModbusSlave
             var client = await Server.AcceptTcpClientAsync().ConfigureAwait(false);
             var masterConnection = new ModbusMasterTcpConnection(new(client), this);
             masterConnection.ModbusMasterTcpConnectionClosed += OnMasterConnectionClosedHandler;
-            _masters.TryAdd(client.Client.RemoteEndPoint!.ToString()!, masterConnection);
+            _ = _masters.TryAdd(client.Client.RemoteEndPoint!.ToString()!, masterConnection);
         }
     }
 
-    /// <summary>
-    ///     Releases unmanaged and - optionally - managed resources.
-    /// </summary>
+    /// <summary>Releases unmanaged and - optionally - managed resources.</summary>
     /// <param name="disposing">
+    /// <remarks>Dispose is thread-safe.</remarks>
     ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
     ///     unmanaged resources.
     /// </param>
-    /// <remarks>Dispose is thread-safe.</remarks>
     protected override void Dispose(bool disposing)
     {
-        if (!disposing || _server is null)
+        try
         {
-            return;
-        }
-
-        lock (_serverLock)
-        {
-            if (_server is not null)
+            if (disposing)
             {
-                _server.Stop();
-                _server = null!;
+                lock (_serverLock)
+                {
+                    var server = _server;
+                    if (server is not null)
+                    {
+                        server.Stop();
+                        _server = null;
 
 #if TIMER
-                if (_timer is not null)
-                {
-                    _timer.Dispose();
-                    _timer = null;
-                }
+                        if (_timer is not null)
+                        {
+                            _timer.Dispose();
+                            _timer = null;
+                        }
 #endif
 
-                foreach (var key in _masters.Keys)
-                {
-                    if (_masters.TryRemove(key, out var connection))
-                    {
-                        connection.ModbusMasterTcpConnectionClosed -= OnMasterConnectionClosedHandler;
-                        connection.Dispose();
+                        foreach (var key in _masters.Keys)
+                        {
+                            if (_masters.TryRemove(key, out var connection))
+                            {
+                                connection.ModbusMasterTcpConnectionClosed -= OnMasterConnectionClosedHandler;
+                                connection.Dispose();
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-
-    private static bool IsSocketConnected(Socket socket)
-    {
-        var poll = socket.Poll(TimeWaitResponse, SelectMode.SelectRead);
-        var available = socket.Available == 0;
-        return poll && available;
+        finally
+        {
+            base.Dispose(disposing);
+        }
     }
 
 #if TIMER
@@ -180,6 +180,9 @@ public class ModbusTcpSlave : ModbusSlave
             }
         }
 #endif
+    /// <summary>Executes the On Master Connection Closed Handler operation.</summary>
+    /// <param name="sender">The sender value.</param>
+    /// <param name="e">The e value.</param>
     private void OnMasterConnectionClosedHandler(object? sender, TcpConnectionEventArgs e)
     {
         if (!_masters.TryRemove(e.EndPoint, out var _))

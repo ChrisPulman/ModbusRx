@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.IO;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests;
 
-/// <summary>
-/// SlaveExceptionFixture.
-/// </summary>
+/// <summary>Tests the SlaveExceptionFixture behavior.</summary>
 public class SlaveExceptionFixture
 {
-    /// <summary>
-    /// Empties the constructor.
-    /// </summary>
+    /// <summary>Empties the constructor.</summary>
     [TUnit.Core.Test]
     public void EmptyConstructor()
     {
@@ -27,9 +23,7 @@ public class SlaveExceptionFixture
         Assert.Null(e.InnerException);
     }
 
-    /// <summary>
-    /// Constructors the with message.
-    /// </summary>
+    /// <summary>Constructors the with message.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithMessage()
     {
@@ -41,9 +35,7 @@ public class SlaveExceptionFixture
         Assert.Null(e.InnerException);
     }
 
-    /// <summary>
-    /// Constructors the with message and inner exception.
-    /// </summary>
+    /// <summary>Constructors the with message and inner exception.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithMessageAndInnerException()
     {
@@ -56,9 +48,7 @@ public class SlaveExceptionFixture
         Assert.Equal(0, e.SlaveExceptionCode);
     }
 
-    /// <summary>
-    /// Constructors the with slave exception response.
-    /// </summary>
+    /// <summary>Constructors the with slave exception response.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithSlaveExceptionResponse()
     {
@@ -75,14 +65,12 @@ public class SlaveExceptionFixture
             e.Message);
     }
 
-    /// <summary>
-    /// Constructors the with custom message and slave exception response.
-    /// </summary>
+    /// <summary>Constructors the with custom message and slave exception response.</summary>
     [TUnit.Core.Test]
     public void ConstructorWithCustomMessageAndSlaveExceptionResponse()
     {
         var response = new SlaveExceptionResponse(12, Modbus.ReadCoils, 2);
-        var customMessage = "custom message";
+        const string customMessage = "custom message";
         var e = new SlaveException(customMessage, response);
 
         Assert.Equal(12, e.SlaveAddress);

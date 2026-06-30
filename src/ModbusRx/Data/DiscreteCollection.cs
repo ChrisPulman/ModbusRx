@@ -1,45 +1,45 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text;
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
-/// <summary>
-///     Collection of discrete values.
-/// </summary>
+/// <summary>Collection of discrete values.</summary>
 public class DiscreteCollection : Collection<bool>, IDataCollection
 {
+    /// <summary>Defines the Bits Per Byte value.</summary>
     private const int BitsPerByte = 8;
 
+    /// <summary>Stores the discretes value.</summary>
     private readonly List<bool> _discretes;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DiscreteCollection" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DiscreteCollection" /> class.</summary>
     public DiscreteCollection()
-        : this(new List<bool>())
+        : this((bool[])[])
     {
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DiscreteCollection" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DiscreteCollection" /> class.</summary>
     /// <param name="bits">Array for discrete collection.</param>
     public DiscreteCollection(params bool[] bits)
         : this((IList<bool>)bits)
     {
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DiscreteCollection" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DiscreteCollection" /> class.</summary>
     /// <param name="bytes">Array for discrete collection.</param>
     public DiscreteCollection(params byte[] bytes)
         : this()
     {
-        if (bytes == null)
+        if (bytes is null)
         {
             throw new ArgumentNullException(nameof(bytes));
         }
@@ -59,18 +59,14 @@ public class DiscreteCollection : Collection<bool>, IDataCollection
         }
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DiscreteCollection" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DiscreteCollection" /> class.</summary>
     /// <param name="bits">List for discrete collection.</param>
     public DiscreteCollection(IList<bool> bits)
         : this(new List<bool>(bits))
     {
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DiscreteCollection" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DiscreteCollection" /> class.</summary>
     /// <param name="bits">List for discrete collection.</param>
     internal DiscreteCollection(List<bool> bits)
         : base(bits)
@@ -79,9 +75,7 @@ public class DiscreteCollection : Collection<bool>, IDataCollection
         _discretes = bits!;
     }
 
-    /// <summary>
-    ///     Gets the network bytes.
-    /// </summary>
+    /// <summary>Gets the network bytes.</summary>
     public byte[] NetworkBytes
     {
         get
@@ -100,17 +94,27 @@ public class DiscreteCollection : Collection<bool>, IDataCollection
         }
     }
 
-    /// <summary>
-    ///     Gets the byte count.
-    /// </summary>
+    /// <summary>Gets the byte count.</summary>
     public byte ByteCount => (byte)((Count + 7) / 8);
 
-    /// <summary>
-    ///     Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
-    /// </summary>
+    /// <summary>Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.</summary>
     /// <returns>
     ///     A <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
     /// </returns>
-    public override string ToString() =>
-        string.Concat("{", string.Join(", ", this.Select(discrete => discrete ? "1" : "0").ToArray()), "}");
+    public override string ToString()
+    {
+        var builder = new StringBuilder("{");
+        for (var i = 0; i < Count; i++)
+        {
+            if (i > 0)
+            {
+                _ = builder.Append(", ");
+            }
+
+            _ = builder.Append(this[i] ? "1" : "0");
+        }
+
+        _ = builder.Append('}');
+        return builder.ToString();
+    }
 }

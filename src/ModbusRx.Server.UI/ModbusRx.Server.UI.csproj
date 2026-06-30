@@ -11,11 +11,13 @@
 
   <ItemGroup>
     <PackageReference Include="CrissCross.WPF.UI" Version="2.6.60" />
+    <PackageReference Include="SerialPortRx" Version="5.0.20" ExcludeAssets="analyzers;build;buildTransitive" PrivateAssets="analyzers;build;buildTransitive" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,6 +26,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ModbusRx\ModbusRx.csproj" />
+    <ProjectReference Include="..\ModbusRx.Reactive\ModbusRx.Reactive.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="ReactiveUI.Primitives.Reactive" />
+    <Using Include="ReactiveUI.Primitives.Disposables.MultipleDisposable" Alias="CompositeDisposable" />
   </ItemGroup>
 
 </Project>

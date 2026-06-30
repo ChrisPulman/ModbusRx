@@ -1,36 +1,41 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Net;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Unme.Common;
+#else
 using ModbusRx.Unme.Common;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-///     Write Multiple Coils request.
-/// </summary>
+/// <summary>Write Multiple Coils request.</summary>
 public class WriteMultipleCoilsRequest : AbstractModbusMessageWithData<DiscreteCollection>, IModbusRequest
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleCoilsRequest"/> class.
-    ///     Write Multiple Coils request.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleCoilsRequest"/> class. Write Multiple Coils request.</summary>
     public WriteMultipleCoilsRequest()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WriteMultipleCoilsRequest" /> class.
-    /// Write Multiple Coils request.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="WriteMultipleCoilsRequest" /> class. Write Multiple Coils request.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="data">The data.</param>
     public WriteMultipleCoilsRequest(byte slaveAddress, ushort startAddress, DiscreteCollection data)
         : base(slaveAddress, Modbus.WriteMultipleCoils)
     {
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -41,25 +46,17 @@ public class WriteMultipleCoilsRequest : AbstractModbusMessageWithData<DiscreteC
         Data = data;
     }
 
-    /// <summary>
-    /// Gets or sets the byte count.
-    /// </summary>
-    /// <value>
-    /// The byte count.
-    /// </value>
+    /// <summary>Gets or sets the byte count.</summary>
+/// <value>The byte count.</value>
     public byte ByteCount
     {
         get => MessageImpl.ByteCount!.Value;
         set => MessageImpl.ByteCount = value;
     }
 
-    /// <summary>
-    /// Gets or sets the number of points.
-    /// </summary>
-    /// <value>
-    /// The number of points.
-    /// </value>
+    /// <summary>Gets or sets the number of points.</summary>
     /// <exception cref="System.ArgumentOutOfRangeException">NumberOfPoints.</exception>
+    /// The number of points.
     public ushort NumberOfPoints
     {
         get => MessageImpl.NumberOfPoints!.Value;
@@ -76,12 +73,8 @@ public class WriteMultipleCoilsRequest : AbstractModbusMessageWithData<DiscreteC
         }
     }
 
-    /// <summary>
-    /// Gets or sets the start address.
-    /// </summary>
-    /// <value>
-    /// The start address.
-    /// </value>
+    /// <summary>Gets or sets the start address.</summary>
+/// <value>The start address.</value>
     public ushort StartAddress
     {
         get => MessageImpl.StartAddress!.Value;
@@ -124,6 +117,8 @@ public class WriteMultipleCoilsRequest : AbstractModbusMessageWithData<DiscreteC
         StartAddress = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(frame, 2));
         NumberOfPoints = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(frame, 4));
         ByteCount = frame[6];
-        Data = new DiscreteCollection(frame.Slice(7, ByteCount).ToArray());
+        var data = new byte[ByteCount];
+        Array.Copy(frame, 7, data, 0, data.Length);
+        Data = new(data);
     }
 }

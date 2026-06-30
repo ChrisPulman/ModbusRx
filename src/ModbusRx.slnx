@@ -1,0 +1,30 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="PreRelease" />
+    <BuildType Name="Release" />
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/ProjectConfiguration/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/dependabot.yml" />
+    <File Path="../.github/workflows/BuildOnly.yml" />
+    <File Path="../.github/workflows/dotnet.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../Directory.Build.props" />
+    <File Path="../Directory.Build.targets" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+    <File Path="../Version.json" />
+  </Folder>
+  <Project Path="ModbusRx.DriverTest/ModbusRx.DriverTest.csproj" />
+  <Project Path="ModbusRx.Generators.Tests/ModbusRx.Generators.Tests.csproj" />
+  <Project Path="ModbusRx.Generators/ModbusRx.Generators.csproj" />
+  <Project Path="ModbusRx.IntegrationTests/ModbusRx.IntegrationTests.csproj" />
+  <Project Path="ModbusRx.Reactive/ModbusRx.Reactive.csproj" />
+  <Project Path="ModbusRx.Server.UI/ModbusRx.Server.UI.csproj" />
+  <Project Path="ModbusRx.UnitTests/ModbusRx.UnitTests.csproj" />
+  <Project Path="ModbusRx/ModbusRx.csproj" />
+</Solution>

@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using ModbusRx.Data;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Data;
 
-/// <summary>
-/// DiscreteCollectionFixture.
-/// </summary>
+/// <summary>Tests the DiscreteCollectionFixture behavior.</summary>
 public class DiscreteCollectionFixture
 {
-    /// <summary>
-    /// Bytes the count.
-    /// </summary>
+    /// <summary>Bytes the count.</summary>
     [TUnit.Core.Test]
     public void ByteCount()
     {
@@ -23,9 +19,7 @@ public class DiscreteCollectionFixture
         Assert.Equal(2, col.ByteCount);
     }
 
-    /// <summary>
-    /// Bytes the count even.
-    /// </summary>
+    /// <summary>Bytes the count even.</summary>
     [TUnit.Core.Test]
     public void ByteCountEven()
     {
@@ -33,9 +27,7 @@ public class DiscreteCollectionFixture
         Assert.Equal(1, col.ByteCount);
     }
 
-    /// <summary>
-    /// Networks the bytes.
-    /// </summary>
+    /// <summary>Networks the bytes.</summary>
     [TUnit.Core.Test]
     public void NetworkBytes()
     {
@@ -43,9 +35,7 @@ public class DiscreteCollectionFixture
         Assert.Equal([3], col.NetworkBytes);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection initialize.
-    /// </summary>
+    /// <summary>Creates the new discrete collection initialize.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionInitialize()
     {
@@ -54,9 +44,7 @@ public class DiscreteCollectionFixture
         Assert.DoesNotContain(false, col);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection from bool parameters.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bool parameters.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBoolParams()
     {
@@ -64,9 +52,7 @@ public class DiscreteCollectionFixture
         Assert.Equal(3, col.Count);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection from bytes parameters.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bytes parameters.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams()
     {
@@ -82,36 +68,29 @@ public class DiscreteCollectionFixture
         Assert.Equal(expected, col);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection from bytes parameters zero length array.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bytes parameters zero length array.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams_ZeroLengthArray()
     {
-        var col = new DiscreteCollection(Array.Empty<byte>());
+        byte[] bytes = [];
+        var col = new DiscreteCollection(bytes);
         Assert.Empty(col);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection from bytes parameters null array.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bytes parameters null array.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParams_NullArray() =>
-        Assert.Throws<ArgumentNullException>(() => new DiscreteCollection((byte[])null!));
+        Assert.Throws<ArgumentNullException>(() => _ = new DiscreteCollection((byte[])null!));
 
-    /// <summary>
-    /// Creates the new discrete collection from bytes parameters order.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bytes parameters order.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParamsOrder()
     {
         var col = new DiscreteCollection(194);
-        Assert.Equal([false, true, false, false, false, false, true, true], col.ToArray());
+        Assert.Equal<IEnumerable<bool>>([false, true, false, false, false, false, true, true], col);
     }
 
-    /// <summary>
-    /// Creates the new discrete collection from bytes parameters order2.
-    /// </summary>
+    /// <summary>Creates the new discrete collection from bytes parameters order2.</summary>
     [TUnit.Core.Test]
     public void CreateNewDiscreteCollectionFromBytesParamsOrder2()
     {
@@ -120,12 +99,10 @@ public class DiscreteCollectionFixture
             [
                 true, false, true, true, true, false, false, true, true, true, true, false, false, false, false, false,
             ],
-            col.ToArray());
+            col);
     }
 
-    /// <summary>
-    /// Resizes this instance.
-    /// </summary>
+    /// <summary>Resizes this instance.</summary>
     [TUnit.Core.Test]
     public void Resize()
     {
@@ -135,9 +112,7 @@ public class DiscreteCollectionFixture
         Assert.Equal(15, col.Count);
     }
 
-    /// <summary>
-    /// Byteses the persistence.
-    /// </summary>
+    /// <summary>Byteses the persistence.</summary>
     [TUnit.Core.Test]
     public void BytesPersistence()
     {
@@ -149,9 +124,7 @@ public class DiscreteCollectionFixture
         Assert.NotEqual(originalBytes, col.NetworkBytes);
     }
 
-    /// <summary>
-    /// Adds the coil.
-    /// </summary>
+    /// <summary>Adds the coil.</summary>
     [TUnit.Core.Test]
     public void AddCoil()
     {
@@ -159,6 +132,6 @@ public class DiscreteCollectionFixture
         Assert.Empty(col);
 
         col.Add(true);
-        Assert.Single(col);
+        _ = Assert.Single(col);
     }
 }

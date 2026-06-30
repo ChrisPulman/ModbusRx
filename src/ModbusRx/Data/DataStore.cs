@@ -1,24 +1,32 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Unme.Common;
+#else
 using ModbusRx.Unme.Common;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Data;
+#else
 namespace ModbusRx.Data;
+#endif
 
 /// <summary>
-///     Object simulation of device memory map.
-///     The underlying collections are thread safe when using the ModbusMaster API to read/write values.
-///     You can use the SyncRoot property to synchronize direct access to the DataStore collections.
+/// Object simulation of device memory map.
+/// The underlying collections are thread safe when using the ModbusMaster API to read/write values.
+/// You can use the SyncRoot property to synchronize direct access to the DataStore collections.
 /// </summary>
 public class DataStore : IDisposable
 {
+    /// <summary>Stores the lock value.</summary>
     private readonly ReaderWriterLockSlim _lock = new();
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DataStore" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DataStore" /> class.</summary>
     public DataStore()
     {
         CoilDiscretes = new() { ModbusDataType = ModbusDataType.Coil };
@@ -27,9 +35,7 @@ public class DataStore : IDisposable
         InputRegisters = new() { ModbusDataType = ModbusDataType.InputRegister };
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DataStore"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DataStore"/> class.</summary>
     /// <param name="coilDiscretes">List of discrete coil values.</param>
     /// <param name="inputDiscretes">List of discrete input values.</param>
     /// <param name="holdingRegisters">List of holding register values.</param>
@@ -46,58 +52,38 @@ public class DataStore : IDisposable
         InputRegisters = new(inputRegisters) { ModbusDataType = ModbusDataType.InputRegister };
     }
 
-    /// <summary>
-    ///     Occurs when the DataStore is written to via a Modbus command.
-    /// </summary>
+    /// <summary>Occurs when the DataStore is written to via a Modbus command.</summary>
     public event EventHandler<DataStoreEventArgs>? DataStoreWrittenTo;
 
-    /// <summary>
-    ///     Occurs when the DataStore is read from via a Modbus command.
-    /// </summary>
+    /// <summary>Occurs when the DataStore is read from via a Modbus command.</summary>
     public event EventHandler<DataStoreEventArgs>? DataStoreReadFrom;
 
-    /// <summary>
-    ///     Gets the discrete coils.
-    /// </summary>
+    /// <summary>Gets the discrete coils.</summary>
     public ModbusDataCollection<bool> CoilDiscretes { get; }
 
-    /// <summary>
-    ///     Gets the discrete inputs.
-    /// </summary>
+    /// <summary>Gets the discrete inputs.</summary>
     public ModbusDataCollection<bool> InputDiscretes { get; }
 
-    /// <summary>
-    ///     Gets the holding registers.
-    /// </summary>
+    /// <summary>Gets the holding registers.</summary>
     public ModbusDataCollection<ushort> HoldingRegisters { get; }
 
-    /// <summary>
-    ///     Gets the input registers.
-    /// </summary>
+    /// <summary>Gets the input registers.</summary>
     public ModbusDataCollection<ushort> InputRegisters { get; }
 
-    /// <summary>
-    ///     Gets an object that can be used to synchronize direct access to the DataStore collections.
-    /// </summary>
+    /// <summary>Gets an object that can be used to synchronize direct access to the DataStore collections.</summary>
     public object SyncRoot { get; } = new();
 
-    /// <summary>
-    /// Gets the reader-writer lock for more granular access control.
-    /// </summary>
+    /// <summary>Gets the reader-writer lock for more granular access control.</summary>
     public ReaderWriterLockSlim Lock { get; } = new();
 
-    /// <summary>
-    /// Disposes the DataStore and releases resources.
-    /// </summary>
+    /// <summary>Disposes the DataStore and releases resources.</summary>
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Performs a bulk read operation with optimized memory allocation.
-    /// </summary>
+    /// <summary>Performs a bulk read operation with optimized memory allocation.</summary>
     /// <typeparam name="T">The collection type.</typeparam>
     /// <typeparam name="TU">The type of elements in the collection.</typeparam>
     /// <param name="dataSource">The data source to read from.</param>
@@ -112,7 +98,7 @@ public class DataStore : IDisposable
         where T : Collection<TU>, new()
         where TU : struct
     {
-        if (dataSource == null)
+        if (dataSource is null)
         {
             throw new ArgumentNullException(nameof(dataSource));
         }
@@ -129,9 +115,11 @@ public class DataStore : IDisposable
         _lock.EnterReadLock();
         try
         {
-            // Use Span<T> for zero-allocation slicing where possible
-            var span = dataSource.Slice(startIndex, count);
-            dataToRetrieve = span.ToArray();
+            dataToRetrieve = new TU[count];
+            for (var i = 0; i < dataToRetrieve.Length; i++)
+            {
+                dataToRetrieve[i] = dataSource[startIndex + i];
+            }
         }
         finally
         {
@@ -149,9 +137,7 @@ public class DataStore : IDisposable
         return result;
     }
 
-    /// <summary>
-    /// Performs a bulk write operation with optimized memory allocation.
-    /// </summary>
+    /// <summary>Performs a bulk write operation with optimized memory allocation.</summary>
     /// <typeparam name="TData">The type of the data.</typeparam>
     /// <param name="items">The items to write.</param>
     /// <param name="destination">The destination collection.</param>
@@ -163,15 +149,15 @@ public class DataStore : IDisposable
         ushort startAddress)
         where TData : struct
     {
-        if (destination == null)
+        if (destination is null)
         {
             throw new ArgumentNullException(nameof(destination));
         }
 
-        var itemsArray = items as TData[] ?? items.ToArray();
+        var materializedItems = MaterializeItems(items);
         var startIndex = startAddress + 1;
 
-        if (startIndex < 0 || destination.Count < startIndex + itemsArray.Length)
+        if (startIndex < 0 || destination.Count < startIndex + materializedItems.Count)
         {
             throw new InvalidModbusRequestException(Modbus.IllegalDataAddress);
         }
@@ -179,7 +165,7 @@ public class DataStore : IDisposable
         _lock.EnterWriteLock();
         try
         {
-            Update(itemsArray, destination, startIndex);
+            Update(materializedItems, destination, startIndex);
         }
         finally
         {
@@ -189,16 +175,20 @@ public class DataStore : IDisposable
         var dataStoreEventArgs = DataStoreEventArgs.CreateDataStoreEventArgs(
             startAddress,
             destination.ModbusDataType,
-            itemsArray);
+            materializedItems);
 
         DataStoreWrittenTo?.Invoke(this, dataStoreEventArgs);
     }
 
-    /// <summary>
-    ///     Retrieves subset of data from collection.
-    /// </summary>
+    /// <summary>Retrieves subset of data from collection.</summary>
     /// <typeparam name="T">The collection type.</typeparam>
     /// <typeparam name="TU">The type of elements in the collection.</typeparam>
+    /// <param name="dataStore">The data store raising the read event.</param>
+    /// <param name="dataSource">The source collection.</param>
+    /// <param name="startAddress">The starting Modbus address.</param>
+    /// <param name="count">The number of values to read.</param>
+    /// <param name="syncRoot">The synchronization root for the source collection.</param>
+    /// <returns>The result.</returns>
     internal static T ReadData<T, TU>(
         DataStore dataStore,
         ModbusDataCollection<TU> dataSource,
@@ -219,7 +209,11 @@ public class DataStore : IDisposable
         TU[] dataToRetrieve;
         lock (syncRoot)
         {
-            dataToRetrieve = dataSource.Slice(startIndex, count).ToArray();
+            dataToRetrieve = new TU[count];
+            for (var i = 0; i < dataToRetrieve.Length; i++)
+            {
+                dataToRetrieve[i] = dataSource[startIndex + i];
+            }
         }
 
         var result = new T();
@@ -233,10 +227,13 @@ public class DataStore : IDisposable
         return result;
     }
 
-    /// <summary>
-    ///     Write data to data store.
-    /// </summary>
+    /// <summary>Write data to data store.</summary>
     /// <typeparam name="TData">The type of the data.</typeparam>
+    /// <param name="dataStore">The data store raising the write event.</param>
+    /// <param name="items">The values to write.</param>
+    /// <param name="destination">The destination collection.</param>
+    /// <param name="startAddress">The starting Modbus address.</param>
+    /// <param name="syncRoot">The synchronization root for the destination collection.</param>
     internal static void WriteData<TData>(
         DataStore dataStore,
         IEnumerable<TData> items,
@@ -247,54 +244,66 @@ public class DataStore : IDisposable
     {
         DataStoreEventArgs dataStoreEventArgs;
         var startIndex = startAddress + 1;
+        var materializedItems = MaterializeItems(items);
 
-        if (startIndex < 0 || destination.Count < startIndex + items.Count())
+        if (startIndex < 0 || destination.Count < startIndex + materializedItems.Count)
         {
             throw new InvalidModbusRequestException(Modbus.IllegalDataAddress);
         }
 
         lock (syncRoot)
         {
-            Update(items, destination, startIndex);
+            Update(materializedItems, destination, startIndex);
         }
 
         dataStoreEventArgs = DataStoreEventArgs.CreateDataStoreEventArgs(
             startAddress,
             destination.ModbusDataType,
-            items);
+            materializedItems);
 
         dataStore.DataStoreWrittenTo?.Invoke(dataStore, dataStoreEventArgs);
     }
 
-    /// <summary>
-    ///     Updates subset of values in a collection.
-    /// </summary>
+    /// <summary>Updates a subset of values in a collection.</summary>
+    /// <typeparam name="T">The collection item type.</typeparam>
+    /// <param name="items">The items to write.</param>
+    /// <param name="destination">The destination collection.</param>
+    /// <param name="startIndex">The zero-based destination index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Update<T>(IEnumerable<T> items, IList<T> destination, int startIndex)
     {
-        if (startIndex < 0 || destination.Count < startIndex + items.Count())
+        var materializedItems = MaterializeItems(items);
+
+        if (startIndex < 0 || destination.Count < startIndex + materializedItems.Count)
         {
             throw new InvalidModbusRequestException(Modbus.IllegalDataAddress);
         }
 
         var index = startIndex;
 
-        foreach (var item in items)
+        foreach (var item in materializedItems)
         {
             destination[index] = item;
             ++index;
         }
     }
 
-    /// <summary>
-    /// Protected virtual dispose method.
-    /// </summary>
+    /// <summary>Protected virtual dispose method.</summary>
     /// <param name="disposing">Indicates if disposing.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing)
+        if (!disposing)
         {
-            _lock?.Dispose();
+            return;
         }
+
+        _lock.Dispose();
     }
+
+    /// <summary>Executes the Materialize Items operation.</summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="items">The items value.</param>
+    /// <returns>The result.</returns>
+    private static IReadOnlyList<T> MaterializeItems<T>(IEnumerable<T> items) =>
+        (items as IReadOnlyList<T>) ?? new List<T>(items);
 }

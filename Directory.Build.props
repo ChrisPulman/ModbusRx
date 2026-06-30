@@ -1,7 +1,6 @@
 <Project DefaultTargets="Build"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Chris Pulman</Authors>
     <Description>An Reactive version of NModbus4</Description>
     <Copyright>Copyright © https://github.com/ChrisPulman $([System.DateTime]::Now.ToString(yyyy))</Copyright>
@@ -10,7 +9,6 @@
     <LangVersion>preview</LangVersion>
     <Configuration>$(TargetFramework)</Configuration>
     <Company>ChrisPulman</Company>
-    <NoWarn>CS1591</NoWarn>
     <Nullable>enable</Nullable>
     <PackageIcon>ModbusRx.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -33,11 +31,10 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
@@ -54,21 +51,6 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)images\ModbusRx.png" Pack="true" PackagePath="\"/>
-    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="LICENSE" />
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\"/>
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <PackageReference Include="TUnit" Version="1.57.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\TUnitXunitCompat.cs" Link="TUnitXunitCompat.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\ModuleInitializerAttribute.cs" Link="ModuleInitializerAttribute.cs" />
-    <Using Include="Xunit.Assert" Alias="Assert" />
-    <Using Include="Xunit.Skip" Alias="Skip" />
-  </ItemGroup>
-
   <!-- Alias Lock to the dedicated System.Threading.Lock on .NET 9+ (faster EnterScope fast path),
      and to a plain object elsewhere (the lock statement falls back to Monitor). -->
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
@@ -83,11 +65,11 @@
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
-  
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageReference Include="TUnit" Version="1.57.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\TUnitAssert.cs" Link="TUnitAssert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\TUnitSkip.cs" Link="TUnitSkip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ModbusRx.Testing\ModuleInitializerAttribute.cs" Link="ModuleInitializerAttribute.cs" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <Using Include="ModbusRx.Testing.TUnitAssert" Alias="Assert" />
     <Using Include="ModbusRx.Testing.TUnitSkip" Alias="Skip" />

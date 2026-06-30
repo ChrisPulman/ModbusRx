@@ -1,5 +1,6 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -11,26 +12,19 @@ using ModbusRx.IO;
 using ModbusRx.Message;
 using ModbusRx.Utility;
 using Moq;
-using Xunit;
 
 namespace ModbusRx.UnitTests.IO;
 
-/// <summary>
-/// ModbusRtuTransportFixture.
-/// </summary>
+/// <summary>Tests the ModbusRtuTransportFixture behavior.</summary>
 public class ModbusRtuTransportFixture
 {
-    /// <summary>
-    /// Gets the stream resource.
-    /// </summary>
+    /// <summary>Gets the stream resource.</summary>
     /// <value>
     /// The stream resource.
     /// </value>
     private static IStreamResource StreamResource => new Mock<IStreamResource>(MockBehavior.Strict).Object;
 
-    /// <summary>
-    /// Builds the message frame.
-    /// </summary>
+    /// <summary>Builds the message frame.</summary>
     [TUnit.Core.Test]
     public void BuildMessageFrame()
     {
@@ -41,9 +35,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(message, transport.BuildMessageFrame(request));
     }
 
-    /// <summary>
-    /// Responses the bytes to read coils.
-    /// </summary>
+    /// <summary>Responses the bytes to read coils.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadCoils()
     {
@@ -51,9 +43,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(6, ModbusRtuTransport.ResponseBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Responses the bytes to read coils no data.
-    /// </summary>
+    /// <summary>Responses the bytes to read coils no data.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadCoilsNoData()
     {
@@ -61,9 +51,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(1, ModbusRtuTransport.ResponseBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Responses the bytes to read write coils response.
-    /// </summary>
+    /// <summary>Responses the bytes to read write coils response.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadWriteCoilsResponse()
     {
@@ -71,9 +59,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(4, ModbusRtuTransport.ResponseBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Responses the bytes to read diagnostics.
-    /// </summary>
+    /// <summary>Responses the bytes to read diagnostics.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadDiagnostics()
     {
@@ -81,9 +67,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(4, ModbusRtuTransport.ResponseBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Responses the bytes to read slave exception.
-    /// </summary>
+    /// <summary>Responses the bytes to read slave exception.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadSlaveException()
     {
@@ -91,19 +75,15 @@ public class ModbusRtuTransportFixture
         Assert.Equal(1, ModbusRtuTransport.ResponseBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Responses the bytes to read invalid function code.
-    /// </summary>
+    /// <summary>Responses the bytes to read invalid function code.</summary>
     [TUnit.Core.Test]
     public void ResponseBytesToReadInvalidFunctionCode()
     {
         byte[] frame = { 0x11, 0x16, 0x00, 0x01, 0x00, 0x02, 0x04 };
-        Assert.Throws<NotImplementedException>(() => ModbusRtuTransport.ResponseBytesToRead(frame));
+        _ = Assert.Throws<NotSupportedException>(() => ModbusRtuTransport.ResponseBytesToRead(frame));
     }
 
-    /// <summary>
-    /// Requests the bytes to read diagnostics.
-    /// </summary>
+    /// <summary>Requests the bytes to read diagnostics.</summary>
     [TUnit.Core.Test]
     public void RequestBytesToReadDiagnostics()
     {
@@ -111,9 +91,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(1, ModbusRtuTransport.RequestBytesToRead(frame));
     }
 
-    /// <summary>
-    /// Requests the bytes to read coils.
-    /// </summary>
+    /// <summary>Requests the bytes to read coils.</summary>
     [TUnit.Core.Test]
     public void RequestBytesToReadCoils()
     {
@@ -121,9 +99,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(1, ModbusRtuTransport.RequestBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Requests the bytes to read write coils request.
-    /// </summary>
+    /// <summary>Requests the bytes to read write coils request.</summary>
     [TUnit.Core.Test]
     public void RequestBytesToReadWriteCoilsRequest()
     {
@@ -131,9 +107,7 @@ public class ModbusRtuTransportFixture
         Assert.Equal(4, ModbusRtuTransport.RequestBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Requests the bytes to read write multiple holding registers.
-    /// </summary>
+    /// <summary>Requests the bytes to read write multiple holding registers.</summary>
     [TUnit.Core.Test]
     public void RequestBytesToReadWriteMultipleHoldingRegisters()
     {
@@ -141,19 +115,15 @@ public class ModbusRtuTransportFixture
         Assert.Equal(6, ModbusRtuTransport.RequestBytesToRead(frameStart));
     }
 
-    /// <summary>
-    /// Requests the bytes to read invalid function code.
-    /// </summary>
+    /// <summary>Requests the bytes to read invalid function code.</summary>
     [TUnit.Core.Test]
     public void RequestBytesToReadInvalidFunctionCode()
     {
         byte[] frame = { 0x11, 0xFF, 0x00, 0x01, 0x00, 0x02, 0x04 };
-        Assert.Throws<NotImplementedException>(() => ModbusRtuTransport.RequestBytesToRead(frame));
+        _ = Assert.Throws<NotSupportedException>(() => ModbusRtuTransport.RequestBytesToRead(frame));
     }
 
-    /// <summary>
-    /// Checksumses the match succeed.
-    /// </summary>
+    /// <summary>Checksumses the match succeed.</summary>
     [TUnit.Core.Test]
     public void ChecksumsMatchSucceed()
     {
@@ -164,9 +134,7 @@ public class ModbusRtuTransportFixture
         Assert.True(transport.ChecksumsMatch(message, frame));
     }
 
-    /// <summary>
-    /// Checksumses the match fail.
-    /// </summary>
+    /// <summary>Checksumses the match fail.</summary>
     [TUnit.Core.Test]
     public void ChecksumsMatchFail()
     {
@@ -177,21 +145,16 @@ public class ModbusRtuTransportFixture
         Assert.False(transport.ChecksumsMatch(message, frame));
     }
 
-    /// <summary>
-    /// Reads the response.
-    /// </summary>
+    /// <summary>Reads the response.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ReadResponse()
     {
-        var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
-        var transport = mock.Object;
-
-        mock.Setup(t => t.Read(ModbusRtuTransport.ResponseFrameStartLength)).Returns(new byte[] { 1, 1, 1, 0 });
-        mock.Setup(t => t.Read(2)).Returns(new byte[] { 81, 136 });
+        var mock = CreateReadStreamResource([1, 1, 1, 0, 81, 136]);
+        var transport = new ModbusRtuTransport(mock.Object);
 
         var response = await transport.ReadResponse<ReadCoilsInputsResponse>();
-        Assert.IsType<ReadCoilsInputsResponse>(response);
+        _ = Assert.IsType<ReadCoilsInputsResponse>(response);
 
         var expectedResponse = new ReadCoilsInputsResponse(Modbus.ReadCoils, 1, 1, new DiscreteCollection(false));
         Assert.Equal(expectedResponse.MessageFrame, response.MessageFrame);
@@ -199,27 +162,22 @@ public class ModbusRtuTransportFixture
         mock.VerifyAll();
     }
 
-    /// <summary>
-    /// Reads the response slave exception.
-    /// </summary>
+    /// <summary>Reads the response slave exception.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ReadResponseSlaveException()
     {
-        var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
-        var transport = mock.Object;
-
         byte[] messageFrame = { 0x01, 0x81, 0x02 };
         var crc = ModbusUtility.CalculateCrc(messageFrame);
+        var responseStart = new byte[messageFrame.Length + 1];
+        Array.Copy(messageFrame, responseStart, messageFrame.Length);
+        responseStart[messageFrame.Length] = crc[0];
 
-        mock.Setup(t => t.Read(ModbusRtuTransport.ResponseFrameStartLength))
-            .Returns(Enumerable.Concat(messageFrame, new byte[] { crc[0] }).ToArray());
-
-        mock.Setup(t => t.Read(1))
-            .Returns(new byte[] { crc[1] });
+        var mock = CreateReadStreamResource(CombineBytes(responseStart, crc[1]));
+        var transport = new ModbusRtuTransport(mock.Object);
 
         var response = await transport.ReadResponse<ReadCoilsInputsResponse>();
-        Assert.IsType<SlaveExceptionResponse>(response);
+        _ = Assert.IsType<SlaveExceptionResponse>(response);
 
         var expectedResponse = new SlaveExceptionResponse(0x01, 0x81, 0x02);
         Assert.Equal(expectedResponse.MessageFrame, response.MessageFrame);
@@ -235,56 +193,43 @@ public class ModbusRtuTransportFixture
     [TUnit.Core.Test]
     public async Task ReadResponseSlaveExceptionWithErroneousLrcAsync()
     {
-        var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
-        var transport = mock.Object;
-
         byte[] messageFrame = { 0x01, 0x81, 0x02 };
 
         // invalid crc
         byte[] crc = { 0x9, 0x9 };
+        var responseStart = new byte[messageFrame.Length + 1];
+        Array.Copy(messageFrame, responseStart, messageFrame.Length);
+        responseStart[messageFrame.Length] = crc[0];
 
-        mock.Setup(t => t.Read(ModbusRtuTransport.ResponseFrameStartLength))
-            .Returns(Enumerable.Concat(messageFrame, new byte[] { crc[0] }).ToArray());
-
-        mock.Setup(t => t.Read(1))
-            .Returns(new byte[] { crc[1] });
+        var mock = CreateReadStreamResource(CombineBytes(responseStart, crc[1]));
+        var transport = new ModbusRtuTransport(mock.Object);
 
         await Assert.ThrowsAsync<IOException>(() => transport.ReadResponse<ReadCoilsInputsResponse>());
 
         mock.VerifyAll();
     }
 
-    /// <summary>
-    /// Reads the request.
-    /// </summary>
+    /// <summary>Reads the request.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ReadRequestAsync()
     {
-        var mock = new Mock<ModbusRtuTransport>(StreamResource) { CallBase = true };
-        var transport = mock.Object;
+        var mock = CreateReadStreamResource([1, 1, 1, 0, 1, 0, 0, 5]);
+        var transport = new ModbusRtuTransport(mock.Object);
 
-        mock.Setup(t => t.Read(ModbusRtuTransport.RequestFrameStartLength))
-            .Returns(new byte[] { 1, 1, 1, 0, 1, 0, 0 });
-
-        mock.Setup(t => t.Read(1))
-            .Returns(new byte[] { 5 });
-
-        Assert.Equal(new byte[] { 1, 1, 1, 0, 1, 0, 0, 5 }, await transport.ReadRequest());
+        Assert.Equal([ 1, 1, 1, 0, 1, 0, 0, 5], await transport.ReadRequest());
 
         mock.VerifyAll();
     }
 
-    /// <summary>
-    /// Reads this instance.
-    /// </summary>
+    /// <summary>Reads this instance.</summary>
     [TUnit.Core.Test]
     public void Read()
     {
         var mock = new Mock<IStreamResource>(MockBehavior.Strict);
-        var bytes = new Queue<byte>(new byte[] { 2, 2, 2, 3, 3 });
+        var bytes = new Queue<byte>([ 2, 2, 2, 3, 3]);
 
-        mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 5), It.IsAny<int>(), 1).Result)
+        _ = mock.Setup(s => s.ReadAsync(It.Is<byte[]>(x => x.Length == 5), It.IsAny<int>(), 1).Result)
             .Returns((byte[] buf, int offset, int count) =>
             {
                 buf[offset] = bytes.Dequeue();
@@ -292,8 +237,38 @@ public class ModbusRtuTransportFixture
             });
 
         var transport = new ModbusRtuTransport(mock.Object);
-        Assert.Equal(new byte[] { 2, 2, 2, 3, 3 }, transport.Read(5));
+        Assert.Equal([ 2, 2, 2, 3, 3], transport.Read(5));
 
         mock.VerifyAll();
+    }
+
+    /// <summary>Combines bytes with a trailing byte.</summary>
+    /// <param name="bytes">The bytes to copy.</param>
+    /// <param name="trailingByte">The trailing byte.</param>
+    /// <returns>The combined bytes.</returns>
+    private static byte[] CombineBytes(byte[] bytes, byte trailingByte)
+    {
+        var combined = new byte[bytes.Length + 1];
+        Array.Copy(bytes, combined, bytes.Length);
+        combined[^1] = trailingByte;
+        return combined;
+    }
+
+    /// <summary>Creates a stream resource that returns the provided bytes one byte at a time.</summary>
+    /// <param name="bytes">The bytes to return.</param>
+    /// <returns>The configured stream resource mock.</returns>
+    private static Mock<IStreamResource> CreateReadStreamResource(byte[] bytes)
+    {
+        var mock = new Mock<IStreamResource>(MockBehavior.Strict);
+        var queue = new Queue<byte>(bytes);
+
+        _ = mock.Setup(s => s.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), 1).Result)
+            .Returns((byte[] buffer, int offset, int count) =>
+            {
+                buffer[offset] = queue.Dequeue();
+                return 1;
+            });
+
+        return mock;
     }
 }

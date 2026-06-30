@@ -1,9 +1,8 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 #if SERIAL
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
@@ -11,7 +10,6 @@ namespace ModbusRx.IntegrationTests;
 /// Base class for ModbusSerialMaster test fixtures.
 /// </summary>
 /// <seealso cref="ModbusRx.IntegrationTests.ModbusRxMasterFixture" />
-[Collection("NetworkTests")]
 public abstract class ModbusSerialMasterFixture : ModbusRxMasterFixture
 {
     /// <summary>

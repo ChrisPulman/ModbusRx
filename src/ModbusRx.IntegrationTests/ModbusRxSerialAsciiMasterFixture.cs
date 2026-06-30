@@ -1,21 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// NModbusSerialAsciiMasterFixture.
-/// </summary>
-[Collection("NetworkTests")]
+/// <summary>Tests the NModbusSerialAsciiMasterFixture behavior.</summary>
 public class ModbusRxSerialAsciiMasterFixture : NetworkTestBase
 {
-    /// <summary>
-    /// Tests the modbus ASCII master read timeout.
-    /// </summary>
+    /// <summary>Tests the modbus ASCII master read timeout.</summary>
     [TUnit.Core.Test]
     public void ModbusRxAsciiMaster_ReadTimeout()
     {

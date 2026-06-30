@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// WriteMultipleRegistersResponseFixture.
-/// </summary>
+/// <summary>Tests the WriteMultipleRegistersResponseFixture behavior.</summary>
 public class WriteMultipleRegistersResponseFixture
 {
-    /// <summary>
-    /// Creates the write multiple registers response.
-    /// </summary>
+    /// <summary>Creates the write multiple registers response.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersResponse()
     {
@@ -25,15 +21,12 @@ public class WriteMultipleRegistersResponseFixture
         Assert.Equal(2, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Creates the write multiple registers response too much data.
-    /// </summary>
+    /// <summary>Creates the write multiple registers response too much data.</summary>
     [TUnit.Core.Test]
-    public void CreateWriteMultipleRegistersResponseTooMuchData() => Assert.Throws<ArgumentOutOfRangeException>(() => new WriteMultipleRegistersResponse(1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
+    public void CreateWriteMultipleRegistersResponseTooMuchData() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = new WriteMultipleRegistersResponse(1, 2, Modbus.MaximumRegisterRequestResponseSize + 1));
 
-    /// <summary>
-    /// Creates the maximum size of the write multiple registers response.
-    /// </summary>
+    /// <summary>Creates the maximum size of the write multiple registers response.</summary>
     [TUnit.Core.Test]
     public void CreateWriteMultipleRegistersResponseMaxSize()
     {
@@ -41,9 +34,7 @@ public class WriteMultipleRegistersResponseFixture
         Assert.Equal(Modbus.MaximumRegisterRequestResponseSize, response.NumberOfPoints);
     }
 
-    /// <summary>
-    /// Converts to string_test.
-    /// </summary>
+    /// <summary>Converts to string_test.</summary>
     [TUnit.Core.Test]
     public void ToString_Test()
     {

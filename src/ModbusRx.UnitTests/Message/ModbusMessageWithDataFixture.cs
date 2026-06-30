@@ -1,20 +1,16 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using ModbusRx.Data;
 using ModbusRx.Message;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Message;
 
-/// <summary>
-/// ModbusMessageWithDataFixture.
-/// </summary>
+/// <summary>Tests the ModbusMessageWithDataFixture behavior.</summary>
 public class ModbusMessageWithDataFixture
 {
-    /// <summary>
-    /// Modbuses the message with data fixture ctor initializes properties.
-    /// </summary>
+    /// <summary>Modbuses the message with data fixture ctor initializes properties.</summary>
     [TUnit.Core.Test]
     public void ModbusMessageWithDataFixtureCtorInitializesProperties()
     {
@@ -23,9 +19,7 @@ public class ModbusMessageWithDataFixture
         Assert.Equal(10, message.SlaveAddress);
     }
 
-    /// <summary>
-    /// Protocols the data unit read coils response.
-    /// </summary>
+    /// <summary>Protocols the data unit read coils response.</summary>
     [TUnit.Core.Test]
     public void ProtocolDataUnitReadCoilsResponse()
     {
@@ -34,9 +28,7 @@ public class ModbusMessageWithDataFixture
         Assert.Equal(expectedResult, message.ProtocolDataUnit);
     }
 
-    /// <summary>
-    /// Datas the read coils response.
-    /// </summary>
+    /// <summary>Datas the read coils response.</summary>
     [TUnit.Core.Test]
     public void DataReadCoilsResponse()
     {

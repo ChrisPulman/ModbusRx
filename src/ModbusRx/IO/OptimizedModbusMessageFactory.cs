@@ -1,21 +1,27 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Buffers.Binary;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Utility;
+#else
 using ModbusRx.Utility;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.IO;
+#else
 namespace ModbusRx.IO;
+#endif
 
-/// <summary>
-/// High-performance Modbus message factory with cross-platform optimizations.
-/// </summary>
+/// <summary>High-performance Modbus message factory with cross-platform optimizations.</summary>
 public static class OptimizedModbusMessageFactory
 {
+    /// <summary>Executes the Buffer Manager operation.</summary>
     private static readonly ModbusBufferManager BufferManager = new();
 
-    /// <summary>
-    /// Creates a read holding registers request with high performance.
-    /// </summary>
+    /// <summary>Creates a read holding registers request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="numberOfPoints">The number of points.</param>
@@ -45,9 +51,7 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Creates a read coils request with high performance.
-    /// </summary>
+    /// <summary>Creates a read coils request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="numberOfPoints">The number of points.</param>
@@ -77,9 +81,7 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Creates a write single register request with high performance.
-    /// </summary>
+    /// <summary>Creates a write single register request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="registerAddress">The register address.</param>
     /// <param name="value">The value to write.</param>
@@ -109,16 +111,14 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Creates a write multiple registers request with high performance.
-    /// </summary>
+    /// <summary>Creates a write multiple registers request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="values">The values to write.</param>
     /// <returns>The serialized message bytes.</returns>
     public static byte[] CreateWriteMultipleRegistersRequest(byte slaveAddress, ushort startAddress, ushort[] values)
     {
-        if (values == null)
+        if (values is null)
         {
             throw new ArgumentNullException(nameof(values));
         }
@@ -156,9 +156,7 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Creates a write single coil request with high performance.
-    /// </summary>
+    /// <summary>Creates a write single coil request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="coilAddress">The coil address.</param>
     /// <param name="value">The value to write.</param>
@@ -188,16 +186,14 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Creates a write multiple coils request with high performance.
-    /// </summary>
+    /// <summary>Creates a write multiple coils request with high performance.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startAddress">The start address.</param>
     /// <param name="values">The values to write.</param>
     /// <returns>The serialized message bytes.</returns>
     public static byte[] CreateWriteMultipleCoilsRequest(byte slaveAddress, ushort startAddress, bool[] values)
     {
-        if (values == null)
+        if (values is null)
         {
             throw new ArgumentNullException(nameof(values));
         }
@@ -241,15 +237,13 @@ public static class OptimizedModbusMessageFactory
         }
     }
 
-    /// <summary>
-    /// Parses a read holding registers response with high performance.
-    /// </summary>
+    /// <summary>Parses a read holding registers response with high performance.</summary>
     /// <param name="responseData">The response data.</param>
     /// <returns>The parsed register values.</returns>
     /// <exception cref="ArgumentException">Thrown when response data is invalid.</exception>
     public static ushort[] ParseReadHoldingRegistersResponse(byte[] responseData)
     {
-        if (responseData == null)
+        if (responseData is null)
         {
             throw new ArgumentNullException(nameof(responseData));
         }
@@ -279,16 +273,14 @@ public static class OptimizedModbusMessageFactory
         return values;
     }
 
-    /// <summary>
-    /// Parses a read coils response with high performance.
-    /// </summary>
+    /// <summary>Parses a read coils response with high performance.</summary>
     /// <param name="responseData">The response data.</param>
     /// <param name="numberOfCoils">The number of coils requested.</param>
     /// <returns>The parsed coil values.</returns>
     /// <exception cref="ArgumentException">Thrown when response data is invalid.</exception>
     public static bool[] ParseReadCoilsResponse(byte[] responseData, int numberOfCoils)
     {
-        if (responseData == null)
+        if (responseData is null)
         {
             throw new ArgumentNullException(nameof(responseData));
         }
@@ -322,14 +314,12 @@ public static class OptimizedModbusMessageFactory
         return values;
     }
 
-    /// <summary>
-    /// Validates a Modbus message CRC with high performance.
-    /// </summary>
+    /// <summary>Validates a Modbus message CRC with high performance.</summary>
     /// <param name="messageData">The complete message data including CRC.</param>
     /// <returns>True if CRC is valid.</returns>
     public static bool ValidateMessageCrc(byte[] messageData)
     {
-        if (messageData == null || messageData.Length < 4)
+        if (messageData is null || messageData.Length < 4)
         {
             return false;
         }
@@ -345,8 +335,6 @@ public static class OptimizedModbusMessageFactory
         return ModbusBufferManager.CompareArrays(calculatedCrc, receivedCrc);
     }
 
-    /// <summary>
-    /// Disposes the shared buffer manager.
-    /// </summary>
+    /// <summary>Disposes the shared buffer manager.</summary>
     public static void DisposeSharedResources() => BufferManager?.Dispose();
 }

@@ -1,5 +1,6 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,26 +13,19 @@ using ModbusRx.Message;
 using ModbusRx.UnitTests.Message;
 using ModbusRx.Utility;
 using Moq;
-using Xunit;
 
 namespace ModbusRx.UnitTests.IO;
 
-/// <summary>
-/// ModbusSerialTransportFixture.
-/// </summary>
+/// <summary>Tests the ModbusSerialTransportFixture behavior.</summary>
 public class ModbusSerialTransportFixture
 {
-    /// <summary>
-    /// Gets the stream resource.
-    /// </summary>
+    /// <summary>Gets the stream resource.</summary>
     /// <value>
     /// The stream resource.
     /// </value>
     private static IStreamResource StreamResource => new Mock<IStreamResource>(MockBehavior.Strict).Object;
 
-    /// <summary>
-    /// Creates the response.
-    /// </summary>
+    /// <summary>Creates the response.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task CreateResponse()
@@ -39,35 +33,31 @@ public class ModbusSerialTransportFixture
         var transport = new ModbusAsciiTransport(StreamResource);
         var expectedResponse = new ReadCoilsInputsResponse(Modbus.ReadCoils, 2, 1, new DiscreteCollection(true, false, false, false, false, false, false, true));
         var lrc = ModbusUtility.CalculateLrc(expectedResponse.MessageFrame);
-        var frame = Task.FromResult(new byte[] { 2, Modbus.ReadCoils, 1, 129, lrc });
+        var frame = Task.FromResult<byte[]>([ 2, Modbus.ReadCoils, 1, 129, lrc]);
         var response = await transport.CreateResponse<ReadCoilsInputsResponse>(frame);
 
-        Assert.IsType<ReadCoilsInputsResponse>(response);
+        _ = Assert.IsType<ReadCoilsInputsResponse>(response);
         ModbusMessageFixture.AssertModbusMessagePropertiesAreEqual(expectedResponse, response);
     }
 
-    /// <summary>
-    /// Creates the response erroneous LRC.
-    /// </summary>
+    /// <summary>Creates the response erroneous LRC.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task CreateResponseErroneousLrcAsync()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = true };
-        var frame = Task.FromResult(new byte[] { 19, Modbus.ReadCoils, 0, 0, 0, 2, 115 });
+        var frame = Task.FromResult<byte[]>([ 19, Modbus.ReadCoils, 0, 0, 0, 2, 115]);
 
         await Assert.ThrowsAsync<IOException>(() => transport.CreateResponse<ReadCoilsInputsResponse>(frame));
     }
 
-    /// <summary>
-    /// Creates the response erroneous LRC do not check frame.
-    /// </summary>
+    /// <summary>Creates the response erroneous LRC do not check frame.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task CreateResponseErroneousLrcDoNotCheckFrame()
     {
         var transport = new ModbusAsciiTransport(StreamResource) { CheckFrame = false };
-        var frame = Task.FromResult(new byte[] { 19, Modbus.ReadCoils, 0, 0, 0, 2, 115 });
+        var frame = Task.FromResult<byte[]>([ 19, Modbus.ReadCoils, 0, 0, 0, 2, 115]);
 
         await transport.CreateResponse<ReadCoilsInputsResponse>(frame);
     }
@@ -83,8 +73,8 @@ public class ModbusSerialTransportFixture
         var serialResource = mock.Object;
         var transport = new ModbusRtuTransport(serialResource);
 
-        mock.Setup(s => s.DiscardInBuffer());
-        mock.Setup(s => s.Write(It.IsAny<byte[]>(), 0, 0));
+        _ = mock.Setup(s => s.DiscardInBuffer());
+        _ = mock.Setup(s => s.Write(It.IsAny<byte[]>(), 0, 0));
 
         serialResource.DiscardInBuffer();
         serialResource.Write(null!, 0, 0);
@@ -94,13 +84,17 @@ public class ModbusSerialTransportFixture
 
         // normal response
         var response = new ReadCoilsInputsResponse(Modbus.ReadCoils, 2, 1, new DiscreteCollection(true, false, true, false, false, false, false, false));
-        var responseBytes = new Queue<byte>(response.MessageFrame.Concat(ModbusUtility.CalculateCrc(response.MessageFrame)));
+        var crc = ModbusUtility.CalculateCrc(response.MessageFrame);
+        var responseFrame = new byte[response.MessageFrame.Length + crc.Length];
+        Array.Copy(response.MessageFrame, responseFrame, response.MessageFrame.Length);
+        Array.Copy(crc, 0, responseFrame, response.MessageFrame.Length, crc.Length);
+        var responseBytes = new Queue<byte>(responseFrame);
 
         // write request
-        mock.Setup(s => s.Write(It.Is<byte[]>(x => x.Length == 8), 0, 8));
+        _ = mock.Setup(s => s.Write(It.Is<byte[]>(x => x.Length == 8), 0, 8));
 
         // read response
-        mock.Setup(s => s.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), 1).Result)
+        _ = mock.Setup(s => s.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), 1).Result)
             .Returns((byte[] buf, int offset, int count) =>
             {
                 buf[offset] = responseBytes.Dequeue();

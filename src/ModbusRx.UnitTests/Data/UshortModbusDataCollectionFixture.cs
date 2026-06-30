@@ -1,21 +1,17 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System.Collections.ObjectModel;
 using ModbusRx.Data;
-using Xunit;
 
 namespace ModbusRx.UnitTests.Data;
 
-/// <summary>
-/// UshortModbusDataCollectionFixture.
-/// </summary>
+/// <summary>Tests the UshortModbusDataCollectionFixture behavior.</summary>
 [TUnit.Core.InheritsTests]
 public class UshortModbusDataCollectionFixture : ModbusDataCollectionFixture<ushort>
 {
-    /// <summary>
-    /// Removes from read only.
-    /// </summary>
+    /// <summary>Removes from read only.</summary>
     [TUnit.Core.Test]
     public void Remove_FromReadOnly()
     {
@@ -28,16 +24,12 @@ public class UshortModbusDataCollectionFixture : ModbusDataCollectionFixture<ush
         Assert.Equal(expectedCount, col.Count);
     }
 
-    /// <summary>
-    /// Gets the array.
-    /// </summary>
+    /// <summary>Gets the array.</summary>
     /// <returns>A ushort.</returns>
     protected override ushort[] GetArray() =>
         [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-    /// <summary>
-    /// Gets the non existent element.
-    /// </summary>
+    /// <summary>Gets the non existent element.</summary>
     /// <returns>A ushort.</returns>
     protected override ushort GetNonExistentElement() => 42;
 }

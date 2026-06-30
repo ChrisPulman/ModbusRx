@@ -1,27 +1,30 @@
-﻿// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
 
+#if REACTIVE_SHIM
+namespace ModbusRx.Reactive.Message;
+#else
 namespace ModbusRx.Message;
+#endif
 
-/// <summary>
-/// ReadWriteMultipleRegistersRequest.
-/// </summary>
-/// <seealso cref="ModbusRx.Message.AbstractModbusMessage" />
-/// <seealso cref="ModbusRx.Message.IModbusRequest" />
+/// <summary>Provides ReadWriteMultipleRegistersRequest functionality.</summary>
+/// <seealso cref="AbstractModbusMessage" />
+/// <seealso cref="IModbusRequest" />
 public class ReadWriteMultipleRegistersRequest : AbstractModbusMessage, IModbusRequest
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadWriteMultipleRegistersRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadWriteMultipleRegistersRequest"/> class.</summary>
     public ReadWriteMultipleRegistersRequest()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadWriteMultipleRegistersRequest"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ReadWriteMultipleRegistersRequest"/> class.</summary>
     /// <param name="slaveAddress">The slave address.</param>
     /// <param name="startReadAddress">The start read address.</param>
     /// <param name="numberOfPointsToRead">The number of points to read.</param>
@@ -35,13 +38,13 @@ public class ReadWriteMultipleRegistersRequest : AbstractModbusMessage, IModbusR
         RegisterCollection writeData)
         : base(slaveAddress, Modbus.ReadWriteMultipleRegisters)
     {
-        ReadRequest = new ReadHoldingInputRegistersRequest(
+        ReadRequest = new(
             Modbus.ReadHoldingRegisters,
             slaveAddress,
             startReadAddress,
             numberOfPointsToRead);
 
-        WriteRequest = new WriteMultipleRegistersRequest(
+        WriteRequest = new(
             slaveAddress,
             startWriteAddress,
             writeData);
@@ -66,20 +69,12 @@ public class ReadWriteMultipleRegistersRequest : AbstractModbusMessage, IModbusR
         }
     }
 
-    /// <summary>
-    /// Gets the read request.
-    /// </summary>
-    /// <value>
-    /// The read request.
-    /// </value>
+    /// <summary>Gets the read request.</summary>
+/// <value>The read request.</value>
     public ReadHoldingInputRegistersRequest? ReadRequest { get; private set; }
 
-    /// <summary>
-    /// Gets the write request.
-    /// </summary>
-    /// <value>
-    /// The write request.
-    /// </value>
+    /// <summary>Gets the write request.</summary>
+/// <value>The write request.</value>
     public WriteMultipleRegistersRequest? WriteRequest { get; private set; }
 
     /// <inheritdoc/>
@@ -95,11 +90,13 @@ public class ReadWriteMultipleRegistersRequest : AbstractModbusMessage, IModbusR
         var typedResponse = (ReadHoldingInputRegistersResponse)response;
         var expectedByteCount = ReadRequest?.NumberOfPoints * 2;
 
-        if (expectedByteCount != typedResponse?.ByteCount)
+        if (expectedByteCount == typedResponse?.ByteCount)
         {
-            var msg = $"Unexpected byte count in response. Expected {expectedByteCount}, received {typedResponse?.ByteCount}.";
-            throw new IOException(msg);
+            return;
         }
+
+        var msg = $"Unexpected byte count in response. Expected {expectedByteCount}, received {typedResponse?.ByteCount}.";
+        throw new IOException(msg);
     }
 
     /// <inheritdoc/>
@@ -113,8 +110,10 @@ public class ReadWriteMultipleRegistersRequest : AbstractModbusMessage, IModbusR
         var readFrame = new byte[2 + 4];
         var writeFrame = new byte[frame.Length - 6 + 2];
 
-        readFrame[0] = writeFrame[0] = SlaveAddress;
-        readFrame[1] = writeFrame[1] = FunctionCode;
+        readFrame[0] = SlaveAddress;
+        writeFrame[0] = SlaveAddress;
+        readFrame[1] = FunctionCode;
+        writeFrame[1] = FunctionCode;
 
         Buffer.BlockCopy(frame, 2, readFrame, 2, 4);
         Buffer.BlockCopy(frame, 6, writeFrame, 2, frame.Length - 6);

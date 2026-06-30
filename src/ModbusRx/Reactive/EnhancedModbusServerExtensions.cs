@@ -1,29 +1,42 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Data;
+#else
 using ModbusRx.Data;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Device;
+#else
 using ModbusRx.Device;
+#endif
+#if REACTIVE_SHIM
+using ModbusRx.Reactive.Utility;
+#else
 using ModbusRx.Utility;
+#endif
 
+#if REACTIVE_SHIM
 namespace ModbusRx.Reactive;
+#else
+namespace ModbusRx;
+#endif
 
-/// <summary>
-/// Enhanced reactive extensions for ModbusServer with performance optimizations.
-/// </summary>
+/// <summary>Enhanced reactive extensions for ModbusServer with performance optimizations.</summary>
 public static class EnhancedModbusServerExtensions
 {
-    /// <summary>
-    /// Observes data changes in the server with high-performance optimizations.
-    /// </summary>
+    /// <summary>Provides optimized observation adapters for Modbus servers.</summary>
     /// <param name="server">The Modbus server.</param>
+    extension(ModbusServer server)
+    {
+    /// <summary>Observes data changes in the server with high-performance optimizations.</summary>
     /// <param name="interval">The observation interval in milliseconds.</param>
     /// <returns>An observable of data changes.</returns>
-    public static IObservable<ModbusServerDataSnapshot> ObserveDataChangesOptimized(this ModbusServer server, int interval = 100)
+    public IObservable<ModbusServerDataSnapshot> ObserveDataChangesOptimized(int interval = 100)
     {
-        if (server == null)
+        if (server is null)
         {
             throw new ArgumentNullException(nameof(server));
         }
@@ -35,12 +48,12 @@ public static class EnhancedModbusServerExtensions
             var hasChanged = false;
 
             // Subscribe to data store events for immediate change detection
-            if (server.DataStore != null)
+            if (server.DataStore is not null)
             {
-                var writeSubscription = Observable.FromEvent<EventHandler<DataStoreEventArgs>, DataStoreEventArgs>(
-                    handler => (sender, args) => handler(args),
+                var writeSubscription = Observable.FromEventPattern<DataStoreEventArgs>(
                     handler => server.DataStore.DataStoreWrittenTo += handler,
                     handler => server.DataStore.DataStoreWrittenTo -= handler)
+                    .Select(pattern => pattern.EventArgs)
                     .Subscribe(_ => hasChanged = true);
 
                 disposables.Add(writeSubscription);
@@ -64,21 +77,17 @@ public static class EnhancedModbusServerExtensions
         });
     }
 
-    /// <summary>
-    /// Observes holding register changes with range filtering.
-    /// </summary>
-    /// <param name="server">The Modbus server.</param>
+    /// <summary>Observes holding register changes with range filtering.</summary>
     /// <param name="startAddress">The start address to observe.</param>
     /// <param name="count">The number of registers to observe.</param>
     /// <param name="interval">The observation interval in milliseconds.</param>
     /// <returns>An observable of register values.</returns>
-    public static IObservable<ushort[]> ObserveHoldingRegistersOptimized(
-        this ModbusServer server,
+    public IObservable<ushort[]> ObserveHoldingRegistersOptimized(
         ushort startAddress,
         ushort count,
         int interval = 100)
     {
-        if (server == null)
+        if (server is null)
         {
             throw new ArgumentNullException(nameof(server));
         }
@@ -91,12 +100,12 @@ public static class EnhancedModbusServerExtensions
             var disposables = new CompositeDisposable();
 
             // Subscribe to relevant data store changes
-            if (server.DataStore != null)
+            if (server.DataStore is not null)
             {
-                var writeSubscription = Observable.FromEvent<EventHandler<DataStoreEventArgs>, DataStoreEventArgs>(
-                    handler => (sender, args) => handler(args),
+                var writeSubscription = Observable.FromEventPattern<DataStoreEventArgs>(
                     handler => server.DataStore.DataStoreWrittenTo += handler,
                     handler => server.DataStore.DataStoreWrittenTo -= handler)
+                    .Select(pattern => pattern.EventArgs)
                     .Where(args => IsAddressInRange(args.StartAddress, GetDataLength(args), startAddress, count))
                     .Subscribe(_ => hasChanged = true);
 
@@ -131,21 +140,17 @@ public static class EnhancedModbusServerExtensions
         });
     }
 
-    /// <summary>
-    /// Observes coil changes with range filtering.
-    /// </summary>
-    /// <param name="server">The Modbus server.</param>
+    /// <summary>Observes coil changes with range filtering.</summary>
     /// <param name="startAddress">The start address to observe.</param>
     /// <param name="count">The number of coils to observe.</param>
     /// <param name="interval">The observation interval in milliseconds.</param>
     /// <returns>An observable of coil values.</returns>
-    public static IObservable<bool[]> ObserveCoilsOptimized(
-        this ModbusServer server,
+    public IObservable<bool[]> ObserveCoilsOptimized(
         ushort startAddress,
         ushort count,
         int interval = 100)
     {
-        if (server == null)
+        if (server is null)
         {
             throw new ArgumentNullException(nameof(server));
         }
@@ -158,12 +163,12 @@ public static class EnhancedModbusServerExtensions
             var disposables = new CompositeDisposable();
 
             // Subscribe to relevant data store changes
-            if (server.DataStore != null)
+            if (server.DataStore is not null)
             {
-                var writeSubscription = Observable.FromEvent<EventHandler<DataStoreEventArgs>, DataStoreEventArgs>(
-                    handler => (sender, args) => handler(args),
+                var writeSubscription = Observable.FromEventPattern<DataStoreEventArgs>(
                     handler => server.DataStore.DataStoreWrittenTo += handler,
                     handler => server.DataStore.DataStoreWrittenTo -= handler)
+                    .Select(pattern => pattern.EventArgs)
                     .Where(args => IsAddressInRange(args.StartAddress, GetDataLength(args), startAddress, count))
                     .Subscribe(_ => hasChanged = true);
 
@@ -198,37 +203,35 @@ public static class EnhancedModbusServerExtensions
         });
     }
 
-    /// <summary>
-    /// Creates a buffered observable with change detection and batching.
-    /// </summary>
-    /// <param name="server">The Modbus server.</param>
+    /// <summary>Creates a buffered observable with change detection and batching.</summary>
     /// <param name="bufferSize">The buffer size for batching changes.</param>
     /// <param name="bufferTimeMilliseconds">The buffer time window in milliseconds.</param>
     /// <returns>An observable of batched data changes.</returns>
-    public static IObservable<ModbusServerDataSnapshot[]> ObserveDataChangesBuffered(
-        this ModbusServer server,
+    public IObservable<ModbusServerDataSnapshot[]> ObserveDataChangesBuffered(
         int bufferSize = 10,
         int bufferTimeMilliseconds = 1000)
     {
-        if (server == null)
+        if (server is null)
         {
             throw new ArgumentNullException(nameof(server));
         }
 
-        var timeSpan = TimeSpan.FromMilliseconds(bufferTimeMilliseconds);
-
         return server.ObserveDataChangesOptimized()
-            .Buffer(timeSpan, bufferSize)
-            .Select(list => list.ToArray())
+            .Buffer(bufferSize)
+            .Select(CopyBufferedSnapshots)
             .Where(buffer => buffer.Length > 0);
     }
+    }
 
+    /// <summary>Executes the Create Snapshot operation.</summary>
+    /// <param name="server">The server value.</param>
+    /// <returns>The result.</returns>
     private static ModbusServerDataSnapshot CreateSnapshot(ModbusServer server)
     {
         try
         {
             var dataStore = server.DataStore;
-            if (dataStore == null)
+            if (dataStore is null)
             {
                 return new ModbusServerDataSnapshot();
             }
@@ -257,14 +260,12 @@ public static class EnhancedModbusServerExtensions
         }
     }
 
+    /// <summary>Executes the Get Data Length operation.</summary>
+    /// <param name="args">The args value.</param>
+    /// <returns>The result.</returns>
     private static int GetDataLength(DataStoreEventArgs args)
     {
-        if (args.Data == null)
-        {
-            return 0;
-        }
-
-        return args.Data.Option switch
+        return args.Data is null ? 0 : args.Data.Option switch
         {
             DiscriminatedUnionOption.A => args.Data.A?.Count ?? 0,
             DiscriminatedUnionOption.B => args.Data.B?.Count ?? 0,
@@ -272,6 +273,12 @@ public static class EnhancedModbusServerExtensions
         };
     }
 
+    /// <summary>Executes the Is Address In Range operation.</summary>
+    /// <param name="startAddress">The start Address value.</param>
+    /// <param name="length">The length value.</param>
+    /// <param name="observeStart">The observe Start value.</param>
+    /// <param name="observeCount">The observe Count value.</param>
+    /// <returns>The result.</returns>
     private static bool IsAddressInRange(ushort startAddress, int length, ushort observeStart, ushort observeCount)
     {
         var endAddress = startAddress + length - 1;
@@ -280,6 +287,11 @@ public static class EnhancedModbusServerExtensions
         return !(endAddress < observeStart || startAddress > observeEnd);
     }
 
+    /// <summary>Executes the Arrays Equal operation.</summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="array1">The array1 value.</param>
+    /// <param name="array2">The array2 value.</param>
+    /// <returns>The result.</returns>
     private static bool ArraysEqual<T>(T[] array1, T[] array2)
         where T : IEquatable<T>
     {
@@ -299,6 +311,35 @@ public static class EnhancedModbusServerExtensions
         return true;
     }
 
+    /// <summary>Executes the Is Array Empty operation.</summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="array">The array value.</param>
+    /// <returns>The result.</returns>
     private static bool IsArrayEmpty<T>(T[] array)
-        where T : struct => array.All(item => EqualityComparer<T>.Default.Equals(item, default));
+        where T : struct
+    {
+        for (var i = 0; i < array.Length; i++)
+        {
+            if (!EqualityComparer<T>.Default.Equals(array[i], default))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Copies buffered snapshots into an array.</summary>
+    /// <param name="snapshots">The buffered snapshots.</param>
+    /// <returns>The copied snapshot array.</returns>
+    private static ModbusServerDataSnapshot[] CopyBufferedSnapshots(IList<ModbusServerDataSnapshot> snapshots)
+    {
+        var result = new ModbusServerDataSnapshot[snapshots.Count];
+        for (var i = 0; i < snapshots.Count; i++)
+        {
+            result[i] = snapshots[i];
+        }
+
+        return result;
+    }
 }

@@ -1,42 +1,37 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using ModbusRx.Data;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// Integration tests for simulation and data generation.
-/// </summary>
-[Collection("SimulationTests")]
+/// <summary>Integration tests for simulation and data generation.</summary>
 public sealed class SimulationIntegrationTests : IDisposable
 {
+    /// <summary>The resources registered for cleanup.</summary>
     private readonly List<IDisposable> _disposables = [];
 
-    /// <summary>
-    /// Disposes test resources.
-    /// </summary>
+    /// <summary>Disposes test resources.</summary>
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Tests that simulation generates realistic sine wave data.
-    /// </summary>
+    /// <summary>Tests that simulation generates realistic sine wave data.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_SineWaveGeneration_ShouldBeRealistic()
     {
         // Arrange
         const int length = 360; // One full cycle in degrees
-        const double amplitude = 10000;
+        const double amplitude = 10_000;
 
         // Act
         var sineData = SimulationDataProvider.GenerateSineWave(length, amplitude);
@@ -51,9 +46,7 @@ public sealed class SimulationIntegrationTests : IDisposable
         Assert.True(sineData[270] < amplitude); // sin(270 degrees) = -1, should be < amplitude
     }
 
-    /// <summary>
-    /// Tests square wave generation with different duty cycles.
-    /// </summary>
+    /// <summary>Tests square wave generation with different duty cycles.</summary>
     /// <param name="dutyCycle">The duty cycle to test.</param>
     [TUnit.Core.Test]
     [TUnit.Core.Arguments(0.25)]
@@ -71,15 +64,13 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         // Assert
         var expectedHighCount = (int)(length * dutyCycle);
-        var actualHighCount = squareData.Count(x => x == highValue);
+        var actualHighCount = CountEqual(squareData, highValue);
 
         // Allow for rounding differences
         Assert.True(Math.Abs(actualHighCount - expectedHighCount) <= 1);
     }
 
-    /// <summary>
-    /// Tests that simulation provider can run continuously.
-    /// </summary>
+    /// <summary>Tests that simulation provider can run continuously.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task SimulationDataProvider_ContinuousSimulation_ShouldUpdateData()
@@ -109,12 +100,10 @@ public sealed class SimulationIntegrationTests : IDisposable
         };
 
         // Assert
-        Assert.True(initialValues.Zip(finalValues, (initial, final) => initial != final).Any(changed => changed));
+        Assert.True(HasAnyChange(initialValues, finalValues));
     }
 
-    /// <summary>
-    /// Tests different simulation types produce different patterns.
-    /// </summary>
+    /// <summary>Tests different simulation types produce different patterns.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task SimulationDataProvider_DifferentTypes_ShouldProduceDifferentPatterns()
@@ -134,15 +123,13 @@ public sealed class SimulationIntegrationTests : IDisposable
         provider.Stop();
 
         // Assert - Should produce different patterns
-        var values1 = dataStore1.HoldingRegisters.Take(10).ToArray();
-        var values2 = dataStore2.HoldingRegisters.Take(10).ToArray();
+        var values1 = CopyFirst(dataStore1.HoldingRegisters, 10);
+        var values2 = CopyFirst(dataStore2.HoldingRegisters, 10);
 
-        Assert.False(values1.SequenceEqual(values2));
+        Assert.False(SequenceEqual(values1, values2));
     }
 
-    /// <summary>
-    /// Tests that server with simulation can handle real client connections.
-    /// </summary>
+    /// <summary>Tests that server with simulation can handle real client connections.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ModbusServer_WithSimulation_ShouldServeRealtimeData()
@@ -152,7 +139,7 @@ public sealed class SimulationIntegrationTests : IDisposable
         _disposables.Add(server);
 
         var tcpPort = GetAvailablePort();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.SimulationMode = true;
         server.Start();
 
@@ -168,12 +155,10 @@ public sealed class SimulationIntegrationTests : IDisposable
         var reading2 = await master.ReadHoldingRegistersAsync(1, 0, 10);
 
         // Assert - Data should have changed due to simulation
-        Assert.False(reading1.SequenceEqual(reading2));
+        Assert.False(SequenceEqual(reading1, reading2));
     }
 
-    /// <summary>
-    /// Tests boolean pattern generation for coils and inputs.
-    /// </summary>
+    /// <summary>Tests boolean pattern generation for coils and inputs.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_BooleanPatterns_ShouldBeCorrect()
     {
@@ -198,12 +183,10 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         // Act & Assert - Random pattern (should have variation)
         var random = provider.GenerateBooleanPattern(100, BooleanPattern.Random);
-        Assert.True(random.Distinct().Count() > 1); // Should have both true and false
+        Assert.True(HasVariation(random)); // Should have both true and false
     }
 
-    /// <summary>
-    /// Tests that sawtooth wave increases linearly.
-    /// </summary>
+    /// <summary>Tests that sawtooth wave increases linearly.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_SawtoothWave_ShouldIncreaseLinearly()
     {
@@ -227,9 +210,7 @@ public sealed class SimulationIntegrationTests : IDisposable
         }
     }
 
-    /// <summary>
-    /// Tests comprehensive simulation with mixed data types.
-    /// </summary>
+    /// <summary>Tests comprehensive simulation with mixed data types.</summary>
     [TUnit.Core.Test]
     public void SimulationDataProvider_MixedDataTypes_ShouldLoadCorrectly()
     {
@@ -251,45 +232,159 @@ public sealed class SimulationIntegrationTests : IDisposable
 
         // Check coils (should reflect register values) - use 1-based indexing
         Assert.False(dataStore.CoilDiscretes[1]); // 0 % 2 == 0 -> false
-        Assert.True(dataStore.CoilDiscretes[2]);  // 1 % 2 == 1 -> true
+        Assert.True(dataStore.CoilDiscretes[2]); // 1 % 2 == 1 -> true
         Assert.False(dataStore.CoilDiscretes[3]); // 2 % 2 == 0 -> false
 
         // Check inputs (inverted coils) - use 1-based indexing
-        Assert.True(dataStore.InputDiscretes[1]);  // !false
+        Assert.True(dataStore.InputDiscretes[1]); // !false
         Assert.False(dataStore.InputDiscretes[2]); // !true
-        Assert.True(dataStore.InputDiscretes[3]);  // !false
+        Assert.True(dataStore.InputDiscretes[3]); // !false
     }
 
+    /// <summary>Copies the first values from the specified collection.</summary>
+    /// <param name="values">The values to copy.</param>
+    /// <param name="count">The maximum number of values to copy.</param>
+    /// <returns>The copied values.</returns>
+    private static ushort[] CopyFirst(IEnumerable<ushort> values, int count)
+    {
+        var result = new List<ushort>(count);
+
+        foreach (var value in values)
+        {
+            if (result.Count >= count)
+            {
+                break;
+            }
+
+            result.Add(value);
+        }
+
+        return [.. result];
+    }
+
+    /// <summary>Counts values that match the expected value.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <param name="expected">The value to count.</param>
+    /// <returns>The number of matching values.</returns>
+    private static int CountEqual(ushort[] values, ushort expected)
+    {
+        var count = 0;
+
+        for (var i = 0; i < values.Length; i++)
+        {
+            if (values[i] == expected)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>Gets an available TCP port on the loopback adapter.</summary>
+    /// <returns>The available port number.</returns>
     private static int GetAvailablePort()
     {
-        using var socket = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        using var socket = new TcpListener(IPAddress.Loopback, 0);
         socket.Start();
-        var port = ((System.Net.IPEndPoint)socket.LocalEndpoint).Port;
+        var port = ((IPEndPoint)socket.LocalEndpoint).Port;
         socket.Stop();
         return port;
     }
 
-    /// <summary>
-    /// Releases unmanaged and - optionally - managed resources.
-    /// </summary>
+    /// <summary>Determines whether any values differ between two arrays.</summary>
+    /// <param name="initialValues">The initial values.</param>
+    /// <param name="finalValues">The final values.</param>
+    /// <returns><c>true</c> when any value has changed; otherwise, <c>false</c>.</returns>
+    private static bool HasAnyChange(ushort[] initialValues, ushort[] finalValues)
+    {
+        var length = Math.Min(initialValues.Length, finalValues.Length);
+
+        for (var i = 0; i < length; i++)
+        {
+            if (initialValues[i] != finalValues[i])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Determines whether the boolean values contain more than one value.</summary>
+    /// <param name="values">The values to inspect.</param>
+    /// <returns><c>true</c> when the sequence contains both <c>true</c> and <c>false</c>; otherwise, <c>false</c>.</returns>
+    private static bool HasVariation(bool[] values)
+    {
+        if (values.Length == 0)
+        {
+            return false;
+        }
+
+        var first = values[0];
+
+        for (var i = 1; i < values.Length; i++)
+        {
+            if (values[i] != first)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Determines whether two arrays contain the same values in order.</summary>
+    /// <param name="left">The left values.</param>
+    /// <param name="right">The right values.</param>
+    /// <returns><c>true</c> when both arrays contain the same values; otherwise, <c>false</c>.</returns>
+    private static bool SequenceEqual(ushort[] left, ushort[] right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Length; i++)
+        {
+            if (left[i] != right[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Releases unmanaged and - optionally - managed resources.</summary>
     /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
     private void Dispose(bool disposing)
     {
-        if (disposing)
+        if (!disposing)
         {
-            foreach (var disposable in _disposables)
-            {
-                try
-                {
-                    disposable?.Dispose();
-                }
-                catch
-                {
-                    // Ignore disposal exceptions in tests
-                }
-            }
-
-            _disposables.Clear();
+            return;
         }
+
+        foreach (var disposable in _disposables)
+        {
+            try
+            {
+                disposable?.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Expected during cleanup.
+            }
+            catch (InvalidOperationException)
+            {
+                // Expected during cleanup.
+            }
+            catch (SocketException)
+            {
+                // Expected during cleanup.
+            }
+        }
+
+        _disposables.Clear();
     }
 }

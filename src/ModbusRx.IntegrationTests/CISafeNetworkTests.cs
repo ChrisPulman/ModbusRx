@@ -1,23 +1,18 @@
-// Copyright (c) Chris Pulman. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) 2022-2026 Chris Pulman. All rights reserved.
+// Chris Pulman licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading.Tasks;
 using CP.IO.Ports;
 using ModbusRx.Device;
-using Xunit;
 
 namespace ModbusRx.IntegrationTests;
 
-/// <summary>
-/// Example integration tests demonstrating CI-safe network testing patterns.
-/// </summary>
-[Collection("NetworkTests")]
+/// <summary>Example integration tests demonstrating CI-safe network testing patterns.</summary>
 public class CISafeNetworkTests : NetworkTestBase
 {
-    /// <summary>
-    /// Test that requires live network connectivity - skipped in CI environments.
-    /// </summary>
+    /// <summary>Test that requires live network connectivity - skipped in CI environments.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task LiveNetworkTest_ShouldConnectToRealDevice()
@@ -27,7 +22,7 @@ public class CISafeNetworkTests : NetworkTestBase
 
         // This test would only run in local development environments
         var canConnect = await TryConnectAsync("192.168.1.100", 502);
-        
+
         Skip.IfNot(canConnect, "No Modbus device found at 192.168.1.100:502");
 
         // Proceed with actual device testing
@@ -36,13 +31,11 @@ public class CISafeNetworkTests : NetworkTestBase
         RegisterDisposable(master);
 
         var registers = await master.ReadHoldingRegistersAsync(1, 0, 10);
-        Assert.NotNull(registers);
+        _ = Assert.NotNull(registers);
         Assert.True(registers.Length > 0);
     }
 
-    /// <summary>
-    /// Test that works in both CI and local environments using localhost.
-    /// </summary>
+    /// <summary>Test that works in both CI and local environments using localhost.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task LocalhostTest_ShouldWorkInAllEnvironments()
@@ -55,7 +48,7 @@ public class CISafeNetworkTests : NetworkTestBase
         server.LoadSimulationData(testData);
 
         var tcpPort = await GetAvailablePortAsync();
-        server.StartTcpServer(tcpPort, 1);
+        _ = server.StartTcpServer(tcpPort, 1);
         server.Start();
 
         // Use CI-appropriate timeout
@@ -73,9 +66,7 @@ public class CISafeNetworkTests : NetworkTestBase
         Assert.Equal(500, result[4]);
     }
 
-    /// <summary>
-    /// Test that demonstrates conditional behavior based on environment.
-    /// </summary>
+    /// <summary>Test that demonstrates conditional behavior based on environment.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     public async Task ConditionalNetworkTest_ShouldAdaptToEnvironment()
@@ -85,14 +76,14 @@ public class CISafeNetworkTests : NetworkTestBase
             // In GitHub Actions, test with mock/simulation only
             var server = new ModbusServer();
             RegisterDisposable(server);
-            
+
             server.SimulationMode = true;
             server.Start();
 
             await Task.Delay(100, CancellationToken);
             var data = server.GetCurrentData();
-            
-            Assert.NotNull(data.holdingRegisters);
+
+            _ = Assert.NotNull(data.holdingRegisters);
         }
         else
         {
@@ -103,9 +94,9 @@ public class CISafeNetworkTests : NetworkTestBase
             // Start multiple endpoints
             var tcpPort = await GetAvailablePortAsync();
             var udpPort = await GetAvailablePortAsync();
-            
-            server.StartTcpServer(tcpPort, 1);
-            server.StartUdpServer(udpPort, 1);
+
+            _ = server.StartTcpServer(tcpPort, 1);
+            _ = server.StartUdpServer(udpPort, 1);
             server.Start();
 
             await Task.Delay(200, CancellationToken);
@@ -116,7 +107,7 @@ public class CISafeNetworkTests : NetworkTestBase
             RegisterDisposable(tcpMaster);
 
             var tcpResult = await tcpMaster.ReadHoldingRegistersAsync(1, 0, 5);
-            Assert.NotNull(tcpResult);
+            _ = Assert.NotNull(tcpResult);
 
             // Test UDP connection
             var udpClient = new UdpClientRx();
@@ -126,13 +117,11 @@ public class CISafeNetworkTests : NetworkTestBase
             RegisterDisposable(udpMaster);
 
             var udpResult = await udpMaster.ReadHoldingRegistersAsync(1, 0, 5);
-            Assert.NotNull(udpResult);
+            _ = Assert.NotNull(udpResult);
         }
     }
 
-    /// <summary>
-    /// Test that requires external internet connectivity - always skipped in CI.
-    /// </summary>
+    /// <summary>Test that requires external internet connectivity - always skipped in CI.</summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TUnit.Core.Test]
     [TUnit.Core.Skip("Requires external internet connectivity - run manually for development testing")]
@@ -142,7 +131,7 @@ public class CISafeNetworkTests : NetworkTestBase
         // for development/debugging purposes        
         var canPing = await TryConnectAsync("google.com", 80, TimeSpan.FromSeconds(10));
         Assert.True(canPing, "No internet connectivity available");
-        
+
         // Additional external connectivity tests would go here
     }
 }
