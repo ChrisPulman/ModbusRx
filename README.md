@@ -1,3 +1,7 @@
+# The code in this repository is now no longer being maintained and will continue at [IoT-DriverCore](https://github.com/ChrisPulman/IoT-DriverCore)
+
+I need a centralised place to continue to develop the IoT drivers and often ended up creating the same code in multiple places due to the seperation.
+
 # ModbusRx - A Reactive Modbus Implementation
 
 ![License](https://img.shields.io/github/license/ChrisPulman/ModbusRx.svg) [![Build](https://github.com/ChrisPulman/ModbusRx/actions/workflows/BuildOnly.yml/badge.svg)](https://github.com/ChrisPulman/ModbusRx/actions/workflows/BuildOnly.yml) ![Nuget](https://img.shields.io/nuget/dt/ModbusRx?color=pink&style=plastic) [![NuGet](https://img.shields.io/nuget/v/ModbusRx.svg?style=plastic)](https://www.nuget.org/packages/ModbusRx)
